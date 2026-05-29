@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MaliTaxi Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4FF;--white:#FFFFFF;--card:#FFFFFF;
+  --blue:#1E40AF;--blue2:#3B82F6;--blue3:#60A5FA;--blue-light:#EFF6FF;
+  --gold:#D97706;--gold2:#F59E0B;--gold-light:#FFFBEB;
+  --green:#059669;--green-light:#ECFDF5;
+  --red:#DC2626;--red-light:#FEF2F2;
+  --purple:#7C3AED;--purple-light:#F5F3FF;
+  --text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --sidebar:#1E3A8A;--sidebar2:#1E40AF;
+  --pattern:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── LOGIN ── */
+.login-wrap{min-height:100vh;display:flex;background:linear-gradient(135deg,#1E3A8A 0%,#1E40AF 40%,#2563EB 100%);position:relative;overflow:hidden}
+.login-left{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;position:relative;z-index:2}
+.login-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px}
+/* African geometric decoration */
+.africa-deco{position:absolute;top:0;left:0;right:0;bottom:0;opacity:.07;background-image:repeating-linear-gradient(45deg,#FFD700 0,#FFD700 2px,transparent 0,transparent 50%),repeating-linear-gradient(-45deg,#FFD700 0,#FFD700 2px,transparent 0,transparent 50%);background-size:20px 20px}
+.login-brand{text-align:center;margin-bottom:40px}
+.login-brand-ico{width:90px;height:90px;border-radius:28px;background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:48px;margin:0 auto 18px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.login-brand h1{font-size:36px;font-weight:900;color:#fff;letter-spacing:-1px}
+.login-brand p{color:rgba(255,255,255,.7);font-size:15px;margin-top:6px}
+/* Login stats */
+.login-stats{display:flex;gap:24px;margin-top:40px}
+.lstat{text-align:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:16px 20px;backdrop-filter:blur(10px)}
+.lstat-val{font-size:24px;font-weight:900;color:#fff}
+.lstat-lbl{font-size:11px;color:rgba(255,255,255,.6);margin-top:3px}
+/* Login card */
+.login-card{background:rgba(255,255,255,.98);border-radius:28px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 40px 80px rgba(0,0,0,.25)}
+.login-card h2{font-size:24px;font-weight:800;color:var(--text);margin-bottom:6px}
+.login-card p{color:var(--muted);font-size:14px;margin-bottom:28px}
+.login-inp{width:100%;padding:14px 16px;background:var(--bg);border:2px solid var(--border);border-radius:13px;color:var(--text);font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;transition:all .2s}
+.login-inp:focus{border-color:var(--blue2);background:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.1)}
+.login-inp::placeholder{color:var(--muted)}
+.login-btn{width:100%;padding:15px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .3s;box-shadow:0 8px 24px rgba(30,64,175,.4)}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(30,64,175,.5)}
+.login-hint{text-align:center;margin-top:16px;font-size:12px;color:var(--muted)}
+.login-err{color:var(--red);font-size:12px;font-weight:700;margin-bottom:10px;display:none;background:var(--red-light);padding:10px 14px;border-radius:10px}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;background:linear-gradient(180deg,var(--sidebar) 0%,#162D6B 100%);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:30;transition:transform .3s;overflow:hidden}
+.sidebar::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:var(--pattern)}
+.sb-top{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.1);position:relative;z-index:1}
+.sb-logo{display:flex;align-items:center;gap:13px}
+.sb-logo-ico{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--gold2),#F97316);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 6px 20px rgba(217,119,6,.4)}
+.sb-logo-txt{font-size:17px;font-weight:900;color:#fff;letter-spacing:-.3px}
+.sb-logo-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px;letter-spacing:.5px}
+.sb-nav{flex:1;padding:16px 12px;overflow-y:auto;position:relative;z-index:1}
+.sb-section{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:1.5px;padding:14px 10px 7px;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:13px;cursor:pointer;transition:all .2s;margin-bottom:2px;font-size:13px;font-weight:600;color:rgba(255,255,255,.6);position:relative}
+.sb-item:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.9)}
+.sb-item.active{background:rgba(255,255,255,.15);color:#fff;font-weight:700}
+.sb-item.active::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:24px;background:var(--gold2);border-radius:0 3px 3px 0}
+.sb-ico{font-size:17px;width:22px;text-align:center}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;min-width:22px;text-align:center}
+.sb-gold-badge{margin-left:auto;background:var(--gold2);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px}
+.sb-bottom{padding:16px 12px;border-top:1px solid rgba(255,255,255,.1);position:relative;z-index:1}
+.sb-user{display:flex;align-items:center;gap:11px;padding:12px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+.sb-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold2),#F97316);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb-user-name{font-size:13px;font-weight:700;color:#fff}
+.sb-user-role{font-size:10px;color:rgba(255,255,255,.4)}
+.sb-logout{background:none;border:none;color:rgba(255,255,255,.4);font-size:16px;cursor:pointer;margin-left:auto;transition:color .2s}
+.sb-logout:hover{color:var(--red)}
+
+/* ── MAIN ── */
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.page-title{font-size:19px;font-weight:800;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.tb-btn{width:40px;height:40px;border-radius:12px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;font-size:18px;transition:all .2s}
+.tb-btn:hover{background:var(--blue-light);border-color:var(--blue3)}
+.tb-notif-dot{position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid #fff}
+.tb-date{font-size:12px;color:var(--muted);background:var(--bg);padding:7px 14px;border-radius:20px;border:1px solid var(--border)}
+.menu-toggle{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text)}
+
+/* ── CONTENT ── */
+.content{padding:26px;flex:1}
+.page-section{animation:fadeUp .4s ease}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:22px;position:relative;overflow:hidden;transition:all .3s;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.1)}
+.stat-card-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0}
+.stat-card-bg{position:absolute;bottom:-10px;right:-10px;font-size:70px;opacity:.06;pointer-events:none}
+.stat-ico-wrap{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
+.stat-val{font-size:26px;font-weight:900;margin-bottom:4px;letter-spacing:-.5px}
+.stat-lbl{font-size:12px;color:var(--muted);font-weight:600}
+.stat-trend{font-size:11px;font-weight:700;margin-top:8px;display:flex;align-items:center;gap:4px}
+.stat-trend.up{color:var(--green)}
+.stat-trend.down{color:var(--red)}
+
+/* ── TABLES ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,var(--white),#FAFBFF)}
+.card-title{font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.card-actions{display:flex;gap:8px}
+.btn{padding:8px 16px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:5px}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 4px 12px rgba(30,64,175,.3)}
+.btn-blue:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(30,64,175,.4)}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--blue3);color:var(--blue)}
+.btn-red-soft{background:var(--red-light);color:var(--red);border:1px solid #FECACA}
+.btn-green-soft{background:var(--green-light);color:var(--green);border:1px solid #A7F3D0}
+table{width:100%;border-collapse:collapse}
+thead{background:linear-gradient(90deg,#F8FAFF,#F0F4FF)}
+th{padding:12px 18px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:14px 18px;font-size:13px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFBFF}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-gold{background:var(--gold-light);color:var(--gold)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-gray{background:#F1F5F9;color:var(--muted)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+
+/* ── SEARCH ── */
+.search-wrap{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.search-inp{flex:1;min-width:200px;padding:11px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:all .2s}
+.search-inp:focus{border-color:var(--blue3);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.search-inp::placeholder{color:var(--muted)}
+.filter-chip{padding:9px 16px;border-radius:20px;background:var(--white);border:1.5px solid var(--border);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.filter-chip.active{background:var(--blue-light);border-color:var(--blue3);color:var(--blue)}
+
+/* ── CHART BARS ── */
+.chart-wrap{display:flex;align-items:flex-end;gap:10px;height:110px;padding:10px 0 0}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.chart-bar-el{width:100%;border-radius:6px 6px 0 0;transition:height .6s ease;min-height:4px}
+.chart-lbl{font-size:9px;color:var(--muted);font-weight:700}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:50;align-items:center;justify-content:center;padding:20px}
+.modal-box{background:#fff;border-radius:24px;padding:28px;width:100%;max-width:480px;animation:fadeUp .3s ease;box-shadow:0 40px 80px rgba(0,0,0,.2)}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;color:var(--text)}
+.modal-close{background:var(--bg);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:var(--red-light);color:var(--red)}
+.modal-inp{width:100%;padding:12px 15px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:12px;transition:all .2s}
+.modal-inp:focus{border-color:var(--blue3);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.modal-inp::placeholder{color:var(--muted)}
+select.modal-inp{cursor:pointer}
+.modal-btns{display:flex;gap:10px;margin-top:6px}
+.modal-btns button{flex:1;padding:12px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s}
+
+/* ── NOTIFICATION ITEMS ── */
+.notif-item{display:flex;align-items:flex-start;gap:14px;padding:16px;border-radius:14px;margin-bottom:8px;transition:all .2s;border:1.5px solid transparent}
+.notif-item.unread{background:var(--blue-light);border-color:#BFDBFE}
+.notif-item.read{background:var(--white);border-color:var(--border)}
+.notif-ico-wrap{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--blue2);flex-shrink:0;margin-top:6px}
+
+/* ── AFRICAN PATTERN HEADER ── */
+.african-header{background:linear-gradient(135deg,var(--blue) 0%,var(--blue2) 100%);border-radius:20px;padding:24px;margin-bottom:24px;position:relative;overflow:hidden;color:#fff}
+.african-header::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background-image:repeating-linear-gradient(45deg,rgba(255,215,0,.08) 0,rgba(255,215,0,.08) 2px,transparent 0,transparent 50%),repeating-linear-gradient(-45deg,rgba(255,215,0,.08) 0,rgba(255,215,0,.08) 2px,transparent 0,transparent 50%);background-size:16px 16px}
+.african-header-content{position:relative;z-index:1}
+
+/* ── MOBILE ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:25}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-260px)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .menu-toggle{display:block}
+  .sidebar-overlay.show{display:block}
+  .login-left{display:none}
+  .login-right{padding:20px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .chart-wrap{gap:5px}
+}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:14px;font-size:13px;font-weight:700;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,.15);animation:fadeUp .3s ease;display:flex;align-items:center;gap:10px}
+.toast.success{background:#fff;border:2px solid #A7F3D0;color:var(--green)}
+.toast.error{background:#fff;border:2px solid #FECACA;color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="pg-login">
+  <div class="login-wrap">
+    <div class="africa-deco"></div>
+    <div class="login-left">
+      <div class="login-brand">
+        <div class="login-brand-ico">🚕</div>
+        <h1>MaliTaxi Admin</h1>
+        <p>Panneau d'administration · Bamako 🇲🇱</p>
+      </div>
+      <div class="login-stats">
+        <div class="lstat"><div class="lstat-val">4</div><div class="lstat-lbl">Applications</div></div>
+        <div class="lstat"><div class="lstat-val">10+</div><div class="lstat-lbl">Partenaires</div></div>
+        <div class="lstat"><div class="lstat-val">🇲🇱</div><div class="lstat-lbl">Mali</div></div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="login-card">
+        <h2>Bon retour ! 👋</h2>
+        <p>Connectez-vous pour accéder au panneau d'administration MaliTaxi.</p>
+        <input class="login-inp" id="a-user" placeholder="👤 Nom d'utilisateur" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <input class="login-inp" id="a-pass" type="password" placeholder="🔒 Mot de passe" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <div id="a-err" class="login-err"></div>
+        <button class="login-btn" onclick="doLogin()">Se connecter →</button>
+        <div class="login-hint">🔐 admin / malitaxi2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="pg-admin" style="display:none">
+  <div class="sidebar-overlay" id="sb-overlay" onclick="closeSb()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sb-top">
+      <div class="sb-logo">
+        <div class="sb-logo-ico">⚙️</div>
+        <div>
+          <div class="sb-logo-txt">MaliTaxi</div>
+          <div class="sb-logo-sub">ADMIN PANEL</div>
+        </div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">Principal</div>
+      <div class="sb-item active" id="si-dashboard" onclick="go('dashboard')"><span class="sb-ico">📊</span> Dashboard</div>
+      <div class="sb-item" id="si-courses" onclick="go('courses')"><span class="sb-ico">🚗</span> Courses <span class="sb-badge">12</span></div>
+      <div class="sb-item" id="si-chauffeurs" onclick="go('chauffeurs')"><span class="sb-ico">👥</span> Chauffeurs</div>
+      <div class="sb-item" id="si-clients" onclick="go('clients')"><span class="sb-ico">👤</span> Clients</div>
+      <div class="sb-section">Gestion</div>
+      <div class="sb-item" id="si-partenaires" onclick="go('partenaires')"><span class="sb-ico">🤝</span> Partenaires</div>
+      <div class="sb-item" id="si-revenus" onclick="go('revenus')"><span class="sb-ico">💰</span> Revenus</div>
+      <div class="sb-item" id="si-notifs" onclick="go('notifs')"><span class="sb-ico">🔔</span> Notifications <span class="sb-badge">3</span></div>
+      <div class="sb-section">Système</div>
+      <div class="sb-item" id="si-params" onclick="go('params')"><span class="sb-ico">⚙️</span> Paramètres</div>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-user">
+        <div class="sb-avatar">👑</div>
+        <div><div class="sb-user-name">Admin</div><div class="sb-user-role">SUPER ADMIN</div></div>
+        <button class="sb-logout" onclick="doLogout()">🚪</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" onclick="openSb()">☰</button>
+        <div class="page-title" id="pg-title">📊 Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-date" id="tb-date"></div>
+        <div class="tb-btn" onclick="go('notifs')">🔔<div class="tb-notif-dot" id="notif-dot"></div></div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg"><div class="modal-box" id="modal-box"></div></div>
+
+<script>
+// ── DATA ──
+const CHAUFFEURS=[
+  {id:1,nom:"Amadou Diallo",    tel:"+223 76 11 22 33",veh:"Toyota Corolla",plaque:"ML-1234-A",type:"Pro", courses:142,rev:2130000,note:4.9,statut:"actif",  zone:"Hamdallaye"},
+  {id:2,nom:"Seydou Koné",      tel:"+223 66 22 33 44",veh:"Honda Civic",   plaque:"ML-2345-B",type:"Pro", courses:98, rev:1470000,note:4.7,statut:"actif",  zone:"ACI 2000"},
+  {id:3,nom:"Ibrahim Traoré",   tel:"+223 76 33 44 55",veh:"Kia Picanto",   plaque:"ML-3456-C",type:"Lite",courses:67, rev:670000, note:4.5,statut:"actif",  zone:"Badalabougou"},
+  {id:4,nom:"Moussa Coulibaly", tel:"+223 66 44 55 66",veh:"Toyota Yaris",  plaque:"ML-4567-D",type:"Pro", courses:203,rev:3045000,note:4.8,statut:"actif",  zone:"Hippodrome"},
+  {id:5,nom:"Oumar Sanogo",     tel:"+223 76 55 66 77",veh:"Hyundai Accent",plaque:"ML-5678-E",type:"Lite",courses:34, rev:340000, note:4.3,statut:"attente",zone:"Lafiabougou"},
+  {id:6,nom:"Bakary Dembélé",   tel:"+223 66 66 77 88",veh:"Renault Logan", plaque:"ML-6789-F",type:"Pro", courses:0,  rev:0,      note:0,  statut:"suspendu",zone:"Magnambougou"},
+];
+const CLIENTS=[
+  {id:1,nom:"Aminata Coulibaly",tel:"+223 70 11 22 33",email:"aminata@gmail.com",  courses:28,dep:840000, note:4.9,statut:"actif",  date:"12/01/2026"},
+  {id:2,nom:"Ibrahim Keïta",    tel:"+223 65 22 33 44",email:"ibrahim@gmail.com",  courses:15,dep:225000, note:4.7,statut:"actif",  date:"15/01/2026"},
+  {id:3,nom:"Fatoumata Diallo", tel:"+223 76 33 44 55",email:"fatoumata@gmail.com",courses:42,dep:1470000,note:5.0,statut:"actif",  date:"03/01/2026"},
+  {id:4,nom:"Moussa Traoré",    tel:"+223 66 44 55 66",email:"moussa@gmail.com",   courses:9, dep:135000, note:4.5,statut:"actif",  date:"20/02/2026"},
+  {id:5,nom:"Oumou Bah",        tel:"+223 76 55 66 77",email:"oumou@gmail.com",    courses:3, dep:45000,  note:4.8,statut:"attente",date:"01/03/2026"},
+];
+const COURSES=[
+  {id:"C001",client:"Aminata C.", ch:"Amadou D.",  de:"Hamdallaye",   vers:"Badalabougou", prix:35000,type:"VIP",     st:"terminée",  heure:"08:30"},
+  {id:"C002",client:"Ibrahim K.", ch:"Seydou K.",   de:"ACI 2000",     vers:"Hippodrome",   prix:15000,type:"Standard",st:"terminée",  heure:"09:15"},
+  {id:"C003",client:"Fatoumata D.",ch:"Moussa C.", de:"Hippodrome",   vers:"Lafiabougou",  prix:35000,type:"VIP",     st:"en cours",  heure:"10:02"},
+  {id:"C004",client:"Moussa T.",   ch:"Ibrahim T.", de:"Sogoniko",     vers:"Magnambougou", prix:15000,type:"Standard",st:"en cours",  heure:"10:18"},
+  {id:"C005",client:"Oumou B.",    ch:"Amadou D.",  de:"Kalaban",      vers:"ACI 2000",     prix:8000, type:"Moto",    st:"en attente",heure:"10:25"},
+  {id:"C006",client:"Aminata C.", ch:"Seydou K.",   de:"Badalabougou", vers:"Centre",       prix:35000,type:"VIP",     st:"terminée",  heure:"Hier 17:30"},
+];
+const PARTS=[
+  {id:1,cat:"🏨 Hôtel",    nom:"Hôtel Laïco",         ville:"Bamako Centre",tel:"+223 20 23 00 00",st:"actif",  contrat:"31/12/2026",com:10},
+  {id:2,cat:"🏨 Hôtel",    nom:"Radisson Blu",         ville:"ACI 2000",     tel:"+223 20 70 14 00",st:"actif",  contrat:"30/06/2026",com:8},
+  {id:3,cat:"🍽️ Resto",   nom:"Le Loft Restaurant",   ville:"Badalabougou", tel:"+223 20 29 45 00",st:"actif",  contrat:"31/12/2026",com:15},
+  {id:4,cat:"🍽️ Resto",   nom:"Chez Boubacar",         ville:"Hamdallaye",   tel:"+223 76 12 34 56",st:"actif",  contrat:"30/09/2026",com:12},
+  {id:5,cat:"💇 Salon",    nom:"Glamour Beauty",        ville:"Hamdallaye",   tel:"+223 76 66 77 88",st:"actif",  contrat:"30/06/2026",com:10},
+  {id:6,cat:"💆 Spa",      nom:"Zen Spa Bamako",        ville:"Hippodrome",   tel:"+223 20 21 55 66",st:"actif",  contrat:"31/12/2026",com:20},
+  {id:7,cat:"🛒 Alim.",    nom:"Supermarché Score",     ville:"Hamdallaye",   tel:"+223 20 29 00 00",st:"attente",contrat:"En attente",com:8},
+  {id:8,cat:"📸 Photo",    nom:"Studio Photo Bamako",   ville:"Hippodrome",   tel:"+223 76 11 00 99",st:"actif",  contrat:"30/06/2026",com:15},
+];
+const NOTIFS=[
+  {id:1,ico:"🚨",msg:"Bouton SOS activé par chauffeur Amadou D.",  heure:"Il y a 5 min",  lu:false,type:"urgent"},
+  {id:2,ico:"👤",msg:"Nouveau chauffeur inscrit : Oumar Sanogo",    heure:"Il y a 30 min", lu:false,type:"info"},
+  {id:3,ico:"💰",msg:"Partenaire Hôtel Laïco a renouvelé son contrat",heure:"Il y a 2h", lu:false,type:"money"},
+  {id:4,ico:"⭐",msg:"Nouveau avis 5 étoiles de Fatoumata D.",      heure:"Il y a 3h",    lu:true, type:"info"},
+  {id:5,ico:"⚠️",msg:"Chauffeur Bakary D. suspendu automatiquement", heure:"Il y a 5h",   lu:true, type:"warning"},
+];
+
+function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");}
+
+// ── AUTH ──
+function doLogin(){
+  const u=document.getElementById("a-user").value.trim();
+  const p=document.getElementById("a-pass").value;
+  if(!u||!p){showErr("Remplissez tous les champs !");return;}
+  if((u==="admin"&&p==="malitaxi2026")||(u==="malitaxi"&&p==="admin123")){
+    document.getElementById("pg-login").style.display="none";
+    document.getElementById("pg-admin").style.display="block";
+    document.getElementById("tb-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+    go("dashboard");
+  } else showErr("Identifiants incorrects !");
+}
+function showErr(m){const e=document.getElementById("a-err");e.textContent="⚠️ "+m;e.style.display="block";}
+function doLogout(){if(confirm("Se déconnecter ?")){document.getElementById("pg-admin").style.display="none";document.getElementById("pg-login").style.display="block";}}
+
+// ── SIDEBAR ──
+function openSb(){document.getElementById("sidebar").classList.add("open");document.getElementById("sb-overlay").classList.add("show");}
+function closeSb(){document.getElementById("sidebar").classList.remove("open");document.getElementById("sb-overlay").classList.remove("show");}
+
+// ── NAV ──
+const titles={dashboard:"📊 Dashboard",courses:"🚗 Courses",chauffeurs:"👥 Chauffeurs",clients:"👤 Clients",partenaires:"🤝 Partenaires",revenus:"💰 Revenus",notifs:"🔔 Notifications",params:"⚙️ Paramètres"};
+function go(p){
+  document.querySelectorAll(".sb-item").forEach(el=>el.classList.remove("active"));
+  const si=document.getElementById("si-"+p);
+  if(si) si.classList.add("active");
+  document.getElementById("pg-title").textContent=titles[p]||p;
+  closeSb();
+  if(p==="dashboard") renderDash();
+  else if(p==="courses") renderCourses();
+  else if(p==="chauffeurs") renderChauf();
+  else if(p==="clients") renderClients();
+  else if(p==="partenaires") renderParts();
+  else if(p==="revenus") renderRev();
+  else if(p==="notifs") renderNotifs();
+  else if(p==="params") renderParams();
+}
+
+// ── DASHBOARD ──
+function renderDash(){
+  const totalR=CHAUFFEURS.reduce((a,c)=>a+c.rev,0)+8500000;
+  const weeks=[{j:"Lun",r:320000},{j:"Mar",r:480000},{j:"Mer",r:290000},{j:"Jeu",r:560000},{j:"Ven",r:720000},{j:"Sam",r:380000},{j:"Dim",r:180000}];
+  const maxR=Math.max(...weeks.map(w=>w.r));
+  let chartH="";
+  for(const w of weeks){
+    const h=Math.round((w.r/maxR)*90);
+    const isMax=w.r===maxR;
+    chartH+=`<div class="chart-col"><div class="chart-bar-el" style="height:${h}px;background:${isMax?"linear-gradient(180deg,#1E40AF,#3B82F6)":"linear-gradient(180deg,#BFDBFE,#93C5FD)"}"></div><div class="chart-lbl">${w.j}</div></div>`;
+  }
+  const types=[{t:"VIP",n:342,c:"#D97706",p:40},{t:"Standard",n:385,c:"#1E40AF",p:45},{t:"Moto",n:85,c:"#059669",p:10},{t:"Livraison",n:43,c:"#7C3AED",p:5}];
+  let typesH="";
+  for(const t of types) typesH+=`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:5px"><span>${t.t}</span><span style="color:${t.c}">${t.n} · ${t.p}%</span></div><div style="height:6px;background:#F1F5F9;border-radius:3px"><div style="height:6px;background:${t.c};border-radius:3px;width:${t.p}%"></div></div></div>`;
+
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <!-- African header banner -->
+    <div class="african-header">
+      <div class="african-header-content">
+        <div style="font-size:13px;font-weight:700;opacity:.7;margin-bottom:5px;letter-spacing:1px">🌍 BAMAKO, MALI · AUJOURD'HUI</div>
+        <div style="font-size:24px;font-weight:900;margin-bottom:4px">Bonjour, Admin ! 👋</div>
+        <div style="font-size:14px;opacity:.8">Voici un aperçu de MaliTaxi en temps réel.</div>
+        <div style="display:flex;gap:20px;margin-top:16px;flex-wrap:wrap">
+          ${[["✅ Actifs",CHAUFFEURS.filter(c=>c.statut==="actif").length+" chauffeurs"],["🚗 Aujourd'hui",COURSES.length+" courses"],["⏳ En attente",NOTIFS.filter(n=>!n.lu).length+" alertes"]].map(([k,v])=>`<div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px;backdrop-filter:blur(10px)"><div style="font-size:11px;opacity:.7">${k}</div><div style="font-size:16px;font-weight:800">${v}</div></div>`).join("")}
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#D97706,#F59E0B)"></div><div class="stat-card-bg">💰</div><div class="stat-ico-wrap" style="background:#FFFBEB"><span style="font-size:24px">💰</span></div><div class="stat-val" style="color:#D97706">${fmt(totalR)}</div><div class="stat-lbl">Revenus totaux (FCFA)</div><div class="stat-trend up">↑ +18% ce mois</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#059669,#10B981)"></div><div class="stat-card-bg">🚗</div><div class="stat-ico-wrap" style="background:#ECFDF5"><span style="font-size:24px">🚗</span></div><div class="stat-val" style="color:#059669">${COURSES.length+847}</div><div class="stat-lbl">Total courses</div><div class="stat-trend up">↑ +${COURSES.length} aujourd'hui</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#1E40AF,#3B82F6)"></div><div class="stat-card-bg">👥</div><div class="stat-ico-wrap" style="background:#EFF6FF"><span style="font-size:24px">👥</span></div><div class="stat-val" style="color:#1E40AF">${CHAUFFEURS.filter(c=>c.statut==="actif").length}</div><div class="stat-lbl">Chauffeurs actifs</div><div class="stat-trend up">↑ +2 cette semaine</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#7C3AED,#8B5CF6)"></div><div class="stat-card-bg">👤</div><div class="stat-ico-wrap" style="background:#F5F3FF"><span style="font-size:24px">👤</span></div><div class="stat-val" style="color:#7C3AED">${CLIENTS.length+234}</div><div class="stat-lbl">Clients inscrits</div><div class="stat-trend up">↑ +12 cette semaine</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#D97706,#F59E0B)"></div><div class="stat-card-bg">🤝</div><div class="stat-ico-wrap" style="background:#FFFBEB"><span style="font-size:24px">🤝</span></div><div class="stat-val" style="color:#D97706">${PARTS.filter(p=>p.st==="actif").length}</div><div class="stat-lbl">Partenaires actifs</div><div class="stat-trend up">↑ +1 ce mois</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#DC2626,#EF4444)"></div><div class="stat-card-bg">🔔</div><div class="stat-ico-wrap" style="background:#FEF2F2"><span style="font-size:24px">🔔</span></div><div class="stat-val" style="color:#DC2626">${NOTIFS.filter(n=>!n.lu).length}</div><div class="stat-lbl">Alertes non lues</div><div class="stat-trend down">⚠️ Action requise</div></div>
+    </div>
+
+    <!-- Charts -->
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:20px">
+      <div class="card"><div class="card-header"><div class="card-title">📈 Revenus hebdomadaires</div></div>
+        <div style="padding:20px"><div class="chart-wrap">${chartH}</div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:10px;padding:10px 0;border-top:1px solid var(--border)">
+            <span>Total semaine : <strong style="color:var(--blue)">${fmt(2930000)} FCFA</strong></span>
+            <span>Moy/jour : <strong style="color:var(--blue)">${fmt(418571)} FCFA</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">🎯 Types de courses</div></div>
+        <div style="padding:20px">${typesH}</div>
+      </div>
+    </div>
+
+    <!-- Recent courses -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">🚗 Courses récentes</div><button class="btn btn-outline" onclick="go('courses')">Voir tout →</button></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>ID</th><th>CLIENT</th><th>CHAUFFEUR</th><th>TRAJET</th><th>MONTANT</th><th>STATUT</th></tr></thead>
+        <tbody>${COURSES.slice(0,5).map(c=>`<tr>
+          <td style="color:var(--muted);font-size:11px;font-weight:700">${c.id}</td>
+          <td><div style="font-weight:700">${c.client}</div></td>
+          <td style="color:var(--muted)">${c.ch}</td>
+          <td style="font-size:12px">${c.de} <span style="color:var(--muted)">→</span> ${c.vers}</td>
+          <td><span style="font-weight:800;color:var(--gold)">${fmt(c.prix)} F</span></td>
+          <td><span class="badge ${c.st==="terminée"?"badge-green":c.st==="en cours"?"badge-blue":"badge-gray"}">${c.st==="terminée"?"✅":c.st==="en cours"?"🔵":"⏳"} ${c.st}</span></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+// ── COURSES ──
+function renderCourses(){
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <div class="search-wrap">
+      <input class="search-inp" placeholder="🔍 Rechercher une course..."/>
+      <button class="filter-chip active">Toutes (${COURSES.length})</button>
+      <button class="filter-chip">✅ Terminées</button>
+      <button class="filter-chip">🔵 En cours</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🚗 Toutes les courses</div>
+        <div class="card-actions"><button class="btn btn-outline">📥 Exporter</button></div>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>ID</th><th>CLIENT</th><th>CHAUFFEUR</th><th>TRAJET</th><th>TYPE</th><th>MONTANT</th><th>HEURE</th><th>STATUT</th></tr></thead>
+        <tbody>${COURSES.map(c=>`<tr>
+          <td style="color:var(--muted);font-size:11px;font-weight:700">${c.id}</td>
+          <td><div style="font-weight:700">${c.client}</div></td>
+          <td style="color:var(--muted)">${c.ch}</td>
+          <td style="font-size:12px">${c.de}<div style="color:var(--muted)">→ ${c.vers}</div></td>
+          <td><span class="badge ${c.type==="VIP"?"badge-gold":c.type==="Moto"?"badge-green":"badge-blue"}">${c.type}</span></td>
+          <td style="font-weight:800;color:var(--gold)">${fmt(c.prix)} F</td>
+          <td style="font-size:11px;color:var(--muted)">${c.heure}</td>
+          <td><span class="badge ${c.st==="terminée"?"badge-green":c.st==="en cours"?"badge-blue":"badge-gray"}">${c.st}</span></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+// ── CHAUFFEURS ──
+function renderChauf(){
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <div class="search-wrap">
+      <input class="search-inp" placeholder="🔍 Rechercher un chauffeur..."/>
+      <button class="filter-chip active">Tous (${CHAUFFEURS.length})</button>
+      <button class="filter-chip">✅ Actifs</button>
+      <button class="filter-chip">⏳ En attente</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">👥 Chauffeurs (${CHAUFFEURS.length})</div>
+        <div class="card-actions">
+          <button class="btn btn-blue" onclick="modalAddChauf()">➕ Ajouter</button>
+          <button class="btn btn-outline">📥 Exporter</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>CHAUFFEUR</th><th>TÉLÉPHONE</th><th>VÉHICULE</th><th>APP</th><th>COURSES</th><th>REVENUS</th><th>NOTE</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
+        <tbody>${CHAUFFEURS.map(c=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${c.nom[0]}</div><div><div style="font-weight:700">${c.nom}</div><div style="font-size:11px;color:var(--muted)">📍 ${c.zone}</div></div></div></td>
+          <td style="font-size:12px;color:var(--muted)">${c.tel}</td>
+          <td><div style="font-size:12px;font-weight:700">${c.veh}</div><div style="font-size:10px;color:var(--muted)">${c.plaque}</div></td>
+          <td><span class="badge ${c.type==="Pro"?"badge-blue":"badge-gray"}">${c.type==="Pro"?"⭐ Pro":"🚕 Lite"}</span></td>
+          <td style="font-weight:700;color:var(--blue)">${c.courses}</td>
+          <td style="font-weight:700;color:var(--gold)">${fmt(c.rev)} F</td>
+          <td style="color:var(--gold)">⭐ ${c.note||"—"}</td>
+          <td><span class="badge ${c.statut==="actif"?"badge-green":c.statut==="attente"?"badge-gold":"badge-red"}">${c.statut==="actif"?"✅ Actif":c.statut==="attente"?"⏳ Attente":"🚫 Suspendu"}</span></td>
+          <td><div style="display:flex;gap:5px">
+            <button class="btn btn-outline" style="padding:6px 10px" onclick="voirChauf(${c.id})">👁️</button>
+            ${c.statut==="actif"?`<button class="btn btn-red-soft" style="padding:6px 10px" onclick="suspChauf(${c.id})">🚫</button>`:c.statut==="attente"?`<button class="btn btn-green-soft" style="padding:6px 10px" onclick="activChauf(${c.id})">✅</button>`:`<button class="btn btn-green-soft" style="padding:6px 10px" onclick="activChauf(${c.id})">✅</button>`}
+          </div></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+function modalAddChauf(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-title">➕ Ajouter un chauffeur <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <input class="modal-inp" id="mn" placeholder="👤 Nom complet"/>
+    <input class="modal-inp" id="mt" placeholder="📱 Téléphone" type="tel"/>
+    <input class="modal-inp" id="mv" placeholder="🚗 Véhicule"/>
+    <input class="modal-inp" id="mp" placeholder="🔢 Plaque"/>
+    <select class="modal-inp" id="mty"><option value="Pro">⭐ Chauffeur Pro</option><option value="Lite">🚕 Chauffeur Lite</option></select>
+    <input class="modal-inp" id="mz" placeholder="📍 Zone"/>
+    <div class="modal-btns">
+      <button onclick="closeModal()" style="background:var(--bg);color:var(--muted)">Annuler</button>
+      <button onclick="addChauf()" style="background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff">✅ Ajouter</button>
+    </div>`;
+  openModal();
+}
+function addChauf(){
+  const n=document.getElementById("mn").value,t=document.getElementById("mt").value,v=document.getElementById("mv").value,p=document.getElementById("mp").value,ty=document.getElementById("mty").value,z=document.getElementById("mz").value;
+  if(!n||!t||!v||!p){toast("⚠️ Remplissez tous les champs","error");return;}
+  CHAUFFEURS.push({id:CHAUFFEURS.length+1,nom:n,tel:t,veh:v,plaque:p,type:ty,courses:0,rev:0,note:0,statut:"attente",zone:z||"Bamako"});
+  closeModal();renderChauf();toast("✅ Chauffeur "+n+" ajouté !","success");
+}
+function voirChauf(id){
+  const c=CHAUFFEURS.find(x=>x.id===id);
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-title">👤 ${c.nom} <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div style="background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:16px;padding:20px;margin-bottom:16px;color:#fff;text-align:center">
+      <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;margin:0 auto 10px">${c.nom[0]}</div>
+      <div style="font-size:18px;font-weight:800">${c.nom}</div>
+      <div style="font-size:12px;opacity:.7;margin-top:3px">${c.zone} · ${c.type}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      ${[["📱 Téléphone",c.tel],["🚗 Véhicule",c.veh],["🔢 Plaque",c.plaque],["🚗 Courses",""+c.courses],["💰 Revenus",fmt(c.rev)+" F"],["⭐ Note",(c.note||0)+"/5"]].map(([k,v])=>`<div style="background:var(--bg);border-radius:12px;padding:12px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">${k}</div><div style="font-size:13px;font-weight:700">${v}</div></div>`).join("")}
+    </div>
+    <div class="modal-btns">
+      <button onclick="closeModal()" style="background:var(--bg);color:var(--muted)">Fermer</button>
+      ${c.statut==="actif"?`<button onclick="suspChauf(${c.id});closeModal()" style="background:var(--red-light);color:var(--red)">🚫 Suspendre</button>`:`<button onclick="activChauf(${c.id});closeModal()" style="background:var(--green-light);color:var(--green)">✅ Activer</button>`}
+    </div>`;
+  openModal();
+}
+function suspChauf(id){const c=CHAUFFEURS.find(x=>x.id===id);if(c){c.statut="suspendu";renderChauf();toast("🚫 "+c.nom+" suspendu","error");}}
+function activChauf(id){const c=CHAUFFEURS.find(x=>x.id===id);if(c){c.statut="actif";renderChauf();toast("✅ "+c.nom+" activé","success");}}
+
+// ── CLIENTS ──
+function renderClients(){
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <div class="search-wrap"><input class="search-inp" placeholder="🔍 Rechercher un client..."/><button class="btn btn-outline">📥 Exporter</button></div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">👤 Clients (${CLIENTS.length+234})</div></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>CLIENT</th><th>TÉLÉPHONE</th><th>EMAIL</th><th>COURSES</th><th>DÉPENSES</th><th>NOTE</th><th>STATUT</th><th>INSCRIPTION</th></tr></thead>
+        <tbody>${CLIENTS.map(c=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${c.nom[0]}</div><div style="font-weight:700">${c.nom}</div></div></td>
+          <td style="font-size:12px;color:var(--muted)">${c.tel}</td>
+          <td style="font-size:12px;color:var(--muted)">${c.email}</td>
+          <td style="font-weight:700;color:var(--blue)">${c.courses}</td>
+          <td style="font-weight:700;color:var(--gold)">${fmt(c.dep)} F</td>
+          <td style="color:var(--gold)">⭐ ${c.note}</td>
+          <td><span class="badge ${c.statut==="actif"?"badge-green":"badge-gold"}">${c.statut==="actif"?"✅ Actif":"⏳ Attente"}</span></td>
+          <td style="font-size:11px;color:var(--muted)">${c.date}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+// ── PARTENAIRES ──
+function renderParts(){
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <div class="search-wrap">
+      <input class="search-inp" placeholder="🔍 Rechercher un partenaire..."/>
+      <button class="btn btn-blue" onclick="modalAddPart()">➕ Nouveau partenaire</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🤝 Partenaires (${PARTS.length})</div><button class="btn btn-outline">📥 Exporter</button></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>PARTENAIRE</th><th>CATÉGORIE</th><th>VILLE</th><th>TÉLÉPHONE</th><th>COMMISSION</th><th>FIN CONTRAT</th><th>STATUT</th><th>ACTIONS</th></tr></thead>
+        <tbody>${PARTS.map(p=>`<tr>
+          <td style="font-weight:700">${p.nom}</td>
+          <td>${p.cat}</td>
+          <td style="font-size:12px;color:var(--muted)">${p.ville}</td>
+          <td style="font-size:12px;color:var(--muted)">${p.tel}</td>
+          <td><span style="font-weight:800;color:var(--gold)">${p.com}%</span></td>
+          <td style="font-size:12px">${p.contrat}</td>
+          <td><span class="badge ${p.st==="actif"?"badge-green":"badge-gold"}">${p.st==="actif"?"✅ Actif":"⏳ Attente"}</span></td>
+          <td><div style="display:flex;gap:5px">
+            <button class="btn btn-outline" style="padding:6px 10px" onclick="editPart(${p.id})">✏️</button>
+            <button class="btn btn-red-soft" style="padding:6px 10px" onclick="delPart(${p.id})">🗑️</button>
+          </div></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+function modalAddPart(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-title">➕ Nouveau partenaire <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <select class="modal-inp" id="pc">
+      ${["🏨 Hôtel","🍽️ Resto","🛒 Alim.","🧃 Sucreries","👗 Boutique","🥐 Pâtisserie","💇 Salon","💆 Spa","🏠 Immo","📸 Photo"].map(c=>`<option>${c}</option>`).join("")}
+    </select>
+    <input class="modal-inp" id="pn" placeholder="🏢 Nom de l'établissement"/>
+    <input class="modal-inp" id="pv" placeholder="📍 Ville/Quartier"/>
+    <input class="modal-inp" id="pt" placeholder="📞 Téléphone"/>
+    <input class="modal-inp" id="pco" placeholder="💰 Commission (%)" type="number" value="10"/>
+    <input class="modal-inp" id="pk" placeholder="📅 Fin contrat (ex: 31/12/2026)"/>
+    <div class="modal-btns">
+      <button onclick="closeModal()" style="background:var(--bg);color:var(--muted)">Annuler</button>
+      <button onclick="addPart()" style="background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff">✅ Ajouter</button>
+    </div>`;
+  openModal();
+}
+function addPart(){
+  const n=document.getElementById("pn").value,v=document.getElementById("pv").value,t=document.getElementById("pt").value;
+  if(!n||!v||!t){toast("⚠️ Remplissez tous les champs","error");return;}
+  PARTS.push({id:PARTS.length+1,cat:document.getElementById("pc").value,nom:n,ville:v,tel:t,com:parseInt(document.getElementById("pco").value)||10,contrat:document.getElementById("pk").value||"—",st:"actif"});
+  closeModal();renderParts();toast("✅ "+n+" ajouté !","success");
+}
+function editPart(id){
+  const p=PARTS.find(x=>x.id===id);
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-title">✏️ Modifier ${p.nom} <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <input class="modal-inp" id="en" value="${p.nom}"/>
+    <input class="modal-inp" id="ev" value="${p.ville}"/>
+    <input class="modal-inp" id="et" value="${p.tel}"/>
+    <input class="modal-inp" id="eco" value="${p.com}" type="number"/>
+    <input class="modal-inp" id="ek" value="${p.contrat}"/>
+    <div class="modal-btns">
+      <button onclick="closeModal()" style="background:var(--bg);color:var(--muted)">Annuler</button>
+      <button onclick="savePart(${id})" style="background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff">💾 Sauvegarder</button>
+    </div>`;
+  openModal();
+}
+function savePart(id){
+  const p=PARTS.find(x=>x.id===id);
+  p.nom=document.getElementById("en").value;p.ville=document.getElementById("ev").value;p.tel=document.getElementById("et").value;p.com=parseInt(document.getElementById("eco").value)||10;p.contrat=document.getElementById("ek").value;
+  closeModal();renderParts();toast("✅ "+p.nom+" mis à jour !","success");
+}
+function delPart(id){
+  const p=PARTS.find(x=>x.id===id);
+  if(confirm("Supprimer "+p.nom+" ?")){PARTS.splice(PARTS.indexOf(p),1);renderParts();toast("🗑️ "+p.nom+" supprimé","error");}
+}
+
+// ── REVENUS ──
+function renderRev(){
+  const totalR=CHAUFFEURS.reduce((a,c)=>a+c.rev,0)+8500000;
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#D97706,#F59E0B)"></div><div class="stat-ico-wrap" style="background:#FFFBEB">💰</div><div class="stat-val" style="color:#D97706">${fmt(totalR)}</div><div class="stat-lbl">Revenus totaux (FCFA)</div><div class="stat-trend up">↑ +18%</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#059669,#10B981)"></div><div class="stat-ico-wrap" style="background:#ECFDF5">🚗</div><div class="stat-val" style="color:#059669">${fmt(Math.round(totalR*.75))}</div><div class="stat-lbl">Revenus chauffeurs (75%)</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#1E40AF,#3B82F6)"></div><div class="stat-ico-wrap" style="background:#EFF6FF">🏢</div><div class="stat-val" style="color:#1E40AF">${fmt(Math.round(totalR*.20))}</div><div class="stat-lbl">Commission MaliTaxi (20%)</div></div>
+      <div class="stat-card"><div class="stat-card-accent" style="background:linear-gradient(90deg,#7C3AED,#8B5CF6)"></div><div class="stat-ico-wrap" style="background:#F5F3FF">🤝</div><div class="stat-val" style="color:#7C3AED">${fmt(Math.round(totalR*.05))}</div><div class="stat-lbl">Revenus partenaires (5%)</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">💰 Revenus par chauffeur</div></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>CHAUFFEUR</th><th>APP</th><th>COURSES</th><th>TOTAL</th><th>COMMISSION (25%)</th><th>NET CHAUFFEUR</th></tr></thead>
+        <tbody>${CHAUFFEURS.filter(c=>c.courses>0).sort((a,b)=>b.rev-a.rev).map(c=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${c.nom[0]}</div><div style="font-weight:700">${c.nom}</div></div></td>
+          <td><span class="badge ${c.type==="Pro"?"badge-blue":"badge-gray"}">${c.type}</span></td>
+          <td style="font-weight:700;color:var(--blue)">${c.courses}</td>
+          <td style="font-weight:800;color:var(--gold)">${fmt(c.rev)} F</td>
+          <td style="color:var(--red)">${fmt(Math.round(c.rev*.25))} F</td>
+          <td style="font-weight:800;color:var(--green)">${fmt(Math.round(c.rev*.75))} F</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+// ── NOTIFICATIONS ──
+function renderNotifs(){
+  document.getElementById("notif-dot").style.display="none";
+  NOTIFS.forEach(n=>n.lu=true);
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔔 Notifications (${NOTIFS.length})</div>
+        <button class="btn btn-outline" onclick="NOTIFS.forEach(n=>n.lu=true);renderNotifs()">✅ Tout lire</button>
+      </div>
+      <div style="padding:14px">
+        ${NOTIFS.map(n=>`<div class="notif-item ${n.lu?"read":"unread"}">
+          <div class="notif-ico-wrap" style="background:${n.type==="urgent"?"var(--red-light)":n.type==="money"?"var(--gold-light)":n.type==="warning"?"#FFFBEB":"var(--blue-light)"}">${n.ico}</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:${n.lu?"600":"800"};margin-bottom:4px">${n.msg}</div><div style="font-size:11px;color:var(--muted)">${n.heure}</div></div>
+          ${!n.lu?`<div class="notif-dot"></div>`:""}
+        </div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── PARAMS ──
+function renderParams(){
+  document.getElementById("content").innerHTML=`<div class="page-section">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚙️ Configuration</div></div>
+        <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+          ${[["Nom de l'app","MaliTaxi VIP"],["Version","1.0.0"],["Pays","Mali 🇲🇱"],["Devise","FCFA"],["Langue","Français"],["Commission","25%"],["Taxi Standard","15 000 FCFA"],["Taxi VIP","35 000 FCFA"],["Moto Express","8 000 FCFA"]].map(([k,v])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:var(--bg);border-radius:12px;border:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted);font-weight:600">${k}</span>
+            <span style="font-size:13px;font-weight:700;color:var(--blue)">${v}</span>
+          </div>`).join("")}
+          <button class="btn btn-blue" style="margin-top:4px">💾 Sauvegarder</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">🔐 Sécurité</div></div>
+          <div style="padding:18px">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Changer le mot de passe</div>
+            <input class="modal-inp" placeholder="Nouveau mot de passe" type="password"/>
+            <input class="modal-inp" placeholder="Confirmer" type="password"/>
+            <button class="btn btn-blue" style="width:100%">🔐 Mettre à jour</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📱 Liens Apps</div></div>
+          <div style="padding:14px">
+            ${[["👑 VIP Client","malitaxi-vip-final-2.html"],["🚕 Lite Client","malitaxi-lite-15.html"],["🚗 Chauffeur Pro","chauffeur-vip-pro-5.html"],["🚕 Chauffeur Lite","chauffeur-lite-1.html"],["🌐 Site web","malitaxi-website.html"]].map(([n,l])=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:13px;font-weight:700">${n}</span>
+              <a href="https://mikailou33-collab.github.io/malitaxi-vip/${l}" target="_blank" style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:600">Ouvrir →</a>
+            </div>`).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── MODAL ──
+function openModal(){document.getElementById("modal-bg").style.display="flex";}
+function closeModal(){document.getElementById("modal-bg").style.display="none";}
+document.getElementById("modal-bg").addEventListener("click",(e)=>{if(e.target===document.getElementById("modal-bg"))closeModal();});
+
+// ── TOAST ──
+function toast(msg,type="success"){
+  const old=document.getElementById("toast-el");if(old)old.remove();
+  const t=document.createElement("div");t.id="toast-el";t.className=`toast ${type}`;
+  t.innerHTML=msg;document.body.appendChild(t);
+  setTimeout(()=>{if(t.parentNode)t.remove();},3500);
+}
+</script>
+</body>
+</html>
