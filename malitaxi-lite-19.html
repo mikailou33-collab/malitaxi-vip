@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MaliTaxi Lite</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#1A1A2E;--card:#22223A;--card2:#2A2A45;
+    --gold:#F5A623;--text:#FFF;--muted:#8A8AA8;
+    --border:#333355;--green:#2ECC71;--red:#E74C3C;--blue:#3498DB;
+  }
+  body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:420px;margin:0 auto;overflow-x:hidden}
+  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#333355;border-radius:4px}
+
+  /* SPLASH */
+  .splash{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 30px;text-align:center;background:var(--bg)}
+  .splash .logo{font-size:80px;margin-bottom:20px}
+  .splash .brand{font-size:30px;font-weight:800;color:var(--gold);margin-bottom:6px}
+  .splash .tagline{font-size:14px;color:var(--muted);margin-bottom:40px}
+  .splash .foot{font-size:11px;color:var(--muted);margin-top:24px}
+
+  /* AUTH */
+  .auth-page{padding:36px 22px;min-height:100vh;background:var(--bg)}
+  .auth-logo{text-align:center;margin-bottom:24px}
+  .auth-tabs{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:20px}
+  .auth-tab{flex:1;padding:10px;border-radius:9px;border:none;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:all .2s}
+  .auth-tab.active{background:var(--gold);color:#1A1000}
+  .auth-tab:not(.active){background:transparent;color:var(--muted)}
+  .auth-inp{width:100%;padding:13px 15px;background:var(--card2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-size:14px;font-family:inherit;outline:none;margin-bottom:11px;transition:border-color .2s}
+  .auth-inp:focus{border-color:var(--gold)}
+  .auth-inp::placeholder{color:var(--muted)}
+  .auth-err{color:var(--red);font-size:12px;font-weight:600;margin-bottom:9px}
+  .auth-link{color:var(--gold);cursor:pointer;font-weight:700}
+
+  /* LANGUE */
+  .lang-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;background:rgba(0,0,0,.7);z-index:80;display:flex;align-items:flex-end;animation:fadeUp .3s ease}
+  .lang-sheet{background:var(--card);border-radius:22px 22px 0 0;padding:22px 22px 36px;width:100%;animation:slideUp .3s ease}
+  .lang-opt{display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:13px;border:2px solid var(--border);background:var(--card2);margin-bottom:9px;cursor:pointer;transition:all .2s}
+  .lang-opt.active{border-color:var(--gold);background:rgba(245,166,35,.1)}
+
+  /* PAIEMENT */
+  .pay-panel{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;background:var(--bg);z-index:50;display:flex;flex-direction:column;animation:slideUp .3s ease;overflow-y:auto}
+  .pay-panel-item{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:13px;border:1px solid var(--border);background:var(--card);margin-bottom:9px;cursor:pointer;transition:all .2s}
+  .pay-panel-item:hover{border-color:var(--gold)}
+  .pay-panel-item.active{border-color:var(--gold);background:rgba(245,166,35,.1)}
+  .pay-panel-logo{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+  .trans-item{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border)}
+
+  /* PROFIL */
+  .profil-panel{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;background:var(--bg);z-index:50;display:flex;flex-direction:column;animation:slideUp .3s ease;overflow-y:auto}
+  .profil-stat{background:var(--card);border-radius:13px;padding:13px;text-align:center;flex:1}
+  .profil-menu{display:flex;align-items:center;gap:13px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s}
+  .profil-menu:hover{background:var(--card)}
+  .profil-menu-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+  .toggle-sw{width:42px;height:23px;border-radius:12px;border:none;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0}
+  .toggle-sw .knob{position:absolute;top:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:left .3s}
+
+  /* SOS */
+  .sos-btn{position:fixed;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:20px;cursor:pointer;z-index:30;box-shadow:0 4px 18px rgba(231,76,60,.6);animation:sosPulse 2s infinite;display:none;align-items:center;justify-content:center;font-family:inherit;font-weight:800}
+  .sos-btn.show{display:flex}
+  .sos-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;background:rgba(0,0,0,.85);z-index:70;display:flex;align-items:center;justify-content:center;animation:fadeUp .3s ease}
+  .sos-panel{background:var(--card);border-radius:22px;padding:24px 22px;margin:20px;width:100%;border:2px solid var(--red);animation:slideUp .3s ease}
+  .sos-big-btn{width:120px;height:120px;border-radius:50%;background:var(--red);border:5px solid rgba(231,76,60,.3);color:#fff;font-size:38px;cursor:pointer;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 10px rgba(231,76,60,.15);animation:sosPulse 1.5s infinite;font-family:inherit}
+  .sos-contact{background:var(--card2);border-radius:13px;padding:12px 15px;margin-bottom:9px;display:flex;align-items:center;gap:11px;border:1px solid var(--border)}
+  @keyframes sosPulse{0%,100%{box-shadow:0 4px 18px rgba(231,76,60,.6)}50%{box-shadow:0 4px 28px rgba(231,76,60,.9),0 0 0 7px rgba(231,76,60,.2)}}
+
+  /* HISTORIQUE */
+  .histo-panel{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;background:var(--bg);z-index:50;display:flex;flex-direction:column;animation:slideUp .3s ease}
+  .histo-tabs{display:flex;background:var(--card);margin:10px 18px;border-radius:11px;padding:4px;flex-shrink:0}
+  .histo-tab{flex:1;padding:8px;border-radius:9px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+  .histo-item{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;gap:11px;align-items:flex-start}
+  .histo-ico{width:40px;height:40px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+
+  /* NOTIFS */
+  .bell-wrap{position:relative;cursor:pointer}
+  .bell-btn{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .bell-badge{position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);display:none}
+
+  /* NOTIF PANEL */
+  .notif-panel{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;background:var(--bg);z-index:50;display:flex;flex-direction:column;animation:slideUp .3s ease}
+  .notif-item{display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer}
+  .notif-item.unread{background:rgba(245,166,35,.05);border-left:3px solid var(--gold)}
+  .notif-ico{width:40px;height:40px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+
+  /* RATING */
+  .rating-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;background:rgba(0,0,0,.7);z-index:60;display:flex;align-items:flex-end}
+  .rating-sheet{background:var(--card);border-radius:22px 22px 0 0;padding:22px 22px 36px;width:100%;animation:slideUp .3s ease}
+  .star-btn{font-size:36px;cursor:pointer;background:none;border:none;padding:3px;transition:transform .15s}
+  .star-btn:hover{transform:scale(1.15)}
+  .rtag{padding:7px 13px;border-radius:18px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+  .rtag.sel{border-color:var(--gold);background:rgba(245,166,35,.2);color:var(--gold)}
+
+  /* TAXI TYPE */
+  .taxi-type-card{border-radius:16px;padding:18px;margin-bottom:13px;cursor:pointer;transition:all .2s;display:flex;gap:14px;align-items:center;border:2px solid var(--border);background:var(--card)}
+  .taxi-type-card:hover{border-color:var(--gold)}
+
+  /* MAP */
+  #map-area{position:relative;height:190px;background:#0A0D18;overflow:hidden}
+  #map-area svg{position:absolute;inset:0;width:100%;height:100%}
+  .taxi-pin{position:absolute;font-size:24px;animation:bounce 2s infinite ease-in-out}
+  .pos-dot{position:absolute;left:47%;top:68px;width:14px;height:14px;border-radius:50%;background:var(--red);border:2px solid #fff;z-index:2}
+  .pos-ring{position:absolute;left:47%;top:68px;width:14px;height:14px;border-radius:50%;border:2px solid var(--red);animation:ping 1.5s infinite;z-index:1}
+  .map-fade{position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(transparent,var(--bg));pointer-events:none}
+
+  /* HEADER */
+  #header{padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center}
+  #header .greet{font-size:13px;color:var(--muted)}
+  #header .name{font-size:20px;font-weight:800;color:var(--gold)}
+  .avatar{width:42px;height:42px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:20px}
+
+  /* LOCATION */
+  .loc-box{margin:12px 18px;background:var(--card);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px}
+  .loc-box span{font-size:20px}
+  .loc-box .lbl{font-size:11px;color:var(--muted)}
+  .loc-box .city{font-size:13px;font-weight:700}
+
+  /* SERVICES */
+  .svc-section{padding:0 18px 12px}
+  .svc-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.5px;margin-bottom:10px}
+  .svc-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .svc-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 8px;border-radius:13px;border:2px solid transparent;background:var(--card);cursor:pointer;transition:all .2s;min-width:66px;font-family:inherit}
+  .svc-btn.active{border-color:var(--gold);background:rgba(245,166,35,.12)}
+  .svc-btn:hover{border-color:rgba(245,166,35,.5)}
+  .svc-btn .ico{font-size:25px}
+  .svc-btn .lbl{font-size:11px;font-weight:700;color:var(--muted)}
+  .svc-btn.active .lbl{color:var(--gold)}
+
+  /* CONTENT PANELS */
+  #content{padding:0 18px 90px}
+
+  /* RIDE PANEL */
+  .input-wrap{position:relative;margin-bottom:10px}
+  .input-wrap .dot{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:10px}
+  .inp{width:100%;padding:13px 14px 13px 40px;background:var(--card2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s}
+  .inp:focus{border-color:var(--gold)}
+  .inp::placeholder{color:var(--muted)}
+  .price-box{background:var(--card);border-radius:11px;padding:13px 15px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .price-box .est{font-size:11px;color:var(--muted);margin-bottom:2px}
+  .price-box .amount{font-size:22px;font-weight:800;color:var(--gold)}
+  .price-box .eta{font-size:13px;color:var(--muted)}
+  .cmd-btn{width:100%;padding:15px;border-radius:13px;border:none;background:var(--gold);color:#1A1000;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;transition:all .2s;box-shadow:0 4px 18px rgba(245,166,35,.4)}
+  .cmd-btn:hover{transform:translateY(-2px);box-shadow:0 7px 24px rgba(245,166,35,.5)}
+  .cmd-btn:disabled{opacity:.5;transform:none;cursor:not-allowed}
+
+  /* BUS / AVION STEPS */
+  .back-btn{background:none;border:none;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;margin-bottom:13px;font-family:inherit;padding:0}
+  .promo-banner{border-radius:15px;padding:17px;margin-bottom:14px;position:relative;overflow:hidden}
+  .promo-banner .deco{position:absolute;top:-20px;right:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.07)}
+  .promo-banner .tag{font-size:11px;color:rgba(255,255,255,.7);font-weight:700;letter-spacing:1px;margin-bottom:4px}
+  .promo-banner .title{font-size:17px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:5px}
+  .promo-banner .sub{font-size:12px;color:rgba(255,255,255,.75)}
+
+  .dest-chip{padding:9px 13px;border-radius:11px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;text-align:left;width:100%}
+  .dest-chip:hover{border-color:var(--gold);background:rgba(245,166,35,.1)}
+  .dest-chip.sel{border-color:var(--gold);background:rgba(245,166,35,.18);color:var(--gold)}
+
+  .region-btn{width:100%;padding:10px 13px;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:inherit;transition:all .2s;margin-bottom:6px}
+  .region-btn.open{border-color:var(--gold);color:var(--gold)}
+  .region-cities{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;animation:fadeUp .2s ease}
+
+  .info-card{background:var(--card);border-radius:15px;padding:15px;margin-bottom:14px;border:1px solid var(--border)}
+  .section-lbl{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:9px}
+
+  .schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+  .sched-btn{padding:11px 13px;border-radius:11px;border:2px solid;cursor:pointer;transition:all .2s;font-family:inherit;font-weight:700;text-align:center}
+  .sched-btn .time{font-size:19px;font-weight:800}
+  .sched-btn .spots{font-size:11px;margin-top:3px;font-weight:600}
+
+  .classe-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+  .classe-btn{padding:13px 9px;border-radius:11px;border:2px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-family:inherit;text-align:center;transition:all .2s}
+  .classe-btn.sel{border-color:var(--gold);background:rgba(245,166,35,.14);color:var(--gold)}
+  .classe-btn .c-ico{font-size:22px;margin-bottom:5px}
+  .classe-btn .c-name{font-size:13px;font-weight:800}
+  .classe-btn .c-price{font-size:12px;margin-top:2px}
+
+  /* SEAT MAP */
+  .seat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-width:200px;margin:0 auto 14px}
+  .seat{width:36px;height:36px;border-radius:7px;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;cursor:pointer;transition:all .15s}
+  .seat.libre{border-color:var(--green);background:rgba(46,204,113,.12);color:var(--green)}
+  .seat.libre:hover{background:var(--green);color:#fff}
+  .seat.pris{border-color:var(--border);background:var(--card2);color:var(--muted);cursor:not-allowed}
+  .seat.choisi{border-color:var(--gold);background:var(--gold);color:#1A1000}
+  .seat-legend{display:flex;gap:13px;margin-bottom:13px}
+  .seat-legend span{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+  .seat-legend .dot{width:9px;height:9px;border-radius:2px}
+  .seat-recap{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.35);border-radius:11px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+
+  /* PAYMENT */
+  .pay-opt{padding:13px 15px;border-radius:11px;border:2px solid var(--border);background:var(--card);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:11px;margin-bottom:9px}
+  .pay-opt.sel{border-color:var(--gold);background:rgba(245,166,35,.1)}
+  .pay-ico{width:40px;height:40px;border-radius:11px;font-size:21px;display:flex;align-items:center;justify-content:center;background:var(--card2)}
+  .pay-radio{width:19px;height:19px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin-left:auto}
+  .pay-radio.sel{border-color:var(--gold);background:var(--gold)}
+  .pay-radio.sel::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--bg)}
+
+  /* RECAP */
+  .recap-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .recap-row:last-child{border-bottom:none}
+  .recap-row .k{color:var(--muted)}
+  .recap-row .v{font-weight:700}
+  .recap-row .v.gold{color:var(--gold)}
+
+  /* TICKET */
+  .ticket-confirm{text-align:center}
+  .confirm-ico{width:76px;height:76px;border-radius:50%;margin:18px auto 14px;display:flex;align-items:center;justify-content:center;font-size:36px}
+  .confirm-title{font-size:21px;font-weight:800;margin-bottom:5px}
+  .confirm-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+  .ticket-card{background:var(--card);border-radius:18px;overflow:hidden;margin-bottom:18px;border:1px solid rgba(245,166,35,.25)}
+  .ticket-header{padding:15px 18px;display:flex;justify-content:space-between;align-items:center}
+  .ticket-header .app-name{font-size:17px;font-weight:800;color:#fff}
+  .ticket-header .tag{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1.4px;margin-bottom:3px}
+  .ticket-code{font-family:monospace;font-size:11px;padding:3px 7px;border-radius:5px;background:rgba(0,0,0,.3)}
+  .ticket-body{padding:15px 18px}
+  .ticket-route{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+  .ticket-route .city{font-size:21px;font-weight:800}
+  .ticket-route .mid{flex:1;text-align:center}
+  .ticket-route .dur{font-size:11px;font-weight:700;margin-bottom:3px}
+  .ticket-route .line{height:2px;margin:0 10px;border-radius:2px}
+  .ticket-route .arr{font-size:21px;font-weight:800}
+  .ticket-mini{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:13px}
+  .ticket-mini .cell{background:var(--card2);border-radius:7px;padding:7px;text-align:center}
+  .ticket-mini .cell .lbl{font-size:9px;color:var(--muted);letter-spacing:.4px;margin-bottom:2px}
+  .ticket-mini .cell .val{font-size:12px;font-weight:800}
+  .qr-wrap{display:flex;justify-content:center;border-top:1px dashed var(--border);padding-top:13px}
+  .qr-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;width:76px;height:76px}
+  .qr-scan-lbl{text-align:center;font-size:10px;color:var(--muted);margin-top:5px}
+  .ticket-actions{display:flex;gap:9px}
+  .btn-ghost{flex:1;padding:12px;border-radius:11px;border:1px solid var(--border);background:none;color:var(--text);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+  .btn-solid{flex:2;padding:12px;border-radius:11px;border:none;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;color:#fff}
+
+  /* NAV */
+  #nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:9px 0 15px;z-index:20}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+  .nav-item .ico{font-size:21px}
+  .nav-item .lbl{font-size:10px;font-weight:700;color:var(--muted)}
+  .nav-item.active .lbl{color:var(--gold)}
+
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.2);opacity:0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="page-splash" class="splash">
+  <div class="logo">🚕</div>
+  <div class="brand">MaliTaxi Lite</div>
+  <div class="tagline">Transport rapide au Mali 🇲🇱</div>
+  <button class="cmd-btn" style="margin-bottom:10px" onclick="showAuth('login')">🔐 Se connecter</button>
+  <button style="width:100%;padding:14px;border-radius:13px;border:2px solid var(--gold);background:none;color:var(--gold);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit" onclick="showAuth('register')">✨ Créer un compte</button>
+  <div class="foot">Bamako · Mali 🇲🇱</div>
+</div>
+
+<!-- AUTH -->
+<div id="page-auth" class="auth-page" style="display:none">
+  <div class="auth-logo">
+    <div style="font-size:44px;margin-bottom:8px">🚕</div>
+    <div style="font-size:22px;font-weight:800;color:var(--gold)">MaliTaxi Lite</div>
+  </div>
+  <div class="auth-tabs">
+    <button id="tab-login" class="auth-tab active" onclick="switchTab('login')">🔐 Connexion</button>
+    <button id="tab-reg" class="auth-tab" onclick="switchTab('register')">✨ Inscription</button>
+  </div>
+  <div id="form-login">
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px">Bon retour ! 👋</div>
+    <input class="auth-inp" id="l-tel" placeholder="📱 Numéro de téléphone" type="tel"/>
+    <input class="auth-inp" id="l-mdp" placeholder="🔒 Mot de passe" type="password"/>
+    <div id="l-err" class="auth-err" style="display:none"></div>
+    <button class="cmd-btn" onclick="doLogin()">Se connecter →</button>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted)">Pas de compte ? <span class="auth-link" onclick="switchTab('register')">S'inscrire</span></div>
+  </div>
+  <div id="form-reg" style="display:none">
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px">Créer un compte 🎉</div>
+    <input class="auth-inp" id="r-nom" placeholder="👤 Nom complet"/>
+    <input class="auth-inp" id="r-tel" placeholder="📱 Numéro de téléphone" type="tel"/>
+    <input class="auth-inp" id="r-mdp" placeholder="🔒 Mot de passe" type="password"/>
+    <input class="auth-inp" id="r-mdp2" placeholder="🔒 Confirmer mot de passe" type="password"/>
+    <div id="r-err" class="auth-err" style="display:none"></div>
+    <button class="cmd-btn" onclick="doRegister()">Créer mon compte →</button>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted)">Déjà un compte ? <span class="auth-link" onclick="switchTab('login')">Se connecter</span></div>
+  </div>
+  <button onclick="showSplash()" style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;display:block;margin:20px auto 0;font-family:inherit">← Retour</button>
+</div>
+
+<!-- LANGUE -->
+<div id="lang-overlay" class="lang-overlay" style="display:none" onclick="if(event.target===this)closeLang()">
+  <div class="lang-sheet">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:5px">CHOISIR LA LANGUE</div>
+      <div style="font-size:17px;font-weight:800">🌍 Langue de l'app</div>
+    </div>
+    <div id="lang-opts"></div>
+    <button onclick="closeLang()" style="width:100%;padding:12px;border-radius:11px;border:1px solid var(--border);background:none;color:var(--muted);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;margin-top:4px">Annuler</button>
+  </div>
+</div>
+
+<!-- PAIEMENT PANEL -->
+<div id="pay-panel" class="pay-panel" style="display:none">
+  <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div style="font-size:16px;font-weight:800">💳 Moyens de paiement</div>
+    <button onclick="closePay()" style="background:var(--card2);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer">✕</button>
+  </div>
+  <div id="pay-body" style="padding:18px 18px 90px"></div>
+</div>
+
+<!-- PROFIL PANEL -->
+<div id="profil-panel" class="profil-panel" style="display:none">
+  <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div style="font-size:16px;font-weight:800">👤 Mon Profil</div>
+    <button onclick="closeProfil()" style="background:var(--card2);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer">✕</button>
+  </div>
+  <div id="profil-body"></div>
+</div>
+
+<!-- SOS BUTTON -->
+<button class="sos-btn" id="sos-btn" onclick="openSOS()">🆘</button>
+
+<!-- SOS PANEL -->
+<div id="sos-overlay" class="sos-overlay" style="display:none" onclick="if(event.target===this)closeSOS()">
+  <div class="sos-panel">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);letter-spacing:1px;margin-bottom:5px">🆘 URGENCE</div>
+      <div style="font-size:19px;font-weight:800;margin-bottom:5px">Besoin d'aide ?</div>
+      <div style="font-size:12px;color:var(--muted)">Appuyez pour alerter vos contacts</div>
+    </div>
+
+    <div id="sos-big" class="sos-big-btn" onclick="triggerSOS()">🆘</div>
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:18px" id="sos-status">Appuyez pour envoyer une alerte</div>
+
+    <div style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:11px;padding:11px 14px;margin-bottom:14px;display:flex;align-items:center;gap:9px">
+      <span style="font-size:18px">📍</span>
+      <div>
+        <div style="font-size:11px;color:var(--muted)">Votre position</div>
+        <div style="font-size:13px;font-weight:700" id="sos-pos">Bamako, Mali</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:9px">CONTACTS D'URGENCE</div>
+
+    <div class="sos-contact">
+      <div style="width:38px;height:38px;border-radius:50%;background:rgba(231,76,60,.2);display:flex;align-items:center;justify-content:center;font-size:18px">👨‍👩‍👧</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">Famille</div><div style="font-size:11px;color:var(--muted)">+223 70 00 00 00</div></div>
+      <button onclick="callContact('Famille')" style="background:var(--green);border:none;border-radius:8px;color:#fff;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📞</button>
+    </div>
+    <div class="sos-contact">
+      <div style="width:38px;height:38px;border-radius:50%;background:rgba(52,152,219,.2);display:flex;align-items:center;justify-content:center;font-size:18px">🚔</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">Police</div><div style="font-size:11px;color:var(--muted)">17</div></div>
+      <button onclick="callContact('Police')" style="background:var(--blue);border:none;border-radius:8px;color:#fff;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📞</button>
+    </div>
+    <div class="sos-contact">
+      <div style="width:38px;height:38px;border-radius:50%;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;font-size:18px">🚑</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700">SAMU</div><div style="font-size:11px;color:var(--muted)">15</div></div>
+      <button onclick="callContact('SAMU')" style="background:var(--green);border:none;border-radius:8px;color:#fff;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📞</button>
+    </div>
+
+    <button onclick="closeSOS()" style="width:100%;padding:12px;border-radius:11px;border:1px solid var(--border);background:none;color:var(--muted);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;margin-top:12px">Annuler</button>
+  </div>
+</div>
+
+<!-- HISTORIQUE PANEL -->
+<div id="histo-panel" class="histo-panel" style="display:none">
+  <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div style="font-size:16px;font-weight:800">📋 Mes Courses & Billets</div>
+    <button onclick="closeHisto()" style="background:var(--card2);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer">✕</button>
+  </div>
+  <div class="histo-tabs">
+    <button id="ht-courses" class="histo-tab" onclick="switchHisto('courses')" style="background:var(--gold);color:#1A1000">🚕 Courses</button>
+    <button id="ht-billets" class="histo-tab" onclick="switchHisto('billets')" style="background:transparent;color:var(--muted)">🎫 Billets</button>
+  </div>
+  <!-- Stats -->
+  <div id="histo-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 18px 12px;flex-shrink:0"></div>
+  <!-- Liste -->
+  <div id="histo-list" style="overflow-y:auto;flex:1"></div>
+</div>
+
+<!-- NOTIF PANEL -->
+<div id="notif-panel" class="notif-panel" style="display:none">
+  <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+    <div><div style="font-size:16px;font-weight:800">🔔 Notifications</div><div id="notif-count" style="font-size:11px;color:var(--muted);margin-top:2px">3 non lues</div></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="markAll()" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;font-weight:700;padding:5px 9px;cursor:pointer;font-family:inherit">Tout lire</button>
+      <button onclick="closeNotifs()" style="background:var(--card2);border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer">✕</button>
+    </div>
+  </div>
+  <div id="notif-list" style="overflow-y:auto;flex:1"></div>
+</div>
+
+<!-- RATING -->
+<div id="rating-overlay" class="rating-overlay" style="display:none" onclick="if(event.target===this)closeRating()">
+  <div class="rating-sheet" id="rating-sheet"></div>
+</div>
+
+<!-- APP -->
+<div id="page-app" style="display:none">
+
+<!-- MAP -->
+<div id="map-area">
+  <svg><defs><radialGradient id="mg" cx="50%" cy="50%" r="70%"><stop offset="0%" stop-color="#12182E"/><stop offset="100%" stop-color="#0A0D18"/></radialGradient></defs>
+    <rect width="100%" height="100%" fill="url(#mg)"/>
+    <line x1="10%" y1="80" x2="90%" y2="120" stroke="#1A2235" stroke-width="8"/>
+    <line x1="5%" y1="100" x2="100%" y2="150" stroke="#1A2235" stroke-width="5"/>
+    <line x1="15%" y1="60" x2="80%" y2="180" stroke="#1A2235" stroke-width="6"/>
+    <path d="M 0 130 Q 25% 110 50% 120 Q 75% 130 100% 115" fill="none" stroke="#0A1428" stroke-width="10"/>
+  </svg>
+  <div class="taxi-pin" style="left:18%;top:48px;animation-delay:0s">🚕</div>
+  <div class="taxi-pin" style="left:55%;top:78px;animation-delay:.4s">🚕</div>
+  <div class="taxi-pin" style="left:75%;top:58px;animation-delay:.8s">🚕</div>
+  <div class="taxi-pin" style="left:28%;top:100px;animation-delay:.2s">🏍️</div>
+  <div class="pos-dot"></div>
+  <div class="pos-ring"></div>
+  <div class="map-fade"></div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div><div class="greet">Bonjour 👋</div><div class="name" id="user-name">Client Lite</div></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="bell-wrap" onclick="openNotifs()">
+      <div class="bell-btn">🔔</div>
+      <div class="bell-badge" id="bell-badge">3</div>
+    </div>
+    <div class="avatar">😊</div>
+  </div>
+</div>
+
+<!-- LOCATION -->
+<div class="loc-box">
+  <span>📍</span>
+  <div><div class="lbl">Votre position</div><div class="city">Bamako, Mali</div></div>
+</div>
+
+<!-- SERVICES -->
+<div class="svc-section">
+  <div class="svc-title">CHOISIR UN SERVICE</div>
+  <div class="svc-row" id="svc-row"></div>
+</div>
+
+<!-- CONTENT -->
+<div id="content"></div>
+
+<!-- NAV -->
+<div id="nav">
+  <div class="nav-item active" onclick="this.parentElement.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));this.classList.add('active')"><div class="ico">🏠</div><div class="lbl">Accueil</div></div>
+  <div class="nav-item" onclick="this.parentElement.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));this.classList.add('active');openHisto()"><div class="ico">📋</div><div class="lbl">Courses</div></div>
+  <div class="nav-item" onclick="this.parentElement.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));this.classList.add('active');openNotifs()"><div class="ico">🔔</div><div class="lbl">Notifs</div></div>
+  <div class="nav-item" onclick="this.parentElement.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));this.classList.add('active');openProfil()"><div class="ico">👤</div><div class="lbl">Profil</div></div>
+</div>
+
+</div><!-- fin page-app -->
+
+<script>
+// ── DATA ──
+const SERVICES = [
+  {id:"taxi",    ico:"🚕", label:"Taxi"    },
+  {id:"moto",    ico:"🏍️", label:"Moto"    },
+  {id:"livraison",ico:"📦",label:"Livraison"},
+  {id:"bus",     ico:"🚍", label:"Bus"     },
+];
+
+const RIDE_PRICES = {taxi:"15 000",moto:"8 000",livraison:"5 000"};
+const RIDE_ETA   = {taxi:"5",moto:"4",livraison:"10"};
+
+const REGIONS = {
+  "Koulikoro":  ["Koulikoro","Kati","Kangaba","Fana","Banamba","Nara","Dioïla"],
+  "Ségou":      ["Ségou","San","Bla","Niono","Tominian","Markala","Barouéli"],
+  "Sikasso":    ["Sikasso","Koutiala","Bougouni","Yanfolila","Kadiolo","Zégoua","Yorosso"],
+  "Kayes":      ["Kayes","Kita","Nioro du Sahel","Diéma","Kéniéba","Bafoulabé","Yélimané"],
+  "Mopti":      ["Mopti","Bandiagara","Djenné","Douentza","Bankass","Koro"],
+  "Tombouctou": ["Tombouctou","Goundam","Diré","Niafunké"],
+  "Gao":        ["Gao","Ansongo","Ménaka","Bourem"],
+  "🇨🇮 Côte d'Ivoire":["Abidjan","Bouaké","Yamoussoukro"],
+  "🇸🇳 Sénégal":      ["Dakar","Thiès","Kaolack"],
+  "🇧🇫 Burkina Faso": ["Ouagadougou","Bobo-Dioulasso"],
+  "🇳🇪 Niger":        ["Niamey","Zinder","Maradi"],
+  "🇬🇳 Guinée":       ["Conakry","Kankan","Kindia"],
+  "🇲🇷 Mauritanie":   ["Nouakchott","Nouadhibou"],
+  "🇳🇬 Nigeria":      ["Lagos","Abuja","Kano"],
+  "🇬🇭 Ghana":        ["Accra","Kumasi","Tamale"],
+};
+
+const LIGNES = [
+  {to:"Ségou",       dist:"240 km", duree:"3h",   prix:3500,  cie:"Sahel Voyage",    deps:[{h:"06:00",p:12},{h:"09:00",p:4},{h:"14:00",p:28}]},
+  {to:"Sikasso",     dist:"376 km", duree:"5h",   prix:5000,  cie:"Sud Express",     deps:[{h:"07:00",p:18},{h:"10:30",p:32},{h:"15:00",p:8}]},
+  {to:"Mopti",       dist:"630 km", duree:"8h",   prix:7500,  cie:"Binke Transport", deps:[{h:"08:00",p:22},{h:"21:00",p:40}]},
+  {to:"Kayes",       dist:"497 km", duree:"6h30", prix:6000,  cie:"Ouest Rapide",    deps:[{h:"06:30",p:14},{h:"13:00",p:6}]},
+  {to:"Koutiala",    dist:"300 km", duree:"4h",   prix:4500,  cie:"Sahel Voyage",    deps:[{h:"08:00",p:20},{h:"12:00",p:16},{h:"16:00",p:34}]},
+  {to:"Koulikoro",   dist:"57 km",  duree:"1h",   prix:1000,  cie:"Koulikoro Exp.",  deps:[{h:"06:00",p:20},{h:"09:00",p:35},{h:"12:00",p:8},{h:"15:00",p:30}]},
+  {to:"Bougouni",    dist:"166 km", duree:"2h30", prix:2500,  cie:"Sud Express",     deps:[{h:"07:00",p:28},{h:"10:00",p:12},{h:"14:00",p:20}]},
+  {to:"Tombouctou",  dist:"1000 km",duree:"14h",  prix:12000, cie:"Nord Sahel",      deps:[{h:"06:00",p:0},{h:"20:00",p:32}]},
+  {to:"Gao",         dist:"1200 km",duree:"18h",  prix:15000, cie:"Nord Sahel",      deps:[{h:"06:00",p:12},{h:"20:00",p:28}]},
+  {to:"Abidjan",     dist:"1150 km",duree:"16h",  prix:18000, cie:"Trans Ivoire",    deps:[{h:"06:00",p:22},{h:"18:00",p:30}]},
+  {to:"Dakar",       dist:"1400 km",duree:"20h",  prix:22000, cie:"Dakar Express",   deps:[{h:"06:00",p:16},{h:"20:00",p:28}]},
+  {to:"Ouagadougou", dist:"870 km", duree:"12h",  prix:12000, cie:"Burkina Trans",   deps:[{h:"06:00",p:24},{h:"14:00",p:18},{h:"20:00",p:32}]},
+  {to:"Niamey",      dist:"1180 km",duree:"16h",  prix:16000, cie:"Niger Voyages",   deps:[{h:"06:00",p:14},{h:"20:00",p:22}]},
+  {to:"Conakry",     dist:"780 km", duree:"11h",  prix:13000, cie:"Guinée Express",  deps:[{h:"06:00",p:18},{h:"18:00",p:26}]},
+  {to:"Accra",       dist:"1800 km",duree:"24h",  prix:24000, cie:"Ghana Express",   deps:[{h:"06:00",p:20},{h:"18:00",p:28}]},
+  {to:"Lagos",       dist:"2500 km",duree:"36h",  prix:35000, cie:"West Africa Bus", deps:[{h:"06:00",p:18},{h:"18:00",p:22}]},
+];
+
+const DESTINATIONS_VOL = {
+  "🇲🇱 Mali (Domestique)": ["Mopti","Tombouctou","Gao","Kayes"],
+  "🇨🇮 Côte d'Ivoire":     ["Abidjan","Bouaké"],
+  "🇸🇳 Sénégal":           ["Dakar"],
+  "🇧🇫 Burkina Faso":      ["Ouagadougou"],
+  "🇳🇪 Niger":             ["Niamey"],
+  "🇬🇳 Guinée":            ["Conakry"],
+  "🇲🇷 Mauritanie":        ["Nouakchott"],
+  "🇹🇬 Togo":              ["Lomé"],
+  "🇧🇯 Bénin":             ["Cotonou"],
+  "🇳🇬 Nigeria":           ["Lagos","Abuja"],
+  "🇬🇭 Ghana":             ["Accra"],
+  "🇫🇷 France":            ["Paris","Lyon","Marseille"],
+  "🇸🇦 Arabie Saoudite":   ["Riyad","Djeddah","La Mecque"],
+  "🇦🇪 Émirats Arabes":    ["Dubaï","Abu Dhabi"],
+  "🇲🇦 Maroc":             ["Casablanca","Marrakech","Rabat"],
+  "🇹🇷 Turquie":           ["Istanbul"],
+  "🇺🇸 États-Unis":        ["New York","Atlanta"],
+  "🇨🇳 Chine":             ["Pékin","Shanghai"],
+};
+
+const VOLS = [
+  {to:"Mopti",       code:"BKO-MOP",duree:"1h",    eco:75000,  biz:120000, cie:"Air Mali",            vols:[{h:"07:30",p:8},{h:"14:00",p:12}]},
+  {to:"Tombouctou",  code:"BKO-TOM",duree:"1h30",  eco:95000,  biz:145000, cie:"Air Mali",            vols:[{h:"08:00",p:6},{h:"15:00",p:10}]},
+  {to:"Gao",         code:"BKO-GAO",duree:"2h",    eco:110000, biz:165000, cie:"Air Mali",            vols:[{h:"09:00",p:8},{h:"16:00",p:4}]},
+  {to:"Kayes",       code:"BKO-KYS",duree:"1h",    eco:80000,  biz:125000, cie:"Air Mali",            vols:[{h:"08:00",p:10},{h:"15:00",p:6}]},
+  {to:"Abidjan",     code:"BKO-ABJ",duree:"1h20",  eco:150000, biz:280000, cie:"Air Côte d'Ivoire",   vols:[{h:"08:00",p:20},{h:"14:30",p:30},{h:"20:00",p:15}]},
+  {to:"Dakar",       code:"BKO-DSS",duree:"1h30",  eco:160000, biz:295000, cie:"Air Sénégal",         vols:[{h:"07:00",p:25},{h:"15:00",p:18},{h:"21:00",p:30}]},
+  {to:"Ouagadougou", code:"BKO-OUA",duree:"1h",    eco:120000, biz:220000, cie:"ASKY Airlines",       vols:[{h:"07:30",p:22},{h:"13:00",p:28},{h:"18:00",p:15}]},
+  {to:"Niamey",      code:"BKO-NIM",duree:"1h30",  eco:130000, biz:240000, cie:"ASKY Airlines",       vols:[{h:"08:00",p:18},{h:"16:00",p:24}]},
+  {to:"Conakry",     code:"BKO-CKY",duree:"1h10",  eco:125000, biz:230000, cie:"Air Guinée",          vols:[{h:"09:00",p:16},{h:"17:00",p:20}]},
+  {to:"Accra",       code:"BKO-ACC",duree:"2h",    eco:180000, biz:320000, cie:"Ghana Airways",       vols:[{h:"08:30",p:22},{h:"16:00",p:18}]},
+  {to:"Lagos",       code:"BKO-LOS",duree:"2h30",  eco:220000, biz:390000, cie:"Air Peace",           vols:[{h:"07:00",p:28},{h:"15:00",p:20}]},
+  {to:"Paris",       code:"BKO-CDG",duree:"5h30",  eco:550000, biz:950000, cie:"Air France",          vols:[{h:"01:30",p:30},{h:"10:00",p:25},{h:"23:00",p:28}]},
+  {to:"Casablanca",  code:"BKO-CMN",duree:"3h30",  eco:290000, biz:500000, cie:"Royal Air Maroc",     vols:[{h:"07:00",p:24},{h:"15:00",p:20},{h:"22:00",p:28}]},
+  {to:"Djeddah",     code:"BKO-JED",duree:"7h",    eco:660000, biz:1120000,cie:"Saudia",              vols:[{h:"01:00",p:28},{h:"22:30",p:24}]},
+  {to:"Dubaï",       code:"BKO-DXB",duree:"7h",    eco:650000, biz:1100000,cie:"Emirates",            vols:[{h:"02:30",p:35},{h:"22:00",p:30}]},
+  {to:"Istanbul",    code:"BKO-IST",duree:"6h",    eco:560000, biz:960000, cie:"Turkish Airlines",    vols:[{h:"02:00",p:30},{h:"22:00",p:28}]},
+  {to:"New York",    code:"BKO-JFK",duree:"10h",   eco:980000, biz:1700000,cie:"Delta Airlines",      vols:[{h:"22:00",p:28},{h:"10:00",p:22}]},
+  {to:"Pékin",       code:"BKO-PEK",duree:"13h",   eco:950000, biz:1600000,cie:"Air China",           vols:[{h:"23:00",p:30},{h:"10:00",p:24}]},
+];
+
+const SIEGES_PRIS = [2,5,8,12,15,17,20,23,28];
+const PAYS_INT = ["🇨🇮","🇸🇳","🇧🇫","🇳🇪","🇬🇳","🇲🇷","🇹🇬","🇧🇯","🇳🇬","🇬🇭"];
+
+// ── STATE ──
+let svc      = "taxi";
+let busStep  = 0,  busDest  = "", busDep  = null, busSiege = null;
+let payMeth  = "orange";
+let openReg  = null;
+
+function fmt(n){return n.toLocaleString("fr-FR")}
+function randCode(){return "MT-"+Math.random().toString(36).slice(2,8).toUpperCase()}
+function getLigne(d){return LIGNES.find(l=>l.to===d)||{to:d,dist:"~km",duree:"~h",prix:5000,cie:"Sahel Voyage",deps:[{h:"07:00",p:20},{h:"14:00",p:15}]};}
+
+// ── RENDER SERVICES ──
+function renderServices(){
+  const row = document.getElementById("svc-row");
+  row.innerHTML = SERVICES.map(s=>`
+    <button class="svc-btn${svc===s.id?" active":""}" onclick="setSvc('${s.id}')">
+      <span class="ico">${s.ico}</span>
+      <span class="lbl">${s.label}</span>
+    </button>`).join("");
+}
+
+function setSvc(id){
+  svc=id;
+  if(id!=="bus"){busStep=0;busDest="";busDep=null;busSiege=null;openReg=null;}
+  renderServices();
+  renderContent();
+}
+
+// ── PAYMENT WIDGET ──
+function payWidget(onPay){
+  const opts = [
+    {id:"orange",ico:"🟠",label:"Orange Money",sub:"Paiement instantané"},
+    {id:"moov",  ico:"🔵",label:"Moov Money",  sub:"Paiement instantané"},
+    {id:"wave",  ico:"🌊",label:"Wave",         sub:"Paiement instantané"},
+    {id:"cash",  ico:"💵",label:"Cash",         sub:"Paiement à la gare/agence"},
+  ];
+  return opts.map(p=>`
+    <div class="pay-opt${payMeth===p.id?" sel":""}" onclick="setPay('${p.id}')">
+      <div class="pay-ico">${p.ico}</div>
+      <div><div style="font-size:14px;font-weight:700">${p.label}</div><div style="font-size:11px;color:var(--muted)">${p.sub}</div></div>
+      <div class="pay-radio${payMeth===p.id?" sel":""}"></div>
+    </div>`).join("");
+}
+
+function setPay(id){payMeth=id;renderContent();}
+
+// ── QR CODE ──
+function qrGrid(){
+  let h="";
+  for(let i=0;i<64;i++) h+=`<div style="background:${Math.random()>.5?"#fff":"transparent"};border-radius:1px"></div>`;
+  return h;
+}
+
+// ── RENDER CONTENT ──
+function renderContent(){
+  const c = document.getElementById("content");
+
+  // RIDE (taxi/moto/livraison)
+  if(["taxi","moto","livraison"].includes(svc)){
+    c.innerHTML=`
+      <div style="animation:fadeUp .3s ease">
+        <div style="font-size:15px;font-weight:700;margin-bottom:13px">📍 Où allez-vous ?</div>
+        <div class="input-wrap"><span class="dot">🟢</span><input class="inp" placeholder="Votre position actuelle"/></div>
+        <div class="input-wrap"><span class="dot">🔴</span><input class="inp" placeholder="Destination"/></div>
+        <div class="price-box">
+          <div><div class="est">Estimation</div><div class="amount">${RIDE_PRICES[svc]} F</div></div>
+          <div class="eta">~${RIDE_ETA[svc]} min</div>
+        </div>
+        <button class="cmd-btn">${SERVICES.find(s=>s.id===svc).ico} Commander maintenant</button>
+      </div>`;
+    return;
+  }
+
+  // BUS
+  if(svc==="bus"){
+    renderBus(c); return;
+  }
+}
+
+// ── BUS ──
+function renderBus(c){
+  if(busStep===0){
+    let popularDests = ["Ségou","Sikasso","Mopti","Kayes","Bougouni","Abidjan","Ouagadougou","Dakar"];
+    let regHTML = Object.entries(REGIONS).map(([reg,villes])=>{
+      let isInt = PAYS_INT.some(f=>reg.startsWith(f));
+      let label = isInt ? reg : "Région de "+reg;
+      let cities = villes.map(v=>`<button class="dest-chip${busDest===v?" sel":""}" onclick="selectBusDest('${v}')">${isInt?"✈️":"📍"} ${v}</button>`).join("");
+      return `
+        <button class="region-btn${openReg===reg?" open":""}" onclick="toggleReg('${reg}')">${label} <span>${openReg===reg?"▲":"▼"}</span></button>
+        ${openReg===reg?`<div class="region-cities">${cities}</div>`:""}`;
+    }).join("");
+
+    c.innerHTML=`
+      <div style="animation:fadeUp .3s ease">
+        <div class="promo-banner" style="background:linear-gradient(135deg,#8B3A00,#C45C26,#F5A623)">
+          <div class="deco"></div>
+          <div class="tag">🎟️ BILLETS DE BUS EN LIGNE</div>
+          <div class="title">Réservez sans aller à la gare !</div>
+          <div class="sub">Bamako vers Mali & Afrique de l'Ouest 🇲🇱</div>
+        </div>
+        <div class="section-lbl" style="margin-bottom:9px">⚡ DESTINATIONS POPULAIRES</div>
+        <div class="region-cities" style="margin-bottom:14px">${popularDests.map(v=>`<button class="dest-chip" onclick="selectBusDest('${v}')">📍 ${v}</button>`).join("")}</div>
+        <div class="section-lbl">TOUTES LES DESTINATIONS</div>
+        ${regHTML}
+      </div>`;
+    return;
+  }
+
+  const lg = getLigne(busDest);
+
+  if(busStep===1){
+    let deps = lg.deps.map((d,i)=>`
+      <button class="sched-btn" ${d.p===0?"disabled":""} onclick="selectBusDep(${i})"
+        style="border-color:${d.p>0?(busDep===d?"var(--gold)":"var(--green)"):"var(--border)"};background:${d.p>0?"rgba(46,204,113,.1)":"var(--card2)"};color:${d.p>0?"var(--text)":"var(--muted)"};cursor:${d.p>0?"pointer":"not-allowed"}">
+        <div class="time">${d.h}</div>
+        <div class="spots" style="color:${d.p===0?"var(--red)":"var(--green)"}">${d.p===0?"Complet":d.p+" places"}</div>
+      </button>`).join("");
+    c.innerHTML=`
+      <div style="animation:fadeUp .3s ease">
+        <button class="back-btn" onclick="busBack()">← Retour</button>
+        <div class="info-card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><div style="font-size:17px;font-weight:800">Bamako → ${busDest}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${lg.cie} · ${lg.dist} · ${lg.duree}</div></div>
+            <div style="text-align:right"><div style="font-size:21px;font-weight:800;color:var(--gold)">${fmt(lg.prix)}</div><div style="font-size:10px;color:var(--muted)">FCFA</div></div>
+          </div>
+        </div>
+        <div class="section-lbl">CHOISIR UN HORAIRE</div>
+        <div class="schedule-grid">${deps}</div>
+      </div>`;
+    return;
+  }
+
+  if(busStep===2){
+    let seats = Array.from({length:32},(_,i)=>i+1).map(n=>`
+      <button class="seat ${SIEGES_PRIS.includes(n)?"pris":busSiege===n?"choisi":"libre"}"
+        ${SIEGES_PRIS.includes(n)?"disabled":""} onclick="selectSiege(${n})">${n}</button>`).join("");
+    c.innerHTML=`
+      <div style="animation:fadeUp .3s ease">
+        <button class="back-btn" onclick="busBack()">← Retour</button>
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">💺 Choisir votre siège</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${busDest} · ${busDep?.h} · ${fmt(lg.prix)} FCFA</div>
+        <div class="seat-legend">
+          <span><div class="dot" style="background:var(--green)"></div>Libre</span>
+          <span><div class="dot" style="background:var(--muted)"></div>Pris</span>
+          <span><div class="dot" style="background:var(--gold)"></div>Choisi</span>
+        </div>
+        <div class="info-card" style="text-align:center">
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:11px">🚍 AVANT DU BUS</div>
+          <div class="seat-grid">${seats}</div>
+        </div>
+        ${busSiege?`<div class="seat-recap"><div><div style="font-size:11px;color:var(--muted)">Siège sélectionné</div><div style="font-size:19px;font-weight:800;color:var(--gold)">N° ${busSiege}</div></div><div style="text-align:right"><div style="font-size:11px;color:var(--muted)">Prix</div><div style="font-size:17px;font-weight:800">${fmt(lg.prix)} FCFA</div></div></div>`:""}
+        <button class="cmd-btn" ${!busSiege?"disabled":""} onclick="busStep=3;renderContent()">Confirmer siège N°${busSiege||"?"} →</button>
+      </div>`;
+    return;
+  }
+
+  if(busStep===3){
+    c.innerHTML=`
+      <div style="animation:fadeUp .3s ease">
+        <button class="back-btn" onclick="busBack()">← Retour</button>
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px">💳 Paiement</div>
+        ${payWidget()}
+        <div class="info-card" style="margin-top:6px">
+          ${[["Trajet",`Bamako → ${busDest}`],["Compagnie",lg.cie],["Départ",busDep?.h||""],["Siège",`N° ${busSiege}`],["Total",`${fmt(lg.prix)} FCFA`]].map(([k,v],i)=>`<div class="recap-row"><span class="k">${k}</span><span class="v${i===4?" gold":""}">${v}</span></div>`).join("")}
+        </div>
+        <button class="cmd-btn" onclick="busStep=4;renderContent()">💳 Payer ${fmt(lg.prix)} FCFA</button>
+      </div>`;
+    return;
+  }
+
+  if(busStep===4){
+    const code = randCode();
+    c.innerHTML=`
+      <div class="ticket-confirm" style="animation:slideUp .4s ease">
+        <div class="confirm-ico" style="background:var(--green);box-shadow:0 8px 26px rgba(46,204,113,.4)">✓</div>
+        <div class="confirm-title">Billet confirmé !</div>
+        <div class="confirm-sub">Votre billet électronique est prêt</div>
+        <div class="ticket-card">
+          <div class="ticket-header" style="background:linear-gradient(135deg,#3D1F00,var(--gold))">
+            <div><div class="tag">BILLET ÉLECTRONIQUE</div><div class="app-name">MaliTaxi Bus 🚍</div></div>
+            <div class="ticket-code">${code}</div>
+          </div>
+          <div class="ticket-body">
+            <div class="ticket-route">
+              <div><div class="city">Bamako</div><div style="font-size:11px;color:var(--muted)">Départ</div></div>
+              <div class="mid"><div class="dur">${lg.duree}</div><div class="line" style="background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+              <div><div class="arr" style="color:var(--gold)">${busDest}</div><div style="font-size:11px;color:var(--muted)">Arrivée</div></div>
+            </div>
+            <div class="ticket-mini">
+              <div class="cell"><div class="lbl">DÉPART</div><div class="val">${busDep?.h||""}</div></div>
+              <div class="cell"><div class="lbl">SIÈGE</div><div class="val">N° ${busSiege}</div></div>
+              <div class="cell"><div class="lbl">PRIX</div><div class="val" style="color:var(--gold)">${fmt(lg.prix)} F</div></div>
+            </div>
+            <div class="qr-wrap"><div class="qr-grid">${qrGrid()}</div></div>
+            <div class="qr-scan-lbl">Scanner à la gare routière</div>
+          </div>
+        </div>
+        <div class="ticket-actions">
+          <button class="btn-ghost" onclick="resetBus()">🏠 Accueil</button>
+          <button class="btn-solid" style="background:var(--gold);color:#1A1000">📲 Envoyer SMS</button>
+        </div>
+      </div>`;
+    return;
+  }
+}
+
+// ── ACTIONS ──
+function selectBusDest(d){busDest=d;busStep=1;openReg=null;renderContent();}
+function busBack(){if(busStep>0){busStep--;if(busStep===0)openReg=null;}renderContent();}
+function selectBusDep(i){const lg=getLigne(busDest);busDep=lg.deps[i];busStep=2;renderContent();}
+function selectSiege(n){busSiege=(busSiege===n?null:n);renderContent();}
+function resetBus(){busStep=0;busDest="";busDep=null;busSiege=null;openReg=null;renderContent();}
+function toggleReg(r){openReg=(openReg===r?null:r);renderContent();}
+
+// ── AUTH ──
+let userName="Client Lite", taxiType=null, ratingNote=0, ratingTags=[];
+const CHAUFFEURS=[
+  {nom:"Moussa Coulibaly",note:4.8,photo:"🧑🏿",courses:312},
+  {nom:"Ibrahim Diallo",  note:4.6,photo:"👨🏿",courses:187},
+  {nom:"Aminata Traoré",  note:4.9,photo:"👩🏿",courses:425},
+];
+const CHAUFFEUR=CHAUFFEURS[Math.floor(Math.random()*CHAUFFEURS.length)];
+
+function showSplash(){
+  document.getElementById("page-splash").style.display="";
+  document.getElementById("page-auth").style.display="none";
+  document.getElementById("page-app").style.display="none";
+}
+function showAuth(tab){
+  document.getElementById("page-splash").style.display="none";
+  document.getElementById("page-auth").style.display="";
+  document.getElementById("page-app").style.display="none";
+  switchTab(tab);
+}
+function switchTab(t){
+  document.getElementById("tab-login").className="auth-tab"+(t==="login"?" active":"");
+  document.getElementById("tab-reg").className="auth-tab"+(t==="register"?" active":"");
+  document.getElementById("form-login").style.display=t==="login"?"":"none";
+  document.getElementById("form-reg").style.display=t==="register"?"":"none";
+}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent="⚠️ "+msg;el.style.display="block";}
+function doLogin(){
+  const tel=document.getElementById("l-tel").value;
+  const mdp=document.getElementById("l-mdp").value;
+  if(!tel||!mdp){showErr("l-err","Remplissez tous les champs");return;}
+  if(tel.length<8){showErr("l-err","Numéro invalide");return;}
+  userName=tel; launchApp();
+}
+function doRegister(){
+  const nom=document.getElementById("r-nom").value;
+  const tel=document.getElementById("r-tel").value;
+  const mdp=document.getElementById("r-mdp").value;
+  const mdp2=document.getElementById("r-mdp2").value;
+  if(!nom||!tel||!mdp||!mdp2){showErr("r-err","Remplissez tous les champs");return;}
+  if(mdp!==mdp2){showErr("r-err","Mots de passe différents");return;}
+  if(mdp.length<4){showErr("r-err","Mot de passe trop court");return;}
+  userName=nom; launchApp();
+}
+function launchApp(){
+  document.getElementById("page-splash").style.display="none";
+  document.getElementById("page-auth").style.display="none";
+  document.getElementById("page-app").style.display="";
+  document.getElementById("user-name").textContent=userName;
+  document.getElementById("bell-badge").style.display="flex";
+  document.getElementById("sos-btn").classList.add("show");
+  renderServices(); renderContent();
+}
+
+// ── NOTIFICATIONS ──
+let notifs=[
+  {id:1,ico:"🚕",title:"Chauffeur en route",msg:"Votre taxi arrive dans 3 min",time:"À l'instant",lu:false},
+  {id:2,ico:"🚍",title:"Billet confirmé",msg:"Bamako → Ségou · Siège N°7",time:"Il y a 5 min",lu:false},
+  {id:3,ico:"🎁",title:"Offre -20%",msg:"Réduction sur les bus ce weekend !",time:"Il y a 1h",lu:false},
+  {id:4,ico:"✅",title:"Course terminée",msg:"Bamako Centre → ACI 2000",time:"Hier",lu:true},
+];
+function openNotifs(){
+  renderNotifs();
+  document.getElementById("notif-panel").style.display="flex";
+}
+function closeNotifs(){document.getElementById("notif-panel").style.display="none";}
+function renderNotifs(){
+  const n=notifs.filter(x=>!x.lu).length;
+  document.getElementById("notif-count").textContent=n+" non lue"+(n>1?"s":"");
+  document.getElementById("bell-badge").textContent=n;
+  document.getElementById("bell-badge").style.display=n>0?"flex":"none";
+  document.getElementById("notif-list").innerHTML=notifs.map(x=>`
+    <div class="notif-item${!x.lu?" unread":""}" onclick="readNotif(${x.id})">
+      <div class="notif-ico">${x.ico}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px">${x.title}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:3px">${x.msg}</div>
+        <div style="font-size:11px;color:var(--muted);opacity:.7">⏰ ${x.time}</div>
+      </div>
+      ${!x.lu?`<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:5px"></div>`:""}
+    </div>`).join("");
+}
+function readNotif(id){notifs=notifs.map(x=>x.id===id?{...x,lu:true}:x);renderNotifs();}
+function markAll(){notifs=notifs.map(x=>({...x,lu:true}));renderNotifs();}
+
+// ── TAXI TYPE ──
+function renderRide(){
+  const c=document.getElementById("content");
+  if(svc==="taxi"&&!taxiType){
+    c.innerHTML=`<div style="animation:fadeUp .3s ease">
+      <div style="font-size:15px;font-weight:800;margin-bottom:14px;text-align:center">🚕 Choisir votre taxi</div>
+      <div class="taxi-type-card" onclick="taxiType='standard';renderRide()">
+        <div style="font-size:44px">🚕</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:800;margin-bottom:3px">Standard</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:7px">Taxi classique · Confortable</div>
+          <div style="display:flex;gap:7px">
+            <span style="background:var(--card2);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700">👤 1-4</span>
+            <span style="background:var(--card2);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700">⏱️ 5 min</span>
+          </div>
+        </div>
+        <div style="text-align:right"><div style="font-size:19px;font-weight:800;color:var(--gold)">15 000</div><div style="font-size:10px;color:var(--muted)">FCFA</div></div>
+      </div>
+      <div class="taxi-type-card" style="background:linear-gradient(135deg,#2A1A00,rgba(245,166,35,.12));border-color:var(--gold);position:relative;overflow:hidden" onclick="taxiType='vip';renderRide()">
+        <div style="position:absolute;top:7px;right:10px;background:var(--gold);color:#1A1000;font-size:9px;font-weight:800;padding:2px 8px;border-radius:15px">👑 VIP</div>
+        <div style="font-size:44px">🚙</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:800;color:var(--gold);margin-bottom:3px">VIP Premium</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:7px">Berline · Climatisé</div>
+          <div style="display:flex;gap:7px">
+            <span style="background:rgba(245,166,35,.15);color:var(--gold);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700">👤 1-4</span>
+            <span style="background:rgba(245,166,35,.15);color:var(--gold);border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700">⏱️ ~5 min</span>
+          </div>
+        </div>
+        <div style="text-align:right"><div style="font-size:19px;font-weight:800;color:var(--gold)">35 000</div><div style="font-size:10px;color:var(--muted)">FCFA</div></div>
+      </div>
+    </div>`;
+    return;
+  }
+  const isVip=svc==="taxi"&&taxiType==="vip";
+  const prix=svc==="moto"?"8 000":svc==="livraison"?"5 000":isVip?"35 000":"15 000";
+  const ico=isVip?"🚙":svc==="moto"?"🏍️":svc==="livraison"?"📦":"🚕";
+  c.innerHTML=`<div style="animation:fadeUp .3s ease">
+    ${svc==="taxi"?`<button onclick="taxiType=null;renderRide()" style="background:none;border:none;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;margin-bottom:12px;font-family:inherit;padding:0">← Changer de type</button>`:""}
+    ${isVip?`<div style="background:linear-gradient(135deg,#2A1A00,rgba(245,166,35,.12));border:1px solid var(--gold);border-radius:13px;padding:11px 14px;margin-bottom:13px;display:flex;align-items:center;gap:9px"><span style="font-size:22px">👑</span><div><div style="font-size:13px;font-weight:800;color:var(--gold)">Taxi VIP Premium</div><div style="font-size:11px;color:var(--muted)">Berline luxe · Climatisé · Wi-Fi</div></div></div>`:""}
+    <div style="font-size:14px;font-weight:700;margin-bottom:12px">📍 Où allez-vous ?</div>
+    <div class="input-wrap"><span class="dot">🟢</span><input class="inp" placeholder="Votre position actuelle"/></div>
+    <div class="input-wrap" style="margin-bottom:13px"><span class="dot">🔴</span><input class="inp" placeholder="Destination"/></div>
+    <div style="background:var(--card);border-radius:13px;padding:13px;border:1px solid var(--border);margin-bottom:13px;display:flex;align-items:center;gap:12px">
+      <div style="width:46px;height:46px;border-radius:50%;background:var(--card2);font-size:26px;display:flex;align-items:center;justify-content:center;border:2px solid var(--gold);flex-shrink:0">${isVip?"🧑🏿‍💼":CHAUFFEUR.photo}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800">${isVip?"Amadou Diarra (VIP)":CHAUFFEUR.nom}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
+          <span style="color:var(--gold);font-size:12px">${"⭐".repeat(Math.round(isVip?5:CHAUFFEUR.note))}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--gold)">${isVip?"5.0":CHAUFFEUR.note}</span>
+          <span style="font-size:10px;color:var(--muted)">· ${isVip?"VIP certifié":CHAUFFEUR.courses+" courses"}</span>
+        </div>
+      </div>
+      <div style="background:rgba(46,204,113,.2);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:15px;border:1px solid rgba(46,204,113,.4)">${isVip?"👑 VIP":"En ligne ✓"}</div>
+    </div>
+    <div class="price-box">
+      <div><div class="est">Estimation</div><div class="amount">${prix} F</div></div>
+      <div class="eta">~5 min</div>
+    </div>
+    <button class="cmd-btn" onclick="openRating()">${ico} Commander ${isVip?"VIP":"maintenant"}</button>
+  </div>`;
+}
+
+// ── RATING ──
+function openRating(){
+  ratingNote=0;ratingTags=[];
+  document.getElementById("rating-overlay").style.display="flex";
+  renderRatingSheet();
+}
+function closeRating(){document.getElementById("rating-overlay").style.display="none";}
+function renderRatingSheet(){
+  const labels=["","😞 Très mauvais","😕 Mauvais","😐 Correct","😊 Bien","🤩 Excellent !"];
+  const tags=["Ponctuel ✓","Poli ✓","Propre ✓","Conduite safe ✓","Rapide ✓"];
+  document.getElementById("rating-sheet").innerHTML=`
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin-bottom:12px">NOTER VOTRE CHAUFFEUR</div>
+      <div style="width:62px;height:62px;border-radius:50%;background:var(--card2);font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 9px;border:2px solid var(--gold)">${CHAUFFEUR.photo}</div>
+      <div style="font-size:15px;font-weight:800">${CHAUFFEUR.nom}</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:3px;margin-bottom:12px">
+      ${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="setRating(${n})">${n<=ratingNote?"⭐":"☆"}</button>`).join("")}
+    </div>
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px">${ratingNote===0?"Appuyez sur une étoile":labels[ratingNote]}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px">${tags.map(t=>`<button class="rtag${ratingTags.includes(t)?" sel":""}" onclick="toggleTag('${t}')">${t}</button>`).join("")}</div>
+    <textarea placeholder="Commentaire (optionnel)..." style="width:100%;padding:11px 13px;background:var(--card2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;resize:none;height:65px;margin-bottom:14px"></textarea>
+    <button class="cmd-btn" ${ratingNote===0?"disabled":""} onclick="submitRating()">⭐ Envoyer ma note</button>
+    <button onclick="closeRating()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--border);background:none;color:var(--muted);font-weight:700;cursor:pointer;font-family:inherit;font-size:13px;margin-top:8px">Passer</button>`;
+}
+function setRating(n){ratingNote=n;renderRatingSheet();}
+function toggleTag(t){ratingTags.includes(t)?ratingTags.splice(ratingTags.indexOf(t),1):ratingTags.push(t);renderRatingSheet();}
+function submitRating(){
+  document.getElementById("rating-sheet").innerHTML=`
+    <div style="text-align:center;padding:18px 0">
+      <div style="font-size:54px;margin-bottom:12px">🎉</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:7px">Merci pour votre note !</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px">${CHAUFFEUR.nom} : ${"⭐".repeat(ratingNote)}</div>
+      <button class="cmd-btn" onclick="closeRating()">🏠 Retour à l'accueil</button>
+    </div>`;
+}
+
+// ── LANGUES ──
+let currentLang="fr";
+const LANGS={
+  fr:{flag:"🇫🇷",name:"Français",      greet:"Bonjour 👋",    brand:"MaliTaxi Lite",tagline:"Transport rapide au Mali 🇲🇱",svc:"CHOISIR UN SERVICE",login:"Se connecter",register:"Créer un compte"},
+  bm:{flag:"🇲🇱",name:"Bamanankan",    greet:"I ni sogoma 👋",brand:"MaliTaxi Lite",tagline:"Malidenw lafilaw ye 🇲🇱",svc:"BAARAKƐCOGO SƆRƆ",  login:"Sigi don",   register:"Tɔgɔ don"},
+  en:{flag:"🇬🇧",name:"English",       greet:"Hello 👋",      brand:"MaliTaxi Lite",tagline:"Fast transport in Mali 🇲🇱",svc:"CHOOSE A SERVICE",login:"Sign In",     register:"Sign Up"},
+  ar:{flag:"🇸🇦",name:"العربية",       greet:"مرحباً 👋",    brand:"MaliTaxi Lite",tagline:"النقل السريع في مالي 🇲🇱",svc:"اختر خدمة",      login:"دخول",       register:"تسجيل"},
+};
+
+function openLang(){
+  document.getElementById("lang-opts").innerHTML=Object.entries(LANGS).map(([code,l])=>`
+    <div class="lang-opt${currentLang===code?" active":""}" onclick="setLang('${code}')">
+      <div style="font-size:30px;width:46px;text-align:center">${l.flag}</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:800">${l.name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${code==="fr"?"Langue officielle":code==="bm"?"Langue nationale":code==="en"?"International":"اللغة العربية"}</div>
+      </div>
+      <div style="width:19px;height:19px;border-radius:50%;border:2px solid ${currentLang===code?"var(--gold)":"var(--border)"};background:${currentLang===code?"var(--gold)":"transparent"};display:flex;align-items:center;justify-content:center">
+        ${currentLang===code?`<div style="width:7px;height:7px;border-radius:50%;background:var(--bg)"></div>`:""}
+      </div>
+    </div>`).join("");
+  document.getElementById("lang-overlay").style.display="flex";
+}
+function closeLang(){ document.getElementById("lang-overlay").style.display="none"; }
+
+function setLang(code){
+  currentLang=code;
+  const l=LANGS[code];
+  document.documentElement.dir=code==="ar"?"rtl":"ltr";
+  // Splash
+  try{
+    document.querySelector(".splash .brand").textContent=l.brand;
+    document.querySelector(".splash .tagline").textContent=l.tagline;
+  }catch(e){}
+  // Header
+  try{ document.querySelector("#header .greet").textContent=l.greet; }catch(e){}
+  try{ document.querySelector(".svc-title").textContent=l.svc; }catch(e){}
+  closeLang();
+  renderContent();
+  renderProfil();
+}
+
+// ── PAIEMENT ──
+let defaultPay2="orange";
+const MOYENS=[
+  {id:"orange",ico:"🟠",nom:"Orange Money", num:"+223 76 00 00 00",solde:"12 500",color:"#FF7900"},
+  {id:"moov",  ico:"🔵",nom:"Moov Money",   num:"+223 65 00 00 00",solde:"8 200", color:"#0066CC"},
+  {id:"wave",  ico:"🌊",nom:"Wave",          num:"+223 70 00 00 00",solde:"25 000",color:"#1DC5E7"},
+  {id:"cash",  ico:"💵",nom:"Cash",          num:"Espèces",          solde:"—",    color:"#2ECC71"},
+];
+const TRANSACTIONS=[
+  {ico:"🚕",desc:"Course Bamako Centre",mont:"-15 000",date:"Aujourd'hui",plus:false},
+  {ico:"🚍",desc:"Billet bus Ségou",    mont:"-3 500", date:"Hier",       plus:false},
+  {ico:"💰",desc:"Rechargement Orange", mont:"+20 000",date:"Il y a 2j",  plus:true},
+  {ico:"🚙",desc:"Taxi VIP Hippodrome", mont:"-35 000",date:"Il y a 3j",  plus:false},
+  {ico:"🎁",desc:"Bonus bienvenue",     mont:"+500",   date:"Il y a 5j",  plus:true},
+];
+
+function openPay(){ renderPay(); document.getElementById("pay-panel").style.display="flex"; }
+function closePay(){ document.getElementById("pay-panel").style.display="none"; }
+
+function renderPay(){
+  document.getElementById("pay-body").innerHTML=`
+    <!-- Solde total -->
+    <div style="background:linear-gradient(135deg,#1A1A2E,#2A1A00,rgba(245,166,35,.2));border-radius:16px;padding:18px;margin-bottom:18px;border:1px solid rgba(245,166,35,.3)">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:5px">💰 Solde total</div>
+      <div style="font-size:30px;font-weight:800;color:var(--gold)">45 700 <span style="font-size:15px">FCFA</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">Sur tous vos comptes</div>
+    </div>
+
+    <!-- Moyens de paiement -->
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:10px">MOYEN PAR DÉFAUT</div>
+    ${MOYENS.map(p=>`
+    <div class="pay-panel-item${defaultPay2===p.id?" active":""}" onclick="setDefPay('${p.id}')">
+      <div class="pay-panel-logo" style="background:${p.color}20">${p.ico}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:800">${p.nom}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${p.num}</div>
+        ${p.solde!=="—"?`<div style="font-size:11px;color:var(--green);font-weight:700;margin-top:2px">Solde : ${p.solde} FCFA</div>`:""}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        ${defaultPay2===p.id?`<span style="background:rgba(245,166,35,.2);color:var(--gold);font-size:10px;font-weight:800;padding:2px 7px;border-radius:7px">✓ Défaut</span>`:""}
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid ${defaultPay2===p.id?"var(--gold)":"var(--border)"};background:${defaultPay2===p.id?"var(--gold)":"transparent"};display:flex;align-items:center;justify-content:center">
+          ${defaultPay2===p.id?`<div style="width:7px;height:7px;border-radius:50%;background:var(--bg)"></div>`:""}
+        </div>
+      </div>
+    </div>`).join("")}
+
+    <!-- Transactions -->
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin:16px 0 10px">DERNIÈRES TRANSACTIONS</div>
+    ${TRANSACTIONS.map(t=>`
+    <div class="trans-item">
+      <div style="width:38px;height:38px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${t.ico}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${t.desc}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${t.date}</div>
+      </div>
+      <div style="font-size:14px;font-weight:800;color:${t.plus?"var(--green)":"var(--red)"}">${t.mont} F</div>
+    </div>`).join("")}
+
+    <button style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--gold);color:#1A1000;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:16px">
+      💰 Recharger mon portefeuille
+    </button>`;
+}
+
+function setDefPay2(id){ defaultPay2=id; payMeth=id; renderPay(); }
+function setDefPay(id){ defaultPay2=id; payMeth=id; renderPay(); }
+
+// ── PROFIL ──
+let profilNotifs=true, profilGPS=true;
+function openProfil(){ renderProfil(); document.getElementById("profil-panel").style.display="flex"; }
+function closeProfil(){ document.getElementById("profil-panel").style.display="none"; }
+
+function renderProfil(){
+  document.getElementById("profil-body").innerHTML=`
+  <div style="padding:20px 18px 90px">
+
+    <!-- Avatar -->
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="width:80px;height:80px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 10px;border:3px solid rgba(245,166,35,.3)">😊</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:3px">${userName}</div>
+      <div style="font-size:12px;color:var(--muted)">Client MaliTaxi Lite</div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:flex;gap:9px;margin-bottom:18px">
+      <div class="profil-stat"><div style="font-size:20px;font-weight:800;color:var(--gold)">5</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Courses</div></div>
+      <div class="profil-stat"><div style="font-size:20px;font-weight:800;color:var(--green)">4.2⭐</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Note moy.</div></div>
+      <div class="profil-stat"><div style="font-size:20px;font-weight:800;color:var(--blue)">3</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Billets</div></div>
+    </div>
+
+    <!-- Infos -->
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:9px">INFORMATIONS</div>
+    <div style="background:var(--card);border-radius:13px;overflow:hidden;margin-bottom:16px">
+      ${[
+        {ico:"📱",label:"Téléphone",val:"+223 76 00 00 00"},
+        {ico:"📍",label:"Ville",val:"Bamako, Mali"},
+        {ico:"🎂",label:"Membre depuis",val:"Mai 2026"},
+      ].map((item,i,arr)=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:${i<arr.length-1?"1px solid var(--border)":"none"}">
+          <div style="font-size:18px">${item.ico}</div>
+          <div style="flex:1"><div style="font-size:11px;color:var(--muted)">${item.label}</div><div style="font-size:13px;font-weight:700;margin-top:1px">${item.val}</div></div>
+          <div style="color:var(--muted)">›</div>
+        </div>`).join("")}
+    </div>
+
+    <!-- Paramètres -->
+    <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:9px">PARAMÈTRES</div>
+    <div style="background:var(--card);border-radius:13px;overflow:hidden;margin-bottom:16px">
+      <div class="profil-menu" onclick="toggleNotifP()">
+        <div class="profil-menu-ico" style="background:rgba(245,166,35,.15)">🔔</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Notifications</div><div style="font-size:11px;color:var(--muted)">Alertes courses & billets</div></div>
+        <button class="toggle-sw" id="tog-notifs" style="background:${profilNotifs?"var(--gold)":"var(--border)"}">
+          <div class="knob" style="left:${profilNotifs?"22px":"3px"}"></div>
+        </button>
+      </div>
+      <div class="profil-menu" onclick="toggleGPSP()">
+        <div class="profil-menu-ico" style="background:rgba(52,152,219,.15)">📍</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Localisation GPS</div><div style="font-size:11px;color:var(--muted)">Partager ma position</div></div>
+        <button class="toggle-sw" id="tog-gps" style="background:${profilGPS?"var(--gold)":"var(--border)"}">
+          <div class="knob" style="left:${profilGPS?"22px":"3px"}"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div style="background:var(--card);border-radius:13px;overflow:hidden;margin-bottom:16px">
+      ${[
+        {ico:"📋",bg:"rgba(52,152,219,.15)", label:"Historique courses",sub:"5 courses · 3 billets",fn:"openHisto()"},
+        {ico:"🆘",bg:"rgba(231,76,60,.15)",  label:"Contacts urgence",   sub:"Famille, Police, SAMU",fn:"openSOS()"},
+        {ico:"💳",bg:"rgba(46,204,113,.15)", label:"Paiement",           sub:"Orange, Moov, Wave, Cash",fn:"openPay()"},
+        {ico:"🌍",bg:"rgba(155,89,182,.15)", label:"Langue",              sub:"Français · Bambara · English · عربي",fn:"openLang()"},
+      ].map((m,i,arr)=>`
+        <div class="profil-menu" onclick="${m.fn}">
+          <div class="profil-menu-ico" style="background:${m.bg}">${m.ico}</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">${m.label}</div><div style="font-size:11px;color:var(--muted)">${m.sub}</div></div>
+          <div style="color:var(--muted)">›</div>
+        </div>`).join("")}
+    </div>
+
+    <!-- Déconnexion -->
+    <button onclick="deconnexion()" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--red);background:rgba(231,76,60,.1);color:var(--red);font-size:14px;font-weight:800;cursor:pointer;font-family:inherit">
+      🚪 Se déconnecter
+    </button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--muted)">MaliTaxi Lite v1.0 · Bamako 🇲🇱</div>
+  </div>`;
+}
+
+function toggleNotifP(){
+  profilNotifs=!profilNotifs;
+  document.getElementById("tog-notifs").style.background=profilNotifs?"var(--gold)":"var(--border)";
+  document.getElementById("tog-notifs").querySelector(".knob").style.left=profilNotifs?"22px":"3px";
+}
+function toggleGPSP(){
+  profilGPS=!profilGPS;
+  document.getElementById("tog-gps").style.background=profilGPS?"var(--gold)":"var(--border)";
+  document.getElementById("tog-gps").querySelector(".knob").style.left=profilGPS?"22px":"3px";
+}
+function deconnexion(){
+  if(confirm("Voulez-vous vous déconnecter ?")){
+    document.getElementById("profil-panel").style.display="none";
+    document.getElementById("sos-btn").classList.remove("show");
+    document.getElementById("page-app").style.display="none";
+    showSplash();
+  }
+}
+
+// ── SOS ──
+let sosTriggered=false;
+function openSOS(){
+  sosTriggered=false;
+  document.getElementById("sos-status").textContent="Appuyez pour envoyer une alerte";
+  document.getElementById("sos-big").style.background="var(--red)";
+  document.getElementById("sos-big").textContent="🆘";
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{
+      document.getElementById("sos-pos").textContent=p.coords.latitude.toFixed(4)+", "+p.coords.longitude.toFixed(4)+" · Bamako";
+    },()=>{document.getElementById("sos-pos").textContent="Bamako, Mali";});
+  }
+  document.getElementById("sos-overlay").style.display="flex";
+}
+function closeSOS(){document.getElementById("sos-overlay").style.display="none";}
+function triggerSOS(){
+  if(sosTriggered)return;
+  sosTriggered=true;
+  document.getElementById("sos-big").style.background="#8B0000";
+  document.getElementById("sos-big").textContent="✓";
+  document.getElementById("sos-status").innerHTML=`<span style="color:var(--red);font-weight:800">🚨 ALERTE ENVOYÉE !</span><br><span style="color:var(--muted)">Contacts notifiés · Police alertée</span>`;
+  notifs.unshift({id:Date.now(),ico:"🆘",title:"Alerte SOS envoyée",msg:"Position partagée avec vos contacts",time:"À l'instant",lu:false});
+  renderNotifs();
+}
+function callContact(name){alert("📞 Appel vers "+name+"...\n\nFonctionnalité disponible dans la version finale.");}
+
+// ── HISTORIQUE ──
+let histoTab="courses";
+const HIST_COURSES=[
+  {ico:"🚕",type:"Taxi Standard",de:"Bamako Centre",   vers:"ACI 2000",      prix:"15 000",date:"Aujourd'hui",note:5,cha:"Moussa C."},
+  {ico:"🚙",type:"Taxi VIP",     de:"Hippodrome",      vers:"Hamdallaye",    prix:"35 000",date:"Hier",       note:5,cha:"Amadou D."},
+  {ico:"🏍️",type:"Moto",         de:"Hamdallaye",      vers:"Badalabougou",  prix:"8 000", date:"Il y a 3j", note:4,cha:"Ibrahim D."},
+  {ico:"📦",type:"Livraison",    de:"Magnambougou",    vers:"Lafiabougou",   prix:"5 000", date:"Il y a 5j", note:3,cha:"Seydou K."},
+  {ico:"🚕",type:"Taxi Standard",de:"Sogoniko",        vers:"Quinzambougou", prix:"12 000",date:"Il y a 1 sem",note:4,cha:"Moussa C."},
+];
+const HIST_BILLETS=[
+  {ico:"🚍",type:"Bus",  de:"Bamako",vers:"Ségou",      prix:"3 500", date:"Il y a 2j",  code:"MT-A3F2K1",statut:"Utilisé"},
+  {ico:"🚍",type:"Bus",  de:"Bamako",vers:"Sikasso",    prix:"5 000", date:"Il y a 1 sem",code:"MT-B4G3H2",statut:"Utilisé"},
+  {ico:"🚍",type:"Bus",  de:"Bamako",vers:"Ouagadougou",prix:"12 000",date:"Dans 3j",    code:"MT-C5K7L9",statut:"À venir"},
+];
+
+function openHisto(){
+  histoTab="courses";
+  renderHisto();
+  document.getElementById("histo-panel").style.display="flex";
+}
+function closeHisto(){document.getElementById("histo-panel").style.display="none";}
+function switchHisto(tab){
+  histoTab=tab;
+  document.getElementById("ht-courses").style.background=tab==="courses"?"var(--gold)":"transparent";
+  document.getElementById("ht-courses").style.color=tab==="courses"?"#1A1000":"var(--muted)";
+  document.getElementById("ht-billets").style.background=tab==="billets"?"var(--gold)":"transparent";
+  document.getElementById("ht-billets").style.color=tab==="billets"?"#1A1000":"var(--muted)";
+  renderHisto();
+}
+function renderHisto(){
+  const stats = histoTab==="courses" ? [
+    {val:"5",       label:"Courses"},
+    {val:"75 000 F",label:"Dépenses"},
+    {val:"4.2 ⭐",  label:"Note moy."},
+  ] : [
+    {val:"2",       label:"Billets achetés"},
+    {val:"1",       label:"À venir"},
+    {val:"20 500 F",label:"Dépensé"},
+  ];
+  document.getElementById("histo-stats").innerHTML = stats.map(s=>`
+    <div style="background:var(--card);border-radius:10px;padding:10px;text-align:center">
+      <div style="font-size:14px;font-weight:800;color:var(--gold)">${s.val}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${s.label}</div>
+    </div>`).join("");
+
+  if(histoTab==="courses"){
+    document.getElementById("histo-list").innerHTML = HIST_COURSES.map(h=>`
+      <div class="histo-item">
+        <div class="histo-ico">${h.ico}</div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div style="font-size:13px;font-weight:700">${h.de} → ${h.vers}</div>
+            <div style="font-size:13px;font-weight:800;color:var(--gold)">${h.prix} F</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:3px">${h.type} · ${h.cha} · ${h.date}</div>
+          <div style="font-size:12px;color:var(--gold)">${"⭐".repeat(h.note)}${"☆".repeat(5-h.note)}</div>
+        </div>
+      </div>`).join("");
+  } else {
+    document.getElementById("histo-list").innerHTML = HIST_BILLETS.map(h=>`
+      <div class="histo-item">
+        <div class="histo-ico">${h.ico}</div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div style="font-size:13px;font-weight:700">${h.de} → ${h.vers}</div>
+            <div style="font-size:13px;font-weight:800;color:var(--gold)">${h.prix} F</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:5px">${h.type} · ${h.date}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;font-family:monospace;color:var(--muted)">${h.code}</span>
+            <span style="padding:2px 8px;border-radius:8px;font-size:10px;font-weight:800;background:${h.statut==="À venir"?"rgba(46,204,113,.2)":"var(--card2)"};color:${h.statut==="À venir"?"var(--green)":"var(--muted)"}">${h.statut}</span>
+          </div>
+        </div>
+      </div>`).join("");
+  }
+}
+
+// ── OVERRIDE RENDER POUR TAXI ──
+const _origRender=renderContent;
+renderContent=function(){
+  if(["taxi","moto","livraison"].includes(svc)){renderRide();}
+  else{_origRender();}
+};
+
+// ── INIT ──
+showSplash();
+</script>
+</body>
+</html>
