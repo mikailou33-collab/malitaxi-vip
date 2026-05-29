@@ -1,0 +1,91 @@
+{
+  "name": "MaliTaxi VIP",
+  "short_name": "MaliTaxi",
+  "description": "La première application de transport premium au Mali. Taxi, Bus, Avion à Bamako.",
+  "start_url": "/malitaxi-vip-final-2.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0D1117",
+  "theme_color": "#F5A623",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["transportation", "travel", "lifestyle"],
+  "icons": [
+    {
+      "src": "malitaxi-logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Accueil MaliTaxi VIP"
+    },
+    {
+      "src": "screenshot2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Réservation de course"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Commander un Taxi",
+      "short_name": "Taxi",
+      "description": "Commander un taxi VIP maintenant",
+      "url": "/malitaxi-vip-final-2.html?service=taxi",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Billets de Bus",
+      "short_name": "Bus",
+      "description": "Réserver un billet de bus",
+      "url": "/malitaxi-vip-final-2.html?service=bus",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Billets d'Avion",
+      "short_name": "Avion",
+      "description": "Réserver un billet d'avion",
+      "url": "/malitaxi-vip-final-2.html?service=avion",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.malitaxi.vip",
+      "id": "com.malitaxi.vip"
+    }
+  ],
+  "prefer_related_applications": false,
+  "iarc_rating_id": "",
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
