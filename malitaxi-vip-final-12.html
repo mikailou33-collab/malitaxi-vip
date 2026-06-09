@@ -1418,7 +1418,7 @@ function renderBus(){
       <div class="info-card" style="margin-top:6px">
         ${[["Trajet",`Bamako → ${busDest}`],["Type",busTypeVoyage==="retour"?"🔄 Aller-retour":"➡️ Aller simple"],["Compagnie",selCie.cie],["Départ",busDep?.h||""],["Siège",`N° ${busSiege}`],["Total",`${fmt(prixFinal)} FCFA`]].map(([k,v],i)=>`<div class="recap-row"><span class="k">${k}</span><span class="v${i===5?" gold":""}">${v}</span></div>`).join("")}
       </div>
-      <button class="cmd-btn" onclick="busStep=5;renderContent()">💳 Payer ${fmt(prixFinal)} FCFA</button></div>`;
+      <button class="cmd-btn" onclick="demanderWhatsApp()">💳 Payer ${fmt(prixFinal)} FCFA</button></div>`;
   }
   if(busStep===5){
     const prixFinal = busTypeVoyage==="retour"?selCie.prix*2:selCie.prix;
