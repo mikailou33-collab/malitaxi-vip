@@ -1,1 +1,0 @@
-const fs=require('fs');var h=fs.readFileSync('malitaxi-vip-final-12.html','utf8');h=h.replace(/{id:"aeroport"[}]*},\r\n\s*{id:"bus"[}]*},/,'');fs.writeFileSync('malitaxi-vip-final-12.html',h);console.log('OK');  
