@@ -239,461 +239,7 @@ select.m-inp{cursor:pointer}
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:13px">
         <button class="menu-toggle" onclick="openSb()">☰</button>
-        <div class="page-ttl" id="pg-ttl">📊 Dashboard</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:11px">
-        <div style="font-size:12px;color:var(--muted);background:var(--bg);padding:6px 13px;border-radius:18px;border:1px solid var(--border)" id="tb-date"></div>
-        <div class="tb-btn" onclick="go('live')">🔴<div class="ndot" id="notif-dot"></div></div>
-      </div>
-    </div>
-    <div class="content" id="content"></div>
-  </div>
-</div>
-
-<div class="modal-bg" id="modal-bg"><div class="modal-box" id="modal-box"></div></div>
-
-<script>
-// ── DATA ──
-const CHAUFFEURS=[
-  {id:1,nom:"Amadou Diallo",    tel:"+223 76 11 22 33",type:"taxi", veh:"Toyota Corolla",plaque:"ML-1234-A",statut:"actif",  note:4.9,courses:142,rev:1240000,zone:"Hamdallaye",valide:true, bloque:false},
-  {id:2,nom:"Seydou Koné",      tel:"+223 66 22 33 44",type:"taxi", veh:"Honda Civic",   plaque:"ML-2345-B",statut:"actif",  note:4.7,courses:98, rev:860000, zone:"ACI 2000",   valide:true, bloque:false},
-  {id:3,nom:"Ibrahim Traoré",   tel:"+223 76 33 44 55",type:"livreur",veh:"Moto Yamaha",  plaque:"ML-3456-C",statut:"actif",  note:4.5,courses:67, rev:320000, zone:"Badalabougou",valide:true, bloque:false},
-  {id:4,nom:"Moussa Coulibaly", tel:"+223 66 44 55 66",type:"taxi", veh:"Toyota Yaris",  plaque:"ML-4567-D",statut:"actif",  note:4.8,courses:203,rev:1740000,zone:"Hippodrome",  valide:true, bloque:false},
-  {id:5,nom:"Oumar Sanogo",     tel:"+223 76 55 66 77",type:"livreur",veh:"Moto Honda",   plaque:"ML-5678-E",statut:"attente",note:0,  courses:0,  rev:0,      zone:"Lafiabougou", valide:false,bloque:false},
-  {id:6,nom:"Bakary Dembélé",   tel:"+223 66 66 77 88",type:"taxi", veh:"Renault Logan", plaque:"ML-6789-F",statut:"suspendu",note:2.1,courses:12, rev:60000,  zone:"Sogoniko",    valide:true, bloque:true},
-];
-const CLIENTS=[
-  {id:1,nom:"Aminata Coulibaly",tel:"+223 70 11 22 33",courses:28,dep:280000,note:4.9,statut:"actif", bloque:false,date:"12/01/2026"},
-  {id:2,nom:"Ibrahim Keïta",    tel:"+223 65 22 33 44",courses:15,dep:145000,note:4.7,statut:"actif", bloque:false,date:"15/01/2026"},
-  {id:3,nom:"Fatoumata Diallo", tel:"+223 76 33 44 55",courses:42,dep:380000,note:5.0,statut:"actif", bloque:false,date:"03/01/2026"},
-  {id:4,nom:"Moussa Traoré",    tel:"+223 66 44 55 66",courses:9, dep:65000, note:4.5,statut:"actif", bloque:false,date:"20/02/2026"},
-  {id:5,nom:"Oumou Bah",        tel:"+223 76 55 66 77",courses:2, dep:12000, note:3.0,statut:"suspect",bloque:false,date:"01/03/2026"},
-];
-const COMMANDES=[
-  {id:"C001",client:"Aminata C.", ch:"Amadou D.",  type:"VIP",     de:"Hamdallaye",    vers:"ACI 2000",     prix:3700, statut:"en cours",  pay:"Orange", heure:"10:02"},
-  {id:"C002",client:"Ibrahim K.", ch:"Seydou K.",  type:"Standard",de:"ACI 2000",      vers:"Hippodrome",   prix:2300, statut:"en cours",  pay:"Wave",   heure:"10:18"},
-  {id:"C003",client:"Fatoumata D.",ch:"Ibrahim T.",type:"Livraison",de:"Sogoniko",      vers:"Badalabougou", prix:1400, statut:"en cours",  pay:"Cash",   heure:"10:25"},
-  {id:"C004",client:"Moussa T.",   ch:"Moussa C.", type:"Standard",de:"Magnambougou",  vers:"Quinzambougou",prix:1800, statut:"terminée", pay:"Moov",   heure:"09:50"},
-  {id:"C005",client:"Oumou B.",    ch:"—",         type:"Standard",de:"Kalaban",        vers:"Centre",       prix:2100, statut:"en attente",pay:"Orange", heure:"10:30"},
-  {id:"C006",client:"Aminata C.", ch:"Amadou D.",  type:"VIP",     de:"Badalabougou",  vers:"Centre",       prix:4200, statut:"terminée", pay:"Wave",   heure:"09:30"},
-];
-const PROMOS=[
-  {id:1,code:"MALI2026",  type:"pct",   val:20,min:1000,max:5000, usage:45,  limite:100, expire:"30/06/2026",actif:true},
-  {id:2,code:"PREMIERE",  type:"fixe",  val:500,min:500, max:500,  usage:123, limite:500, expire:"31/12/2026",actif:true},
-  {id:3,code:"VIP50",     type:"pct",   val:50,min:2000,max:3000, usage:12,  limite:50,  expire:"30/06/2026",actif:true},
-  {id:4,code:"NOEL2025",  type:"fixe",  val:1000,min:2000,max:1000,usage:200,limite:200, expire:"31/12/2025",actif:false},
-];
-const BILLETS_BUS=[
-  {id:"BB001",client:"Aminata C.",trajet:"Bamako→Sikasso",cie:"Sud Express",prix:8000,siege:"12A",statut:"payé",    date:"2026-06-01",heure:"07:00"},
-  {id:"BB002",client:"Ibrahim K.",trajet:"Bamako→Ségou",  cie:"Sahel Voyage",prix:2500,siege:"05B",statut:"payé",  date:"2026-06-01",heure:"09:00"},
-  {id:"BB003",client:"Moussa T.", trajet:"Bamako→Mopti",  cie:"Binke Trans",  prix:8000,siege:"18C",statut:"payé", date:"2026-06-02",heure:"08:00"},
-  {id:"BB004",client:"Fatoumata D.",trajet:"Bamako→Abidjan",cie:"Trans Ivoire",prix:28000,siege:"22D",statut:"réservé",date:"2026-06-05",heure:"06:00"},
-];
-const BILLETS_AVION=[
-  {id:"BA001",client:"Aminata C.", trajet:"BKO→DKR",cie:"Air Sénégal",prix:145000,classe:"Eco",statut:"payé",  date:"2026-06-10"},
-  {id:"BA002",client:"Ibrahim K.", trajet:"BKO→ABJ",cie:"Air Côte d'Ivoire",prix:120000,classe:"Eco",statut:"payé",date:"2026-06-08"},
-  {id:"BA003",client:"Fatoumata D.",trajet:"BKO→CMN",cie:"Royal Air Maroc",prix:280000,classe:"Business",statut:"réservé",date:"2026-06-15"},
-];
-const ZONES=[
-  {id:1,nom:"Zone Centre",quartiers:["Centre Ville","Hippodrome","Medina Coura","Bagadadji"],tarif_sup:0,actif:true},
-  {id:2,nom:"Zone ACI",quartiers:["ACI 2000","Hamdallaye","Badalabougou"],tarif_sup:0,actif:true},
-  {id:3,nom:"Zone Sud",quartiers:["Lafiabougou","Sogoniko","Kalaban Coura","Magnambougou"],tarif_sup:200,actif:true},
-  {id:4,nom:"Zone Nord",quartiers:["Banconi","Djélibougou","Boulkassoumbougou"],tarif_sup:300,actif:true},
-  {id:5,nom:"Zone Est",quartiers:["Yirimadio","Niamakoro","Banankabougou","Senou","Faladié"],tarif_sup:400,actif:true},
-  {id:6,nom:"Aéroport",quartiers:["Aéroport Bamako-Sénou"],tarif_sup:1500,actif:true},
-];
-let TARIFS={
-  standard:{base:500,km:600,min:20,minPrix:500},
-  vip:     {base:1000,km:900,min:35,minPrix:1500},
-  moto:    {base:300,km:400,min:15,minPrix:400},
-  livraison:{base:900,km:500,min:10,minPrix:900},
-};
-let autoAttribution=true;
-
-function fmt(n){if(typeof n!=="number")return n;return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");}
-
-// ── AUTH ──
-// ── SÉCURITÉ AVANCÉE ──
-let loginAttempts = 0;
-const MAX_ATTEMPTS = 3;
-let isLocked = false;
-let lockTimer = null;
-let sessionTimeout = null;
-const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
-const ACTIVITY_LOG = [];
-
-// Comptes avec rôles
-const ADMIN_ACCOUNTS = {
-  "admin":     {pass:"malitaxi2026", role:"super_admin", nom:"Super Admin"},
-  "malitaxi":  {pass:"admin123",     role:"admin",       nom:"Administrateur"},
-  "viewer":    {pass:"view2026",     role:"viewer",      nom:"Observateur"},
-};
-
-function doLogin(){
-  if(isLocked){
-    showErr("🔒 Compte bloqué temporairement. Réessayez dans 5 minutes.");
-    return;
-  }
-  const u=document.getElementById("a-user").value.trim();
-  const p=document.getElementById("a-pass").value;
-  if(!u||!p){showErr("Remplissez tous les champs");return;}
-  
-  const account = ADMIN_ACCOUNTS[u];
-  if(account && account.pass === p){
-    // Succès
-    loginAttempts = 0;
-    logActivity("Connexion", "✅ Connexion réussie — "+u, "success");
-    launchAdmin(account);
-  } else {
-    loginAttempts++;
-    const remaining = MAX_ATTEMPTS - loginAttempts;
-    if(loginAttempts >= MAX_ATTEMPTS){
-      isLocked = true;
-      showErr("🔒 Trop de tentatives ! Compte bloqué 5 minutes.");
-      lockTimer = setTimeout(function(){
-        isLocked = false;
-        loginAttempts = 0;
-        showErr("");
-      }, 5 * 60 * 1000);
-    } else {
-      showErr("❌ Identifiants incorrects — "+remaining+" tentative(s) restante(s)");
-    }
-    logActivity("Tentative échouée", "❌ Tentative de connexion échouée — "+u, "danger");
-  }
-}
-
-function launchAdmin(account){
-  currentAdmin = account;
-  document.getElementById("pg-login").style.display="none";
-  document.getElementById("pg-admin").style.display="block";
-  document.getElementById("tb-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"});
-  // Update sidebar user
-  document.querySelector(".sb-user div div:first-child").textContent = account.nom;
-  document.querySelector(".sb-user div div:last-child").textContent = 
-    account.role==="super_admin"?"Super Admin":account.role==="admin"?"Administrateur":"Observateur";
-  // Session timeout
-  resetSessionTimeout();
-  document.addEventListener("click", resetSessionTimeout);
-  document.addEventListener("keypress", resetSessionTimeout);
-  go("dashboard");
-}
-
-let currentAdmin = null;
-function resetSessionTimeout(){
-  clearTimeout(sessionTimeout);
-  sessionTimeout = setTimeout(function(){
-    toast("⏰ Session expirée — Reconnectez-vous", "e");
-    setTimeout(doLogout, 3000);
-  }, SESSION_DURATION);
-}
-
-function logActivity(action, detail, type){
-  ACTIVITY_LOG.unshift({
-    time: new Date().toLocaleTimeString("fr-FR"),
-    date: new Date().toLocaleDateString("fr-FR"),
-    action: action,
-    detail: detail,
-    type: type,
-    user: currentAdmin ? currentAdmin.nom : "Inconnu",
-  });
-  if(ACTIVITY_LOG.length > 100) ACTIVITY_LOG.pop();
-}
-
-function showErr(m){
-  const e=document.getElementById("a-err");
-  if(!m){e.style.display="none";return;}
-  e.textContent="⚠️ "+m;e.style.display="block";
-}
-function doLogout(){if(confirm("Se déconnecter ?")){document.getElementById("pg-admin").style.display="none";document.getElementById("pg-login").style.display="block";}}
-
-// ── SIDEBAR ──
-function openSb(){document.getElementById("sidebar").classList.add("open");document.getElementById("sb-overlay").classList.add("show");}
-function closeSb(){document.getElementById("sidebar").classList.remove("open");document.getElementById("sb-overlay").classList.remove("show");}
-
-// ── NAV ──
-const TITLES={pub:'📢 Gestion Publicités',
-  dashboard:"📊 Tableau de bord",live:"🔴 Suivi en direct",
-  clients:"👤 Gestion des clients",chauffeurs:"🚗 Chauffeurs & Livreurs",
-  validation:"✅ Validation des comptes",blocage:"🚫 Blocage des fraudes",
-  commandes:"📋 Gestion des commandes",attribution:"🎯 Attribution des courses",
-  zones:"🗺️ Zones de service",tarifs:"💰 Tarifs par distance",
-  paiements:"💳 Paiements & Commissions",promos:"🎁 Promotions & Codes promo",
-  rapports:"📈 Rapports & Statistiques",billets:"🎫 Ventes Billets Bus/Avion",
-  params:"⚙️ Paramètres",
-};
-function go(p){
-  document.querySelectorAll(".sb-item").forEach(e=>e.classList.remove("active"));
-  const si=document.getElementById("si-"+p);if(si)si.classList.add("active");
-  document.getElementById("pg-ttl").textContent=TITLES[p]||p;
-  closeSb();
-  const fns={pub:function(){document.getElementById('section-pub').style.display='block';},dashboard:renderDash,live:renderLive,clients:renderClients,chauffeurs:renderChauffeurs,
-    validation:renderValidation,blocage:renderBlocage,commandes:renderCommandes,
-    attribution:renderAttribution,zones:renderZones,tarifs:renderTarifs,
-    paiements:renderPaiements,promos:renderPromos,rapports:renderRapports,
-    billets:renderBillets,params:renderParams};
-  if(fns[p]) fns[p]();
-}
-
-// ── 1. DASHBOARD RICHE ──
-function renderDash(){
-  const totalR = CHAUFFEURS.reduce((a,c)=>a+c.rev,0)+8500000;
-  const commission = Math.round(totalR*0.15);
-  const coursesAujourdhui = COMMANDES.length;
-  const enCours = COMMANDES.filter(c=>c.statut==="en cours").length;
-  const terminees = COMMANDES.filter(c=>c.statut==="terminée").length;
-  const activeDrivers = CHAUFFEURS.filter(c=>c.statut==="actif").length;
-
-  // Chart semaine
-  const semaine=[{j:"Lun",r:420000,c:98},{j:"Mar",r:580000,c:134},{j:"Mer",r:340000,c:82},{j:"Jeu",r:670000,c:155},{j:"Ven",r:850000,c:196},{j:"Sam",r:460000,c:108},{j:"Dim",r:220000,c:52}];
-  const maxR=Math.max(...semaine.map(w=>w.r));
-  let bars="";
-  for(const w of semaine){
-    const h=Math.round((w.r/maxR)*80);
-    const peak=w.r===maxR;
-    bars+=`<div class="chart-col">
-      <div style="font-size:9px;color:var(--muted);margin-bottom:3px;font-weight:700">${fmt(w.r/1000)}k</div>
-      <div class="chart-bar" style="height:${h}px;background:${peak?"linear-gradient(0deg,#1E40AF,#3B82F6)":"linear-gradient(0deg,#DBEAFE,#BFDBFE)"}"></div>
-      <div class="chart-lbl">${w.j}</div>
-    </div>`;
-  }
-
-  // Sparkline mini pour chaque stat
-  function spark(vals, color){
-    const max=Math.max(...vals);
-    const pts=vals.map((v,i)=>`${i*(40/(vals.length-1))},${20-Math.round((v/max)*18)}`).join(" ");
-    return `<svg width="40" height="20" style="margin-top:4px"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/></svg>`;
-  }
-
-  document.getElementById("content").innerHTML=`<div class="page-section">
-
-    <!-- KPI CARDS TOP -->
-    <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
-
-      <div class="stat-card" style="border-left:3px solid #D97706">
-        <div class="stat-acc" style="background:linear-gradient(90deg,#D97706,#F59E0B)"></div>
-        <div class="stat-bg-ico">💰</div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="stat-ico-wrap" style="background:#FFFBEB">💰</div>
-          ${spark([320,450,380,520,610,490,580,700],"#D97706")}
-        </div>
-        <div class="stat-val" style="color:#D97706">${fmt(totalR)}</div>
-        <div class="stat-lbl">Revenus totaux (FCFA)</div>
-        <div class="stat-trend trend-up">↑ +18.4% ce mois</div>
-      </div>
-
-      <div class="stat-card" style="border-left:3px solid #1E40AF">
-        <div class="stat-acc" style="background:linear-gradient(90deg,#1E40AF,#3B82F6)"></div>
-        <div class="stat-bg-ico">💼</div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="stat-ico-wrap" style="background:#EFF6FF">💼</div>
-          ${spark([120,180,145,200,230,195,220,260],"#1E40AF")}
-        </div>
-        <div class="stat-val" style="color:#1E40AF">${fmt(commission)}</div>
-        <div class="stat-lbl">Commission MaliTaxi</div>
-        <div class="stat-trend trend-up">↑ +15% cette semaine</div>
-      </div>
-
-      <div class="stat-card" style="border-left:3px solid #059669">
-        <div class="stat-acc" style="background:linear-gradient(90deg,#059669,#10B981)"></div>
-        <div class="stat-bg-ico">🚗</div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="stat-ico-wrap" style="background:#ECFDF5">🚗</div>
-          ${spark([82,98,134,82,155,196,108,52],"#059669")}
-        </div>
-        <div class="stat-val" style="color:#059669">${coursesAujourdhui+847}</div>
-        <div class="stat-lbl">Courses totales</div>
-        <div class="stat-trend trend-up">↑ +${coursesAujourdhui} aujourd'hui</div>
-      </div>
-
-      <div class="stat-card" style="border-left:3px solid #7C3AED">
-        <div class="stat-acc" style="background:linear-gradient(90deg,#7C3AED,#8B5CF6)"></div>
-        <div class="stat-bg-ico">👥</div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="stat-ico-wrap" style="background:#F5F3FF">👥</div>
-          ${spark([180,210,195,240,220,260,245,280],"#7C3AED")}
-        </div>
-        <div class="stat-val" style="color:#7C3AED">${CLIENTS.length+234}</div>
-        <div class="stat-lbl">Clients inscrits</div>
-        <div class="stat-trend trend-up">↑ +12 cette semaine</div>
-      </div>
-
-      <div class="stat-card" style="border-left:3px solid #EA580C">
-        <div class="stat-acc" style="background:linear-gradient(90deg,#EA580C,#F97316)"></div>
-        <div class="stat-bg-ico">🔴</div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="stat-ico-wrap" style="background:#FFF7ED">🔴</div>
-          <div style="width:10px;height:10px;border-radius:50%;background:#059669;animation:pulse 1.5s infinite;margin-top:8px"></div>
-        </div>
-        <div class="stat-val" style="color:#EA580C">${enCours}</div>
-        <div class="stat-lbl">Courses en cours LIVE</div>
-        <div class="stat-trend" style="color:var(--orange)">● Temps réel</div>
-      </div>
-
-      <div class="stat-card" style="border-left:3px solid #059669">
-        <div class="stat-acc" style="background:linear-gradient(90deg,#059669,#10B981)"></div>
-        <div class="stat-bg-ico">🚗</div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="stat-ico-wrap" style="background:#ECFDF5">🚗</div>
-          ${spark([4,5,6,4,5,6,5,6],"#059669")}
-        </div>
-        <div class="stat-val" style="color:#059669">${activeDrivers}</div>
-        <div class="stat-lbl">Chauffeurs actifs</div>
-        <div class="stat-trend trend-up">↑ +2 cette semaine</div>
-      </div>
-
-    </div>
-
-    <!-- GRAPHIQUES PRINCIPAUX -->
-    <div style="display:grid;grid-template-columns:1.8fr 1fr;gap:16px;margin-bottom:18px">
-
-      <!-- Revenus chart -->
-      <div class="card">
-        <div class="card-hdr">
-          <div class="card-ttl">📈 Revenus & Courses — 7 derniers jours</div>
-          <div style="display:flex;gap:8px">
-            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--blue)"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue)"></div>Revenus</span>
-            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--green)"><div style="width:10px;height:10px;border-radius:2px;background:var(--green)"></div>Courses</span>
-          </div>
-        </div>
-        <div style="padding:18px 18px 8px">
-          <div style="display:flex;align-items:flex-end;gap:6px;height:100px;margin-bottom:4px">${bars}</div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding-top:10px;border-top:1px solid var(--border)">
-            <span>📅 Cette semaine</span>
-            <span>Total: <strong style="color:var(--blue)">${fmt(semaine.reduce((a,w)=>a+w.r,0))} FCFA</strong></span>
-            <span>Pic: <strong>Vendredi</strong></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Paiements + Satisfaction -->
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="card" style="margin-bottom:0">
-          <div class="card-hdr" style="padding:12px 16px"><div class="card-ttl" style="font-size:13px">💳 Modes de paiement</div></div>
-          <div style="padding:12px 16px">
-            ${[{ico:"🟠",n:"Orange",p:55,c:"#FF7900"},{ico:"🔵",n:"Moov",p:20,c:"#0066CC"},{ico:"🌊",n:"Wave",p:15,c:"#1DC5E7"},{ico:"💵",n:"Cash",p:10,c:"#059669"}].map(x=>`
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-              <span style="font-size:14px">${x.ico}</span>
-              <div style="flex:1">
-                <div style="height:5px;background:#F1F5F9;border-radius:3px"><div style="height:5px;background:${x.c};border-radius:3px;width:${x.p}%;transition:width 1s"></div></div>
-              </div>
-              <span style="font-size:11px;font-weight:700;color:${x.c};width:30px;text-align:right">${x.p}%</span>
-            </div>`).join("")}
-          </div>
-        </div>
-        <div class="card" style="margin-bottom:0">
-          <div style="padding:14px 16px">
-            <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px">⭐ SATISFACTION CLIENT</div>
-            <div style="font-size:28px;font-weight:900;color:#D97706">4.8<span style="font-size:13px;font-weight:400;color:var(--muted)">/5.0</span></div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">Basé sur ${terminees+847} courses</div>
-            <div style="height:5px;background:#F1F5F9;border-radius:3px;margin-top:8px"><div style="height:5px;background:#D97706;border-radius:3px;width:96%"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACTIVITÉ TEMPS RÉEL + ALERTES + TOP CHAUFFEURS -->
-    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;margin-bottom:18px">
-
-      <!-- Activité temps réel -->
-      <div class="card">
-        <div class="card-hdr">
-          <div class="card-ttl">🔴 Activité temps réel</div>
-          <div style="display:flex;align-items:center;gap:5px"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite"></div><span style="font-size:11px;color:var(--green);font-weight:700">LIVE</span></div>
-        </div>
-        <div style="padding:12px;max-height:200px;overflow-y:auto">
-          ${[
-            {time:"10:32",ico:"🚗",msg:"Nouvelle course VIP — Hamdallaye→ACI",c:"var(--gold)"},
-            {time:"10:28",ico:"✅",msg:"Course terminée — "+fmt(3700)+" FCFA payé",c:"var(--green)"},
-            {time:"10:25",ico:"📦",msg:"Livraison lancée — Sogoniko→Badalabougou",c:"var(--purple)"},
-            {time:"10:20",ico:"👤",msg:"Nouveau client inscrit — +223 70 XX XX",c:"var(--blue)"},
-            {time:"10:15",ico:"⭐",msg:"Note 5/5 pour Amadou Diallo",c:"#D97706"},
-            {time:"10:10",ico:"🎫",msg:"Billet Bus vendu — Bamako→Sikasso",c:"var(--orange)"},
-            {time:"10:05",ico:"✅",msg:"Course terminée — "+fmt(2300)+" FCFA payé",c:"var(--green)"},
-            {time:"09:58",ico:"🔔",msg:"Chauffeur en ligne — Seydou Koné",c:"var(--blue)"},
-          ].map(a=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F1F5F9;align-items:flex-start">
-            <span style="font-size:14px">${a.ico}</span>
-            <div style="flex:1">
-              <div style="font-size:12px;font-weight:600;color:var(--text)">${a.msg}</div>
-            </div>
-            <span style="font-size:10px;color:var(--muted);white-space:nowrap">${a.time}</span>
-          </div>`).join("")}
-        </div>
-      </div>
-
-      <!-- Alertes prioritaires -->
-      <div class="card">
-        <div class="card-hdr"><div class="card-ttl">⚠️ Alertes prioritaires</div></div>
-        <div style="padding:12px">
-          ${[
-            {ico:"🔴",msg:"3 courses sans chauffeur",level:"URGENT",c:"var(--red)",fn:"attribution"},
-            {ico:"⏳",msg:"3 comptes à valider",level:"ACTION",c:"var(--gold)",fn:"validation"},
-            {ico:"🚫",msg:"1 client suspect",level:"INFO",c:"var(--orange)",fn:"blocage"},
-            {ico:"📈",msg:"Pic de demande: Vendredi",level:"INFO",c:"var(--blue)",fn:"rapports"},
-            {ico:"🎁",msg:"Code VIP50 bientôt expiré",level:"INFO",c:"var(--purple)",fn:"promos"},
-          ].map(a=>`<div onclick="go('${a.fn}')" style="display:flex;align-items:center;gap:9px;padding:9px;border-radius:10px;border:1px solid ${a.c}22;background:${a.c}08;cursor:pointer;margin-bottom:7px;transition:all .2s" onmouseover="this.style.background='${a.c}15'" onmouseout="this.style.background='${a.c}08'">
-            <span style="font-size:17px">${a.ico}</span>
-            <div style="flex:1">
-              <div style="font-size:11px;font-weight:700">${a.msg}</div>
-              <span style="font-size:9px;font-weight:800;color:${a.c};background:${a.c}20;padding:1px 6px;border-radius:5px">${a.level}</span>
-            </div>
-            <span style="color:var(--muted);font-size:12px">›</span>
-          </div>`).join("")}
-        </div>
-      </div>
-
-      <!-- Top chauffeurs du jour -->
-      <div class="card">
-        <div class="card-hdr"><div class="card-ttl">🏆 Top chauffeurs</div></div>
-        <div style="padding:12px">
-          ${CHAUFFEURS.filter(c=>c.courses>0).sort((a,b)=>b.rev-a.rev).slice(0,5).map((c,i)=>`
-          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;${i<3?"background:linear-gradient(90deg,#FFFBEB,#FEF9EC)":""}margin-bottom:5px">
-            <div style="font-size:16px;font-weight:900;color:${i===0?"#D97706":i===1?"#9CA3AF":i===2?"#B45309":"var(--muted)"};width:20px">${i+1}</div>
-            <div class="avatar" style="width:30px;height:30px;font-size:12px">${c.nom[0]}</div>
-            <div style="flex:1">
-              <div style="font-size:12px;font-weight:700">${c.nom.split(" ")[0]}</div>
-              <div style="font-size:10px;color:var(--muted)">${c.courses} courses · ⭐${c.note}</div>
-            </div>
-            <div style="font-size:11px;font-weight:800;color:#D97706">${fmt(Math.round(c.rev/1000))}k</div>
-          </div>`).join("")}
-        </div>
-      </div>
-    </div>
-
-    <!-- RÉSUMÉ FINANCIER + COURS RÉCENTES -->
-    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-bottom:18px">
-
-      <!-- Résumé financier -->
-      <div class="card">
-        <div class="card-hdr"><div class="card-ttl">💰 Résumé financier</div></div>
-        <div style="padding:16px">
-          ${[
-            {lbl:"Revenus bruts",val:totalR,c:"#D97706",ico:"💰"},
-            {lbl:"Commission MaliTaxi (15%)",val:Math.round(totalR*.15),c:"var(--blue)",ico:"🏢"},
-            {lbl:"Commission IBI Groupe (5%)",val:Math.round(totalR*.05),c:"#D97706",ico:"🤝"},
-            {lbl:"Revenus chauffeurs (80%)",val:Math.round(totalR*.80),c:"var(--green)",ico:"🚗"},
-            {lbl:"Billets Bus",val:BILLETS_BUS.reduce((a,b)=>a+b.prix,0),c:"var(--purple)",ico:"🚌"},
-            {lbl:"Billets Avion",val:BILLETS_AVION.reduce((a,b)=>a+b.prix,0),c:"var(--orange)",ico:""},
-          ].map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-radius:11px;background:var(--bg);margin-bottom:7px;border:1px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:8px"><span>${x.ico}</span><span style="font-size:12px;color:var(--muted)">${x.lbl}</span></div>
-            <span style="font-size:13px;font-weight:800;color:${x.c}">${fmt(x.val)} F</span>
-          </div>`).join("")}
-        </div>
-      </div>
-
-      <!-- Commandes récentes enrichies -->
-      <div class="card">
-        <div class="card-hdr"><div class="card-ttl">🚗 Courses du jour</div><button class="btn btn-outline" onclick="go('commandes')">Voir tout →</button></div>
-        <div style="overflow-x:auto"><table>
-          <thead><tr><th>CLIENT</th><th>TYPE</th><th>TRAJET</th><th>MONTANT</th><th>PAIEMENT</th><th>STATUT</th></tr></thead>
-          <tbody>${COMMANDES.map(c=>`<tr class="${c.statut==="en cours"?"live-row":""}">
-            <td><div style="font-weight:700;font-size:12px">${c.client}</div><div style="font-size:10px;color:var(--muted)">${c.heure}</div></td>
-            <td><span class="badge ${c.type==="VIP"?"bo":c.type==="Livraison"?"bp":"bb"}" style="font-size:10px">${c.type}</span></td>
-            <td style="font-size:11px;max-width:120px"><div style="font-weight:600">${c.de}</div><div style="color:var(--muted)">→ ${c.vers}</div></td>
-            <td style="font-weight:800;color:#D97706;font-size:12px">${fmt(c.prix)}F</td>
-            <td><span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;background:${c.pay==="Orange"?"#FFF3E0":c.pay==="Moov"?"#E3F2FD":c.pay==="Wave"?"#E0F7FA":"#ECFDF5"};color:${c.pay==="Orange"?"#FF7900":c.pay==="Moov"?"#0066CC":c.pay==="Wave"?"#1DC5E7":"#059669"}">${c.pay==="Orange"?"🟠":c.pay==="Moov"?"🔵":c.pay==="Wave"?"🌊":"💵"}</span></td>
-            <td><span class="badge ${c.statut==="terminée"?"bg":c.statut==="en cours"?"bb":"bgr"}" style="font-size:10px">${c.statut==="en cours"?'<span class="live-dot"></span>':""} ${c.statut}</span></td>
-          </tr>`).join("")}</tbody>
-        </table></div>
+        <div class="page-ttl" id="pg-ttl">📊 Dashboard
       </div>
 
     </div>
@@ -1473,7 +1019,461 @@ function toast(msg,type="s"){
 }
 </script>
 
-<div id="section-pub" class="section" style="display:none">
+</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:11px">
+        <div style="font-size:12px;color:var(--muted);background:var(--bg);padding:6px 13px;border-radius:18px;border:1px solid var(--border)" id="tb-date"></div>
+        <div class="tb-btn" onclick="go('live')">🔴<div class="ndot" id="notif-dot"></div></div>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg"><div class="modal-box" id="modal-box"></div></div>
+
+<script>
+// ── DATA ──
+const CHAUFFEURS=[
+  {id:1,nom:"Amadou Diallo",    tel:"+223 76 11 22 33",type:"taxi", veh:"Toyota Corolla",plaque:"ML-1234-A",statut:"actif",  note:4.9,courses:142,rev:1240000,zone:"Hamdallaye",valide:true, bloque:false},
+  {id:2,nom:"Seydou Koné",      tel:"+223 66 22 33 44",type:"taxi", veh:"Honda Civic",   plaque:"ML-2345-B",statut:"actif",  note:4.7,courses:98, rev:860000, zone:"ACI 2000",   valide:true, bloque:false},
+  {id:3,nom:"Ibrahim Traoré",   tel:"+223 76 33 44 55",type:"livreur",veh:"Moto Yamaha",  plaque:"ML-3456-C",statut:"actif",  note:4.5,courses:67, rev:320000, zone:"Badalabougou",valide:true, bloque:false},
+  {id:4,nom:"Moussa Coulibaly", tel:"+223 66 44 55 66",type:"taxi", veh:"Toyota Yaris",  plaque:"ML-4567-D",statut:"actif",  note:4.8,courses:203,rev:1740000,zone:"Hippodrome",  valide:true, bloque:false},
+  {id:5,nom:"Oumar Sanogo",     tel:"+223 76 55 66 77",type:"livreur",veh:"Moto Honda",   plaque:"ML-5678-E",statut:"attente",note:0,  courses:0,  rev:0,      zone:"Lafiabougou", valide:false,bloque:false},
+  {id:6,nom:"Bakary Dembélé",   tel:"+223 66 66 77 88",type:"taxi", veh:"Renault Logan", plaque:"ML-6789-F",statut:"suspendu",note:2.1,courses:12, rev:60000,  zone:"Sogoniko",    valide:true, bloque:true},
+];
+const CLIENTS=[
+  {id:1,nom:"Aminata Coulibaly",tel:"+223 70 11 22 33",courses:28,dep:280000,note:4.9,statut:"actif", bloque:false,date:"12/01/2026"},
+  {id:2,nom:"Ibrahim Keïta",    tel:"+223 65 22 33 44",courses:15,dep:145000,note:4.7,statut:"actif", bloque:false,date:"15/01/2026"},
+  {id:3,nom:"Fatoumata Diallo", tel:"+223 76 33 44 55",courses:42,dep:380000,note:5.0,statut:"actif", bloque:false,date:"03/01/2026"},
+  {id:4,nom:"Moussa Traoré",    tel:"+223 66 44 55 66",courses:9, dep:65000, note:4.5,statut:"actif", bloque:false,date:"20/02/2026"},
+  {id:5,nom:"Oumou Bah",        tel:"+223 76 55 66 77",courses:2, dep:12000, note:3.0,statut:"suspect",bloque:false,date:"01/03/2026"},
+];
+const COMMANDES=[
+  {id:"C001",client:"Aminata C.", ch:"Amadou D.",  type:"VIP",     de:"Hamdallaye",    vers:"ACI 2000",     prix:3700, statut:"en cours",  pay:"Orange", heure:"10:02"},
+  {id:"C002",client:"Ibrahim K.", ch:"Seydou K.",  type:"Standard",de:"ACI 2000",      vers:"Hippodrome",   prix:2300, statut:"en cours",  pay:"Wave",   heure:"10:18"},
+  {id:"C003",client:"Fatoumata D.",ch:"Ibrahim T.",type:"Livraison",de:"Sogoniko",      vers:"Badalabougou", prix:1400, statut:"en cours",  pay:"Cash",   heure:"10:25"},
+  {id:"C004",client:"Moussa T.",   ch:"Moussa C.", type:"Standard",de:"Magnambougou",  vers:"Quinzambougou",prix:1800, statut:"terminée", pay:"Moov",   heure:"09:50"},
+  {id:"C005",client:"Oumou B.",    ch:"—",         type:"Standard",de:"Kalaban",        vers:"Centre",       prix:2100, statut:"en attente",pay:"Orange", heure:"10:30"},
+  {id:"C006",client:"Aminata C.", ch:"Amadou D.",  type:"VIP",     de:"Badalabougou",  vers:"Centre",       prix:4200, statut:"terminée", pay:"Wave",   heure:"09:30"},
+];
+const PROMOS=[
+  {id:1,code:"MALI2026",  type:"pct",   val:20,min:1000,max:5000, usage:45,  limite:100, expire:"30/06/2026",actif:true},
+  {id:2,code:"PREMIERE",  type:"fixe",  val:500,min:500, max:500,  usage:123, limite:500, expire:"31/12/2026",actif:true},
+  {id:3,code:"VIP50",     type:"pct",   val:50,min:2000,max:3000, usage:12,  limite:50,  expire:"30/06/2026",actif:true},
+  {id:4,code:"NOEL2025",  type:"fixe",  val:1000,min:2000,max:1000,usage:200,limite:200, expire:"31/12/2025",actif:false},
+];
+const BILLETS_BUS=[
+  {id:"BB001",client:"Aminata C.",trajet:"Bamako→Sikasso",cie:"Sud Express",prix:8000,siege:"12A",statut:"payé",    date:"2026-06-01",heure:"07:00"},
+  {id:"BB002",client:"Ibrahim K.",trajet:"Bamako→Ségou",  cie:"Sahel Voyage",prix:2500,siege:"05B",statut:"payé",  date:"2026-06-01",heure:"09:00"},
+  {id:"BB003",client:"Moussa T.", trajet:"Bamako→Mopti",  cie:"Binke Trans",  prix:8000,siege:"18C",statut:"payé", date:"2026-06-02",heure:"08:00"},
+  {id:"BB004",client:"Fatoumata D.",trajet:"Bamako→Abidjan",cie:"Trans Ivoire",prix:28000,siege:"22D",statut:"réservé",date:"2026-06-05",heure:"06:00"},
+];
+const BILLETS_AVION=[
+  {id:"BA001",client:"Aminata C.", trajet:"BKO→DKR",cie:"Air Sénégal",prix:145000,classe:"Eco",statut:"payé",  date:"2026-06-10"},
+  {id:"BA002",client:"Ibrahim K.", trajet:"BKO→ABJ",cie:"Air Côte d'Ivoire",prix:120000,classe:"Eco",statut:"payé",date:"2026-06-08"},
+  {id:"BA003",client:"Fatoumata D.",trajet:"BKO→CMN",cie:"Royal Air Maroc",prix:280000,classe:"Business",statut:"réservé",date:"2026-06-15"},
+];
+const ZONES=[
+  {id:1,nom:"Zone Centre",quartiers:["Centre Ville","Hippodrome","Medina Coura","Bagadadji"],tarif_sup:0,actif:true},
+  {id:2,nom:"Zone ACI",quartiers:["ACI 2000","Hamdallaye","Badalabougou"],tarif_sup:0,actif:true},
+  {id:3,nom:"Zone Sud",quartiers:["Lafiabougou","Sogoniko","Kalaban Coura","Magnambougou"],tarif_sup:200,actif:true},
+  {id:4,nom:"Zone Nord",quartiers:["Banconi","Djélibougou","Boulkassoumbougou"],tarif_sup:300,actif:true},
+  {id:5,nom:"Zone Est",quartiers:["Yirimadio","Niamakoro","Banankabougou","Senou","Faladié"],tarif_sup:400,actif:true},
+  {id:6,nom:"Aéroport",quartiers:["Aéroport Bamako-Sénou"],tarif_sup:1500,actif:true},
+];
+let TARIFS={
+  standard:{base:500,km:600,min:20,minPrix:500},
+  vip:     {base:1000,km:900,min:35,minPrix:1500},
+  moto:    {base:300,km:400,min:15,minPrix:400},
+  livraison:{base:900,km:500,min:10,minPrix:900},
+};
+let autoAttribution=true;
+
+function fmt(n){if(typeof n!=="number")return n;return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");}
+
+// ── AUTH ──
+// ── SÉCURITÉ AVANCÉE ──
+let loginAttempts = 0;
+const MAX_ATTEMPTS = 3;
+let isLocked = false;
+let lockTimer = null;
+let sessionTimeout = null;
+const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+const ACTIVITY_LOG = [];
+
+// Comptes avec rôles
+const ADMIN_ACCOUNTS = {
+  "admin":     {pass:"malitaxi2026", role:"super_admin", nom:"Super Admin"},
+  "malitaxi":  {pass:"admin123",     role:"admin",       nom:"Administrateur"},
+  "viewer":    {pass:"view2026",     role:"viewer",      nom:"Observateur"},
+};
+
+function doLogin(){
+  if(isLocked){
+    showErr("🔒 Compte bloqué temporairement. Réessayez dans 5 minutes.");
+    return;
+  }
+  const u=document.getElementById("a-user").value.trim();
+  const p=document.getElementById("a-pass").value;
+  if(!u||!p){showErr("Remplissez tous les champs");return;}
+  
+  const account = ADMIN_ACCOUNTS[u];
+  if(account && account.pass === p){
+    // Succès
+    loginAttempts = 0;
+    logActivity("Connexion", "✅ Connexion réussie — "+u, "success");
+    launchAdmin(account);
+  } else {
+    loginAttempts++;
+    const remaining = MAX_ATTEMPTS - loginAttempts;
+    if(loginAttempts >= MAX_ATTEMPTS){
+      isLocked = true;
+      showErr("🔒 Trop de tentatives ! Compte bloqué 5 minutes.");
+      lockTimer = setTimeout(function(){
+        isLocked = false;
+        loginAttempts = 0;
+        showErr("");
+      }, 5 * 60 * 1000);
+    } else {
+      showErr("❌ Identifiants incorrects — "+remaining+" tentative(s) restante(s)");
+    }
+    logActivity("Tentative échouée", "❌ Tentative de connexion échouée — "+u, "danger");
+  }
+}
+
+function launchAdmin(account){
+  currentAdmin = account;
+  document.getElementById("pg-login").style.display="none";
+  document.getElementById("pg-admin").style.display="block";
+  document.getElementById("tb-date").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"});
+  // Update sidebar user
+  document.querySelector(".sb-user div div:first-child").textContent = account.nom;
+  document.querySelector(".sb-user div div:last-child").textContent = 
+    account.role==="super_admin"?"Super Admin":account.role==="admin"?"Administrateur":"Observateur";
+  // Session timeout
+  resetSessionTimeout();
+  document.addEventListener("click", resetSessionTimeout);
+  document.addEventListener("keypress", resetSessionTimeout);
+  go("dashboard");
+}
+
+let currentAdmin = null;
+function resetSessionTimeout(){
+  clearTimeout(sessionTimeout);
+  sessionTimeout = setTimeout(function(){
+    toast("⏰ Session expirée — Reconnectez-vous", "e");
+    setTimeout(doLogout, 3000);
+  }, SESSION_DURATION);
+}
+
+function logActivity(action, detail, type){
+  ACTIVITY_LOG.unshift({
+    time: new Date().toLocaleTimeString("fr-FR"),
+    date: new Date().toLocaleDateString("fr-FR"),
+    action: action,
+    detail: detail,
+    type: type,
+    user: currentAdmin ? currentAdmin.nom : "Inconnu",
+  });
+  if(ACTIVITY_LOG.length > 100) ACTIVITY_LOG.pop();
+}
+
+function showErr(m){
+  const e=document.getElementById("a-err");
+  if(!m){e.style.display="none";return;}
+  e.textContent="⚠️ "+m;e.style.display="block";
+}
+function doLogout(){if(confirm("Se déconnecter ?")){document.getElementById("pg-admin").style.display="none";document.getElementById("pg-login").style.display="block";}}
+
+// ── SIDEBAR ──
+function openSb(){document.getElementById("sidebar").classList.add("open");document.getElementById("sb-overlay").classList.add("show");}
+function closeSb(){document.getElementById("sidebar").classList.remove("open");document.getElementById("sb-overlay").classList.remove("show");}
+
+// ── NAV ──
+const TITLES={pub:'📢 Gestion Publicités',
+  dashboard:"📊 Tableau de bord",live:"🔴 Suivi en direct",
+  clients:"👤 Gestion des clients",chauffeurs:"🚗 Chauffeurs & Livreurs",
+  validation:"✅ Validation des comptes",blocage:"🚫 Blocage des fraudes",
+  commandes:"📋 Gestion des commandes",attribution:"🎯 Attribution des courses",
+  zones:"🗺️ Zones de service",tarifs:"💰 Tarifs par distance",
+  paiements:"💳 Paiements & Commissions",promos:"🎁 Promotions & Codes promo",
+  rapports:"📈 Rapports & Statistiques",billets:"🎫 Ventes Billets Bus/Avion",
+  params:"⚙️ Paramètres",
+};
+function go(p){
+  document.querySelectorAll(".sb-item").forEach(e=>e.classList.remove("active"));
+  const si=document.getElementById("si-"+p);if(si)si.classList.add("active");
+  document.getElementById("pg-ttl").textContent=TITLES[p]||p;
+  closeSb();
+  const fns={pub:function(){document.getElementById('section-pub').style.display='block';},dashboard:renderDash,live:renderLive,clients:renderClients,chauffeurs:renderChauffeurs,
+    validation:renderValidation,blocage:renderBlocage,commandes:renderCommandes,
+    attribution:renderAttribution,zones:renderZones,tarifs:renderTarifs,
+    paiements:renderPaiements,promos:renderPromos,rapports:renderRapports,
+    billets:renderBillets,params:renderParams};
+  if(fns[p]) fns[p]();
+}
+
+// ── 1. DASHBOARD RICHE ──
+function renderDash(){
+  const totalR = CHAUFFEURS.reduce((a,c)=>a+c.rev,0)+8500000;
+  const commission = Math.round(totalR*0.15);
+  const coursesAujourdhui = COMMANDES.length;
+  const enCours = COMMANDES.filter(c=>c.statut==="en cours").length;
+  const terminees = COMMANDES.filter(c=>c.statut==="terminée").length;
+  const activeDrivers = CHAUFFEURS.filter(c=>c.statut==="actif").length;
+
+  // Chart semaine
+  const semaine=[{j:"Lun",r:420000,c:98},{j:"Mar",r:580000,c:134},{j:"Mer",r:340000,c:82},{j:"Jeu",r:670000,c:155},{j:"Ven",r:850000,c:196},{j:"Sam",r:460000,c:108},{j:"Dim",r:220000,c:52}];
+  const maxR=Math.max(...semaine.map(w=>w.r));
+  let bars="";
+  for(const w of semaine){
+    const h=Math.round((w.r/maxR)*80);
+    const peak=w.r===maxR;
+    bars+=`<div class="chart-col">
+      <div style="font-size:9px;color:var(--muted);margin-bottom:3px;font-weight:700">${fmt(w.r/1000)}k</div>
+      <div class="chart-bar" style="height:${h}px;background:${peak?"linear-gradient(0deg,#1E40AF,#3B82F6)":"linear-gradient(0deg,#DBEAFE,#BFDBFE)"}"></div>
+      <div class="chart-lbl">${w.j}</div>
+    </div>`;
+  }
+
+  // Sparkline mini pour chaque stat
+  function spark(vals, color){
+    const max=Math.max(...vals);
+    const pts=vals.map((v,i)=>`${i*(40/(vals.length-1))},${20-Math.round((v/max)*18)}`).join(" ");
+    return `<svg width="40" height="20" style="margin-top:4px"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  }
+
+  document.getElementById("content").innerHTML=`<div class="page-section">
+
+    <!-- KPI CARDS TOP -->
+    <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+
+      <div class="stat-card" style="border-left:3px solid #D97706">
+        <div class="stat-acc" style="background:linear-gradient(90deg,#D97706,#F59E0B)"></div>
+        <div class="stat-bg-ico">💰</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stat-ico-wrap" style="background:#FFFBEB">💰</div>
+          ${spark([320,450,380,520,610,490,580,700],"#D97706")}
+        </div>
+        <div class="stat-val" style="color:#D97706">${fmt(totalR)}</div>
+        <div class="stat-lbl">Revenus totaux (FCFA)</div>
+        <div class="stat-trend trend-up">↑ +18.4% ce mois</div>
+      </div>
+
+      <div class="stat-card" style="border-left:3px solid #1E40AF">
+        <div class="stat-acc" style="background:linear-gradient(90deg,#1E40AF,#3B82F6)"></div>
+        <div class="stat-bg-ico">💼</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stat-ico-wrap" style="background:#EFF6FF">💼</div>
+          ${spark([120,180,145,200,230,195,220,260],"#1E40AF")}
+        </div>
+        <div class="stat-val" style="color:#1E40AF">${fmt(commission)}</div>
+        <div class="stat-lbl">Commission MaliTaxi</div>
+        <div class="stat-trend trend-up">↑ +15% cette semaine</div>
+      </div>
+
+      <div class="stat-card" style="border-left:3px solid #059669">
+        <div class="stat-acc" style="background:linear-gradient(90deg,#059669,#10B981)"></div>
+        <div class="stat-bg-ico">🚗</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stat-ico-wrap" style="background:#ECFDF5">🚗</div>
+          ${spark([82,98,134,82,155,196,108,52],"#059669")}
+        </div>
+        <div class="stat-val" style="color:#059669">${coursesAujourdhui+847}</div>
+        <div class="stat-lbl">Courses totales</div>
+        <div class="stat-trend trend-up">↑ +${coursesAujourdhui} aujourd'hui</div>
+      </div>
+
+      <div class="stat-card" style="border-left:3px solid #7C3AED">
+        <div class="stat-acc" style="background:linear-gradient(90deg,#7C3AED,#8B5CF6)"></div>
+        <div class="stat-bg-ico">👥</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stat-ico-wrap" style="background:#F5F3FF">👥</div>
+          ${spark([180,210,195,240,220,260,245,280],"#7C3AED")}
+        </div>
+        <div class="stat-val" style="color:#7C3AED">${CLIENTS.length+234}</div>
+        <div class="stat-lbl">Clients inscrits</div>
+        <div class="stat-trend trend-up">↑ +12 cette semaine</div>
+      </div>
+
+      <div class="stat-card" style="border-left:3px solid #EA580C">
+        <div class="stat-acc" style="background:linear-gradient(90deg,#EA580C,#F97316)"></div>
+        <div class="stat-bg-ico">🔴</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stat-ico-wrap" style="background:#FFF7ED">🔴</div>
+          <div style="width:10px;height:10px;border-radius:50%;background:#059669;animation:pulse 1.5s infinite;margin-top:8px"></div>
+        </div>
+        <div class="stat-val" style="color:#EA580C">${enCours}</div>
+        <div class="stat-lbl">Courses en cours LIVE</div>
+        <div class="stat-trend" style="color:var(--orange)">● Temps réel</div>
+      </div>
+
+      <div class="stat-card" style="border-left:3px solid #059669">
+        <div class="stat-acc" style="background:linear-gradient(90deg,#059669,#10B981)"></div>
+        <div class="stat-bg-ico">🚗</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stat-ico-wrap" style="background:#ECFDF5">🚗</div>
+          ${spark([4,5,6,4,5,6,5,6],"#059669")}
+        </div>
+        <div class="stat-val" style="color:#059669">${activeDrivers}</div>
+        <div class="stat-lbl">Chauffeurs actifs</div>
+        <div class="stat-trend trend-up">↑ +2 cette semaine</div>
+      </div>
+
+    </div>
+
+    <!-- GRAPHIQUES PRINCIPAUX -->
+    <div style="display:grid;grid-template-columns:1.8fr 1fr;gap:16px;margin-bottom:18px">
+
+      <!-- Revenus chart -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ttl">📈 Revenus & Courses — 7 derniers jours</div>
+          <div style="display:flex;gap:8px">
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--blue)"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue)"></div>Revenus</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--green)"><div style="width:10px;height:10px;border-radius:2px;background:var(--green)"></div>Courses</span>
+          </div>
+        </div>
+        <div style="padding:18px 18px 8px">
+          <div style="display:flex;align-items:flex-end;gap:6px;height:100px;margin-bottom:4px">${bars}</div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding-top:10px;border-top:1px solid var(--border)">
+            <span>📅 Cette semaine</span>
+            <span>Total: <strong style="color:var(--blue)">${fmt(semaine.reduce((a,w)=>a+w.r,0))} FCFA</strong></span>
+            <span>Pic: <strong>Vendredi</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paiements + Satisfaction -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="margin-bottom:0">
+          <div class="card-hdr" style="padding:12px 16px"><div class="card-ttl" style="font-size:13px">💳 Modes de paiement</div></div>
+          <div style="padding:12px 16px">
+            ${[{ico:"🟠",n:"Orange",p:55,c:"#FF7900"},{ico:"🔵",n:"Moov",p:20,c:"#0066CC"},{ico:"🌊",n:"Wave",p:15,c:"#1DC5E7"},{ico:"💵",n:"Cash",p:10,c:"#059669"}].map(x=>`
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="font-size:14px">${x.ico}</span>
+              <div style="flex:1">
+                <div style="height:5px;background:#F1F5F9;border-radius:3px"><div style="height:5px;background:${x.c};border-radius:3px;width:${x.p}%;transition:width 1s"></div></div>
+              </div>
+              <span style="font-size:11px;font-weight:700;color:${x.c};width:30px;text-align:right">${x.p}%</span>
+            </div>`).join("")}
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div style="padding:14px 16px">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px">⭐ SATISFACTION CLIENT</div>
+            <div style="font-size:28px;font-weight:900;color:#D97706">4.8<span style="font-size:13px;font-weight:400;color:var(--muted)">/5.0</span></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Basé sur ${terminees+847} courses</div>
+            <div style="height:5px;background:#F1F5F9;border-radius:3px;margin-top:8px"><div style="height:5px;background:#D97706;border-radius:3px;width:96%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITÉ TEMPS RÉEL + ALERTES + TOP CHAUFFEURS -->
+    <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:16px;margin-bottom:18px">
+
+      <!-- Activité temps réel -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-ttl">🔴 Activité temps réel</div>
+          <div style="display:flex;align-items:center;gap:5px"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite"></div><span style="font-size:11px;color:var(--green);font-weight:700">LIVE</span></div>
+        </div>
+        <div style="padding:12px;max-height:200px;overflow-y:auto">
+          ${[
+            {time:"10:32",ico:"🚗",msg:"Nouvelle course VIP — Hamdallaye→ACI",c:"var(--gold)"},
+            {time:"10:28",ico:"✅",msg:"Course terminée — "+fmt(3700)+" FCFA payé",c:"var(--green)"},
+            {time:"10:25",ico:"📦",msg:"Livraison lancée — Sogoniko→Badalabougou",c:"var(--purple)"},
+            {time:"10:20",ico:"👤",msg:"Nouveau client inscrit — +223 70 XX XX",c:"var(--blue)"},
+            {time:"10:15",ico:"⭐",msg:"Note 5/5 pour Amadou Diallo",c:"#D97706"},
+            {time:"10:10",ico:"🎫",msg:"Billet Bus vendu — Bamako→Sikasso",c:"var(--orange)"},
+            {time:"10:05",ico:"✅",msg:"Course terminée — "+fmt(2300)+" FCFA payé",c:"var(--green)"},
+            {time:"09:58",ico:"🔔",msg:"Chauffeur en ligne — Seydou Koné",c:"var(--blue)"},
+          ].map(a=>`<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F1F5F9;align-items:flex-start">
+            <span style="font-size:14px">${a.ico}</span>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--text)">${a.msg}</div>
+            </div>
+            <span style="font-size:10px;color:var(--muted);white-space:nowrap">${a.time}</span>
+          </div>`).join("")}
+        </div>
+      </div>
+
+      <!-- Alertes prioritaires -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-ttl">⚠️ Alertes prioritaires</div></div>
+        <div style="padding:12px">
+          ${[
+            {ico:"🔴",msg:"3 courses sans chauffeur",level:"URGENT",c:"var(--red)",fn:"attribution"},
+            {ico:"⏳",msg:"3 comptes à valider",level:"ACTION",c:"var(--gold)",fn:"validation"},
+            {ico:"🚫",msg:"1 client suspect",level:"INFO",c:"var(--orange)",fn:"blocage"},
+            {ico:"📈",msg:"Pic de demande: Vendredi",level:"INFO",c:"var(--blue)",fn:"rapports"},
+            {ico:"🎁",msg:"Code VIP50 bientôt expiré",level:"INFO",c:"var(--purple)",fn:"promos"},
+          ].map(a=>`<div onclick="go('${a.fn}')" style="display:flex;align-items:center;gap:9px;padding:9px;border-radius:10px;border:1px solid ${a.c}22;background:${a.c}08;cursor:pointer;margin-bottom:7px;transition:all .2s" onmouseover="this.style.background='${a.c}15'" onmouseout="this.style.background='${a.c}08'">
+            <span style="font-size:17px">${a.ico}</span>
+            <div style="flex:1">
+              <div style="font-size:11px;font-weight:700">${a.msg}</div>
+              <span style="font-size:9px;font-weight:800;color:${a.c};background:${a.c}20;padding:1px 6px;border-radius:5px">${a.level}</span>
+            </div>
+            <span style="color:var(--muted);font-size:12px">›</span>
+          </div>`).join("")}
+        </div>
+      </div>
+
+      <!-- Top chauffeurs du jour -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-ttl">🏆 Top chauffeurs</div></div>
+        <div style="padding:12px">
+          ${CHAUFFEURS.filter(c=>c.courses>0).sort((a,b)=>b.rev-a.rev).slice(0,5).map((c,i)=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;${i<3?"background:linear-gradient(90deg,#FFFBEB,#FEF9EC)":""}margin-bottom:5px">
+            <div style="font-size:16px;font-weight:900;color:${i===0?"#D97706":i===1?"#9CA3AF":i===2?"#B45309":"var(--muted)"};width:20px">${i+1}</div>
+            <div class="avatar" style="width:30px;height:30px;font-size:12px">${c.nom[0]}</div>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:700">${c.nom.split(" ")[0]}</div>
+              <div style="font-size:10px;color:var(--muted)">${c.courses} courses · ⭐${c.note}</div>
+            </div>
+            <div style="font-size:11px;font-weight:800;color:#D97706">${fmt(Math.round(c.rev/1000))}k</div>
+          </div>`).join("")}
+        </div>
+      </div>
+    </div>
+
+    <!-- RÉSUMÉ FINANCIER + COURS RÉCENTES -->
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-bottom:18px">
+
+      <!-- Résumé financier -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-ttl">💰 Résumé financier</div></div>
+        <div style="padding:16px">
+          ${[
+            {lbl:"Revenus bruts",val:totalR,c:"#D97706",ico:"💰"},
+            {lbl:"Commission MaliTaxi (15%)",val:Math.round(totalR*.15),c:"var(--blue)",ico:"🏢"},
+            {lbl:"Commission IBI Groupe (5%)",val:Math.round(totalR*.05),c:"#D97706",ico:"🤝"},
+            {lbl:"Revenus chauffeurs (80%)",val:Math.round(totalR*.80),c:"var(--green)",ico:"🚗"},
+            {lbl:"Billets Bus",val:BILLETS_BUS.reduce((a,b)=>a+b.prix,0),c:"var(--purple)",ico:"🚌"},
+            {lbl:"Billets Avion",val:BILLETS_AVION.reduce((a,b)=>a+b.prix,0),c:"var(--orange)",ico:""},
+          ].map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-radius:11px;background:var(--bg);margin-bottom:7px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:8px"><span>${x.ico}</span><span style="font-size:12px;color:var(--muted)">${x.lbl}</span></div>
+            <span style="font-size:13px;font-weight:800;color:${x.c}">${fmt(x.val)} F</span>
+          </div>`).join("")}
+        </div>
+      </div>
+
+      <!-- Commandes récentes enrichies -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-ttl">🚗 Courses du jour</div><button class="btn btn-outline" onclick="go('commandes')">Voir tout →</button></div>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>CLIENT</th><th>TYPE</th><th>TRAJET</th><th>MONTANT</th><th>PAIEMENT</th><th>STATUT</th></tr></thead>
+          <tbody>${COMMANDES.map(c=>`<tr class="${c.statut==="en cours"?"live-row":""}">
+            <td><div style="font-weight:700;font-size:12px">${c.client}</div><div style="font-size:10px;color:var(--muted)">${c.heure}</div></td>
+            <td><span class="badge ${c.type==="VIP"?"bo":c.type==="Livraison"?"bp":"bb"}" style="font-size:10px">${c.type}</span></td>
+            <td style="font-size:11px;max-width:120px"><div style="font-weight:600">${c.de}</div><div style="color:var(--muted)">→ ${c.vers}</div></td>
+            <td style="font-weight:800;color:#D97706;font-size:12px">${fmt(c.prix)}F</td>
+            <td><span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;background:${c.pay==="Orange"?"#FFF3E0":c.pay==="Moov"?"#E3F2FD":c.pay==="Wave"?"#E0F7FA":"#ECFDF5"};color:${c.pay==="Orange"?"#FF7900":c.pay==="Moov"?"#0066CC":c.pay==="Wave"?"#1DC5E7":"#059669"}">${c.pay==="Orange"?"🟠":c.pay==="Moov"?"🔵":c.pay==="Wave"?"🌊":"💵"}</span></td>
+            <td><span class="badge ${c.statut==="terminée"?"bg":c.statut==="en cours"?"bb":"bgr"}" style="font-size:10px">${c.statut==="en cours"?'<span class="live-dot"></span>':""} ${c.statut}</span></td>
+          </tr>`).join("")}</tbody>
+        </table></div><div id="section-pub" class="section" style="display:none">
 <h2 style="font-size:20px;font-weight:700;margin-bottom:20px">📢 Gestion Publicités</h2>
 <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
 <div style="background:#fff;border-radius:12px;padding:16px;flex:1;min-width:150px;box-shadow:0 2px 8px rgba(0,0,0,0.08)"><div style="font-size:28px;font-weight:800;color:#F5A623">8</div><div style="color:#666;font-size:13px">Pubs actives</div></div>
