@@ -1033,6 +1033,8 @@ function toast(msg,type="s"){
 <div class="modal-bg" id="modal-bg"><div class="modal-box" id="modal-box"></div></div>
 
 <script>
+const ADMIN_ACCOUNTS={admin:{nom:"Admin Principal",pass:"malitaxi2026",role:"super_admin"},manager:{nom:"Manager",pass:"manager2026",role:"admin"}};const MAX_ATTEMPTS=3;let loginAttempts=0;let isLocked=false;
+
 // ── DATA ──
 const CHAUFFEURS=[
   {id:1,nom:"Amadou Diallo",    tel:"+223 76 11 22 33",type:"taxi", veh:"Toyota Corolla",plaque:"ML-1234-A",statut:"actif",  note:4.9,courses:142,rev:1240000,zone:"Hamdallaye",valide:true, bloque:false},
