@@ -411,7 +411,7 @@ function openSb(){document.getElementById("sidebar").classList.add("open");docum
 function closeSb(){document.getElementById("sidebar").classList.remove("open");document.getElementById("sb-overlay").classList.remove("show");}
 
 // ── NAV ──
-const TITLES={
+const TITLES={pub:'📢 Gestion Publicités',
   dashboard:"📊 Tableau de bord",live:"🔴 Suivi en direct",
   clients:"👤 Gestion des clients",chauffeurs:"🚗 Chauffeurs & Livreurs",
   validation:"✅ Validation des comptes",blocage:"🚫 Blocage des fraudes",
@@ -426,7 +426,7 @@ function go(p){
   const si=document.getElementById("si-"+p);if(si)si.classList.add("active");
   document.getElementById("pg-ttl").textContent=TITLES[p]||p;
   closeSb();
-  const fns={dashboard:renderDash,live:renderLive,clients:renderClients,chauffeurs:renderChauffeurs,
+  const fns={pub:function(){document.getElementById('section-pub').style.display='block';},dashboard:renderDash,live:renderLive,clients:renderClients,chauffeurs:renderChauffeurs,
     validation:renderValidation,blocage:renderBlocage,commandes:renderCommandes,
     attribution:renderAttribution,zones:renderZones,tarifs:renderTarifs,
     paiements:renderPaiements,promos:renderPromos,rapports:renderRapports,
