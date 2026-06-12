@@ -626,7 +626,7 @@ function renderDash(){
         <div style="padding:12px">
           ${[
             {ico:"🔴",msg:"3 courses sans chauffeur",level:"URGENT",c:"var(--red)",fn:"attribution"},
-            {ico:"⏳",msg:"${CHAUFFEURS.filter(c=>!c.valide).length} comptes à valider",level:"ACTION",c:"var(--gold)",fn:"validation"},
+            {ico:"⏳",msg:"3 comptes à valider",level:"ACTION",c:"var(--gold)",fn:"validation"},
             {ico:"🚫",msg:"1 client suspect",level:"INFO",c:"var(--orange)",fn:"blocage"},
             {ico:"📈",msg:"Pic de demande: Vendredi",level:"INFO",c:"var(--blue)",fn:"rapports"},
             {ico:"🎁",msg:"Code VIP50 bientôt expiré",level:"INFO",c:"var(--purple)",fn:"promos"},
@@ -672,7 +672,7 @@ function renderDash(){
             {lbl:"Commission IBI Groupe (5%)",val:Math.round(totalR*.05),c:"#D97706",ico:"🤝"},
             {lbl:"Revenus chauffeurs (80%)",val:Math.round(totalR*.80),c:"var(--green)",ico:"🚗"},
             {lbl:"Billets Bus",val:BILLETS_BUS.reduce((a,b)=>a+b.prix,0),c:"var(--purple)",ico:"🚌"},
-            {lbl:"Billets Avion",val:BILLETS_AVION.reduce((a,b)=>a+b.prix,0),c:"var(--orange)",ico:"✈️"},
+            {lbl:"Billets Avion",val:BILLETS_AVION.reduce((a,b)=>a+b.prix,0),c:"var(--orange)",ico:""},
           ].map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 11px;border-radius:11px;background:var(--bg);margin-bottom:7px;border:1px solid var(--border)">
             <div style="display:flex;align-items:center;gap:8px"><span>${x.ico}</span><span style="font-size:12px;color:var(--muted)">${x.lbl}</span></div>
             <span style="font-size:13px;font-weight:800;color:${x.c}">${fmt(x.val)} F</span>
