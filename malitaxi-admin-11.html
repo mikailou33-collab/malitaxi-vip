@@ -1185,7 +1185,7 @@ function showErr(m){
   e.textContent="⚠️ "+m;e.style.display="block";
 }
 
-function doLogin(){const user=document.getElementById('l-user').value.trim();const pass=document.getElementById('l-pass').value;if(!user||!pass){alert('Remplissez tous les champs');return;}const accounts={admin:'malitaxi2026',manager:'manager2026'};if(accounts[user]&&accounts[user]===pass){document.getElementById('pg-login').style.display='none';document.getElementById('pg-admin').style.display='flex';if(typeof renderDashboard==='function')renderDashboard();}else{alert('Identifiants incorrects !');}}
+function doLogin(){var user=document.getElementById("a-user").value.trim();var pass=document.getElementById("a-pass").value;var err=document.getElementById("a-err");if(!user||!pass){err.textContent="Remplissez tous les champs";return;}if(user==="admin"&&pass==="malitaxi2026"){document.getElementById("pg-login").style.display="none";document.getElementById("pg-admin").style.display="flex";if(typeof renderDashboard==="function")renderDashboard();}else{err.textContent="Identifiants incorrects !";err.style.color="#dc2626";}}
 function doLogout(){if(confirm("Se déconnecter ?")){document.getElementById("pg-admin").style.display="none";document.getElementById("pg-login").style.display="block";}}
 
 // ── SIDEBAR ──
