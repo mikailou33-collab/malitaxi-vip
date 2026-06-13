@@ -995,7 +995,7 @@ function openChatChauffeur(){
 // ── RESET RIDE ──
 function setSvc(id){
   // Bloquer Taxi, Moto, Livraison si client hors Bamako
-  if(id==="livraison" && clientDansBamako!==false){ openLivraison(); return; }
+  if(id==="livraison"){ openLivraison(); return; }
   if((id==="taxi"||id==="moto") && clientDansBamako===false){
     // Afficher message informatif
     var exist=document.getElementById('modal-hors-bamako');
