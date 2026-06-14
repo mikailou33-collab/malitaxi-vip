@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MaliTaxi Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4FF;--white:#fff;--blue:#1E40AF;--blue2:#3B82F6;
+  --gold:#D97706;--gold2:#F59E0B;
+  --green:#059669;--red:#DC2626;--purple:#7C3AED;--orange:#EA580C;
+  --text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --sidebar:#1E3A8A;
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#pg-login{min-height:100vh;display:flex;background:linear-gradient(135deg,#1E3A8A,#2563EB);align-items:center;justify-content:center;}
+.login-box{background:#fff;border-radius:24px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 40px 80px rgba(0,0,0,.3);text-align:center;}
+.login-box h1{font-size:28px;font-weight:900;color:var(--blue);margin-bottom:6px;}
+.login-box p{color:var(--muted);font-size:14px;margin-bottom:24px;}
+.l-inp{width:100%;padding:13px 15px;background:var(--bg);border:2px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;margin-bottom:12px;outline:none;transition:.2s;}
+.l-inp:focus{border-color:var(--blue2);}
+.l-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;}
+.l-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(30,64,175,.4);}
+.l-err{color:var(--red);font-size:13px;margin-top:8px;min-height:20px;}
+.l-hint{margin-top:14px;font-size:12px;color:var(--muted);}
+
+/* ADMIN LAYOUT */
+#pg-admin{display:none;min-height:100vh;}
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:255px;background:linear-gradient(180deg,#1E3A8A,#162D6B);position:fixed;top:0;left:0;height:100vh;z-index:30;display:flex;flex-direction:column;overflow-y:auto;}
+.sb-logo{padding:20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.1);}
+.sb-logo-ico{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.sb-logo-txt{color:#fff;font-weight:900;font-size:15px;}
+.sb-logo-sub{color:rgba(255,255,255,.5);font-size:10px;}
+.sb-sec{padding:16px 16px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;color:rgba(255,255,255,.7);font-size:13px;font-weight:600;border-radius:10px;margin:1px 8px;transition:.2s;}
+.sb-item:hover{background:rgba(255,255,255,.1);color:#fff;}
+.sb-item.active{background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,215,0,.1));color:#FFD700;border:1px solid rgba(255,215,0,.3);}
+.sb-ico{font-size:16px;width:24px;text-align:center;}
+.sb-badge{background:var(--red);color:#fff;font-size:10px;padding:2px 6px;border-radius:10px;margin-left:auto;}
+.sb-badge-live{background:var(--red);color:#fff;font-size:9px;padding:2px 5px;border-radius:6px;margin-left:auto;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.sb-user{padding:16px;border-top:1px solid rgba(255,255,255,.1);margin-top:auto;display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:14px;}
+.sb-user-name{color:#fff;font-size:13px;font-weight:700;}
+.sb-user-role{color:rgba(255,255,255,.5);font-size:11px;}
+.sb-logout{margin-left:auto;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px;transition:.2s;}
+.sb-logout:hover{color:var(--red);}
+
+/* MAIN */
+.main{margin-left:255px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:#fff;padding:14px 24px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
+.topbar-title{font-size:18px;font-weight:800;color:var(--text);flex:1;}
+.topbar-date{font-size:12px;color:var(--muted);}
+.content{padding:24px;flex:1;}
+
+/* CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--border);}
+.stat-icon{font-size:28px;margin-bottom:8px;}
+.stat-val{font-size:26px;font-weight:900;color:var(--text);}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+.stat-trend{font-size:11px;color:var(--green);margin-top:4px;font-weight:700;}
+
+/* TABLE */
+.table-wrap{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:20px;overflow-x:auto;}
+.table-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.table-title{font-size:16px;font-weight:800;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;border-bottom:2px solid var(--border);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg);}
+.badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;}
+.badge-green{background:#dcfce7;color:#16a34a;}
+.badge-red{background:#fee2e2;color:#dc2626;}
+.badge-yellow{background:#fef9c3;color:#ca8a04;}
+.badge-blue{background:#dbeafe;color:#1d4ed8;}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;flex-shrink:0;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:.2s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:var(--blue2);}
+.btn-green{background:#dcfce7;color:#16a34a;}
+.btn-red{background:#fee2e2;color:#dc2626;}
+.btn-small{padding:4px 10px;font-size:11px;border-radius:6px;}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;}
+.modal-box{background:#fff;border-radius:20px;padding:28px;width:90%;max-width:480px;box-shadow:0 40px 80px rgba(0,0,0,.3);}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.modal-title{font-size:18px;font-weight:800;}
+.modal-close{cursor:pointer;font-size:22px;color:var(--muted);}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px;display:block;}
+.form-input{width:100%;padding:10px 12px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;}
+.form-input:focus{border-color:var(--blue2);}
+.form-row{display:flex;gap:10px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:700;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:slideIn .3s ease;}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-s{background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;}
+.toast-e{background:#fee2e2;color:#dc2626;border:1px solid #fecaca;}
+
+/* SECTION PUB */
+.pub-card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid var(--border);}
+
+/* QUICK ACTIONS */
+.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.action-card{background:#fff;border-radius:14px;padding:16px;text-align:center;cursor:pointer;border:1px solid var(--border);transition:.2s;}
+.action-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.action-ico{font-size:28px;margin-bottom:8px;}
+.action-lbl{font-size:12px;font-weight:700;color:var(--text);}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .action-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+  authDomain: "malitaxi.firebaseapp.com",
+  databaseURL: "https://malitaxi-default-rtdb.firebaseio.com",
+  projectId: "malitaxi",
+  storageBucket: "malitaxi.firebasestorage.app",
+  messagingSenderId: "505754219310",
+  appId: "1:505754219310:web:1098a82ac81ee10eec00bf"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+</script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="pg-login">
+  <div class="login-box">
+    <div style="font-size:48px;margin-bottom:12px">👑</div>
+    <h1>MaliTaxi Admin</h1>
+    <p>Connectez-vous à votre espace admin</p>
+    <input class="l-inp" id="a-user" placeholder="👤 Nom d'utilisateur" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <input class="l-inp" id="a-pass" type="password" placeholder="🔒 Mot de passe" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="l-err" id="a-err"></div>
+    <button class="l-btn" onclick="doLogin()">Se connecter →</button>
+    <div class="l-hint">🔐 admin / malitaxi2026</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="pg-admin">
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-ico">⚙️</div>
+      <div>
+        <div class="sb-logo-txt">MaliTaxi</div>
+        <div class="sb-logo-sub">ADMIN PANEL</div>
+      </div>
+    </div>
+    <div class="sb-sec">Principal</div>
+    <div class="sb-item active" id="si-dashboard" onclick="go('dashboard')"><span class="sb-ico">📊</span> Dashboard</div>
+    <div class="sb-item" id="si-live" onclick="go('live')"><span class="sb-ico">🔴</span> Suivi en direct <span class="sb-badge-live">LIVE</span></div>
+    <div class="sb-sec">Utilisateurs</div>
+    <div class="sb-item" id="si-clients" onclick="go('clients')"><span class="sb-ico">👤</span> Clients</div>
+    <div class="sb-item" id="si-chauffeurs" onclick="go('chauffeurs')"><span class="sb-ico">🚗</span> Chauffeurs & Livreurs</div>
+    <div class="sb-item" id="si-validation" onclick="go('validation')"><span class="sb-ico">✅</span> Validation comptes <span class="sb-badge" id="badge-valid">3</span></div>
+    <div class="sb-item" id="si-blocage" onclick="go('blocage')"><span class="sb-ico">🚫</span> Blocage fraudes</div>
+    <div class="sb-sec">Opérations</div>
+    <div class="sb-item" id="si-commandes" onclick="go('commandes')"><span class="sb-ico">📋</span> Commandes</div>
+    <div class="sb-item" id="si-attribution" onclick="go('attribution')"><span class="sb-ico">🎯</span> Attribution courses</div>
+    <div class="sb-item" id="si-zones" onclick="go('zones')"><span class="sb-ico">🗺️</span> Zones de service</div>
+    <div class="sb-sec">Finance</div>
+    <div class="sb-item" id="si-tarifs" onclick="go('tarifs')"><span class="sb-ico">💰</span> Tarifs & Distance</div>
+    <div class="sb-item" id="si-paiements" onclick="go('paiements')"><span class="sb-ico">💳</span> Paiements & Commissions</div>
+    <div class="sb-item" id="si-promos" onclick="go('promos')"><span class="sb-ico">🎁</span> Promotions</div>
+    <div class="sb-item" id="si-rapports" onclick="go('rapports')"><span class="sb-ico">📈</span> Rapports & Stats</div>
+    <div class="sb-sec">Mali Nav</div>
+    <div class="sb-item" id="si-positions" onclick="go('positions')"><span class="sb-ico">📍</span> Positions clients</div>
+    <div class="sb-item" id="si-malinav" onclick="go('malinav')"><span class="sb-ico">🇲🇱</span> Mali Nav Stats</div>
+    <div class="sb-item" id="si-maliNavLite" onclick="ouvrirMaliNavLite()"><span class="sb-ico">📱</span> Mali Nav Lite</div>
+    <div class="sb-sec">Bus & Régions</div>
+  <div class="sb-item" id="si-bus" onclick="go('bus')"><span class="sb-ico">🚌</span> Réservations Bus</div>
+  <div class="sb-item" id="si-compagnies" onclick="go('compagnies')"><span class="sb-ico">🏢</span> Compagnies Bus</div>
+  <div class="sb-item" id="si-tarifsbus" onclick="go('tarifsbus')"><span class="sb-ico">💰</span> Tarifs Bus</div>
+  <div class="sb-item" id="si-pubregion" onclick="go('pubregion')"><span class="sb-ico">📢</span> Pubs Régionales</div>
+  <div class="sb-item" id="si-livraison" onclick="go('livraison')"><span class="sb-ico">📦</span> Livraisons</div>
+  <div class="sb-item" id="si-suivilive" onclick="go('suivilive')"><span class="sb-ico">🔴</span> Suivi live</div>
+  <div class="sb-item" id="si-bus" onclick="go('bus')"><span class="sb-ico">🚌</span> Vente billets bus</div>
+  <div class="sb-item" id="si-livraison" onclick="go('livraison')"><span class="sb-ico">📦</span> Livraisons</div>
+  <div class="sb-item" id="si-suivilive" onclick="go('suivilive')"><span class="sb-ico">🔴</span> Suivi live</div>
+  <div class="sb-sec">Marketing</div>
+  <div class="sb-item" id="si-pubvideo" onclick="go('pubvideo')"><span class="sb-ico">📢</span> Publicités bannières</div>
+  <div class="sb-sec">Transport</div><div class="sb-item" id="si-bus" onclick="go('bus')"><span class="sb-ico">🚌</span> Billets bus</div><div class="sb-item" id="si-livraison" onclick="go('livraison')"><span class="sb-ico">📦</span> Livraisons</div><div class="sb-item" id="si-suivilive" onclick="go('suivilive')"><span class="sb-ico">🔴</span> Suivi live</div><div class="sb-item" id="si-pubvideo" onclick="go('pubvideo')"><span class="sb-ico">📢</span> Publicités</div><div class="sb-sec">Système</div>
+    <div class="sb-item" id="si-pub" onclick="go('pub')"><span class="sb-ico">📢</span> Publicités</div>
+    <div class="sb-item" id="si-params" onclick="go('params')"><span class="sb-ico">⚙️</span> Paramètres</div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-av">A</div>
+      <div>
+        <div class="sb-user-name" id="sb-name">Admin</div>
+        <div class="sb-user-role" id="sb-role">Super Admin</div>
+      </div>
+      <div class="sb-logout" onclick="doLogout()" title="Déconnexion">🚪</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="cursor:pointer;font-size:22px;display:none" id="menu-btn" onclick="toggleSb()">☰</div>
+      <div class="topbar-title" id="pg-ttl">📊 Dashboard</div>
+      <div class="topbar-date" id="tb-date"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script>
+// ── DONNÉES ──
+const ADMIN_ACCOUNTS = {
+  admin: {nom:"Admin Principal", pass:"malitaxi2026", role:"super_admin"},
+  manager: {nom:"Manager Ops", pass:"manager2026", role:"admin"}
+};
+let currentAdmin = null;
+let loginAttempts = 0;
+const MAX_ATTEMPTS = 5;
+
+const CHAUFFEURS = [
+  {id:1,nom:"Moussa Coulibaly",tel:"76123456",type:"taxi",veh:"Toyota Corolla",plaque:"BA-1234",statut:"actif",note:4.8,courses:234,rev:1170000,zone:"Commune I",valide:true,bloque:false},
+  {id:2,nom:"Ibrahim Traoré",tel:"65987654",type:"taxi",veh:"Renault Logan",plaque:"BA-5678",statut:"actif",note:4.6,courses:189,rev:945000,zone:"Commune II",valide:true,bloque:false},
+  {id:3,nom:"Amadou Diallo",tel:"70456789",type:"livreur",veh:"Moto Honda",plaque:"BA-9012",statut:"actif",note:4.9,courses:312,rev:780000,zone:"Commune III",valide:true,bloque:false},
+  {id:4,nom:"Seydou Koné",tel:"79234567",type:"taxi",veh:"Peugeot 301",plaque:"BA-3456",statut:"attente",note:0,courses:0,rev:0,zone:"Commune IV",valide:false,bloque:false},
+  {id:5,nom:"Fatoumata Keita",tel:"66789012",type:"livreur",veh:"Moto Yamaha",plaque:"BA-7890",statut:"suspendu",note:3.2,courses:45,rev:112500,zone:"Commune V",valide:true,bloque:true},
+];
+
+const CLIENTS = [
+  {id:1,nom:"Aminata Sanogo",tel:"79111222",courses:34,dep:510000,note:4.7,statut:"actif",date:"Jan 2026",bloque:false},
+  {id:2,nom:"Boubacar Diarra",tel:"76333444",courses:12,dep:180000,note:4.2,statut:"actif",date:"Fév 2026",bloque:false},
+  {id:3,nom:"Mariam Coulibaly",tel:"65555666",courses:67,dep:1005000,note:4.9,statut:"actif",date:"Mar 2026",bloque:false},
+  {id:4,nom:"Oumar Traoré",tel:"70777888",courses:5,dep:75000,note:2.1,statut:"suspect",date:"Avr 2026",bloque:false},
+  {id:5,nom:"Kadiatou Bah",tel:"79999000",courses:0,dep:0,note:0,statut:"bloqué",date:"Mai 2026",bloque:true},
+];
+
+const COMMANDES = [
+  {id:"CMD001",client:"Aminata S.",ch:"Moussa C.",de:"Hamdallaye",vers:"ACI 2000",type:"Standard",prix:2500,pay:"Orange",heure:"08:30",statut:"terminée"},
+  {id:"CMD002",client:"Boubacar D.",ch:"Ibrahim T.",de:"Badalabougou",vers:"Sogoniko",type:"VIP",prix:4500,pay:"Wave",heure:"09:15",statut:"en cours"},
+  {id:"CMD003",client:"Mariam C.",ch:"Amadou D.",de:"Magnambougou",vers:"Kalaban Coura",type:"Livraison",prix:1500,pay:"Cash",heure:"10:00",statut:"en attente"},
+  {id:"CMD004",client:"Oumar T.",ch:"—",de:"Lafiabougou",vers:"Faladié",type:"Moto",prix:1000,pay:"Moov",heure:"10:30",statut:"en attente"},
+];
+
+const ZONES = [
+  {id:1,nom:"Commune I",quartiers:["Médina Coura","Bagadadji","Niarela"],tarif_sup:0,actif:true},
+  {id:2,nom:"Commune II",quartiers:["Bozola","Hippodrome","Quinzambougou"],tarif_sup:0,actif:true},
+  {id:3,nom:"Commune III",quartiers:["Bamako Coura","Djelibougou","Ouolofobougou"],tarif_sup:0,actif:true},
+  {id:4,nom:"Commune IV",quartiers:["Hamdallaye","Lafiabougou","Taliko"],tarif_sup:0,actif:true},
+  {id:5,nom:"Commune V",quartiers:["Badalabougou","Magnambougou","Sogoniko"],tarif_sup:0,actif:true},
+  {id:6,nom:"Commune VI",quartiers:["Faladié","Missabougou","Niamakoro"],tarif_sup:500,actif:true},
+];
+
+const TARIFS = {
+  standard:{base:1000,km:300,min:30,minPrix:1500},
+  vip:{base:2000,km:500,min:50,minPrix:3000},
+  moto:{base:500,km:150,min:15,minPrix:800},
+  livraison:{base:800,km:200,min:20,minPrix:1200},
+};
+
+const PROMOS = [
+  {id:1,code:"MALI2026",type:"pct",val:20,min:2000,usage:45,limite:100,expire:"31/12/2026",actif:true},
+  {id:2,code:"WELCOME",type:"fixe",val:500,min:1000,usage:123,limite:500,expire:"30/06/2026",actif:true},
+  {id:3,code:"ETE2025",type:"pct",val:15,min:1500,usage:89,limite:89,expire:"31/08/2025",actif:false},
+];
+
+const PUBS = [
+  {id:1,nom:"Hôtel Laïco",cat:"Hôtel",statut:"actif"},
+  {id:2,nom:"Immo Mali",cat:"Immobilier",statut:"actif"},
+  {id:3,nom:"TechShop",cat:"Électronique",statut:"inactif"},
+];
+
+let ACTIVITY_LOG = [];
+
+// ── LOGIN ──
+function doLogin(){
+  const u = document.getElementById("a-user").value.trim();
+  const p = document.getElementById("a-pass").value;
+  const err = document.getElementById("a-err");
+  err.textContent = "";
+  if(!u || !p){ err.textContent = "⚠️ Remplissez tous les champs"; return; }
+  if(loginAttempts >= MAX_ATTEMPTS){ err.textContent = "🔒 Trop de tentatives. Réessayez plus tard."; return; }
+  const account = ADMIN_ACCOUNTS[u];
+  if(account && account.pass === p){
+    currentAdmin = account;
+    loginAttempts = 0;
+    logActivity("Connexion","✅ Connexion réussie — "+u,"success");
+    launchAdmin(account);
+  } else {
+    loginAttempts++;
+    err.textContent = "❌ Identifiants incorrects ("+(MAX_ATTEMPTS-loginAttempts)+" essais restants)";
+  }
+}
+
+function launchAdmin(account){
+  document.getElementById("pg-login").style.display = "none";
+  document.getElementById("pg-admin").style.display = "block";
+  document.getElementById("sb-av").textContent = account.nom[0];
+  document.getElementById("sb-name").textContent = account.nom;
+  document.getElementById("sb-role").textContent = account.role === "super_admin" ? "Super Admin" : "Administrateur";
+  document.getElementById("tb-date").textContent = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  go("dashboard");
+}
+
+function doLogout(){
+  if(confirm("Se déconnecter ?")){
+    document.getElementById("pg-admin").style.display = "none";
+    document.getElementById("pg-login").style.display = "flex";
+    document.getElementById("a-user").value = "";
+    document.getElementById("a-pass").value = "";
+    currentAdmin = null;
+  }
+}
+
+// ── NAV ──
+function go(p){
+  document.querySelectorAll(".sb-item").forEach(e=>e.classList.remove("active"));
+  const si = document.getElementById("si-"+p);
+  if(si) si.classList.add("active");
+  document.getElementById("pg-ttl").textContent = {
+    dashboard:"📊 Dashboard",live:"🔴 Suivi en direct",clients:"👤 Clients",
+    chauffeurs:"🚗 Chauffeurs & Livreurs",validation:"✅ Validation comptes",
+    blocage:"🚫 Blocage fraudes",commandes:"📋 Commandes",attribution:"🎯 Attribution courses",
+    zones:"🗺️ Zones de service",tarifs:"💰 Tarifs & Distance",paiements:"💳 Paiements & Commissions",
+    promos:"🎁 Promotions",rapports:"📈 Rapports & Stats",pub:"📢 Publicités",
+    params:"⚙️ Paramètres",malinav:"🇲🇱 Mali Nav Stats"
+  }[p] || p;
+  const fns = {
+    dashboard:renderDash, live:renderLive, clients:renderClients,
+    chauffeurs:renderChauffeurs, validation:renderValidation, blocage:renderBlocage,
+    commandes:renderCommandes, attribution:renderAttribution, zones:renderZones,
+    tarifs:renderTarifs, paiements:renderPaiements, promos:renderPromos,
+    rapports:renderRapports, pub:renderPub, params:renderParams, malinav:renderMaliNav
+  };
+  if(fns[p]) fns[p]();
+}
+
+function toggleSb(){
+  document.getElementById("sidebar").classList.toggle("open");
+}
+
+const fmt = n => Number(n).toLocaleString("fr-FR");
+
+function logActivity(action, detail){
+  const now = new Date();
+  ACTIVITY_LOG.unshift({
+    date: now.toLocaleDateString("fr-FR"),
+    time: now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),
+    user: currentAdmin ? currentAdmin.nom : "—",
+    action, detail
+  });
+  if(ACTIVITY_LOG.length > 50) ACTIVITY_LOG.pop();
+}
+
+// ── 1. DASHBOARD ──
+function renderDash(){
+  const totalR = CHAUFFEURS.reduce((a,c)=>a+c.rev,0) + 8500000;
+  const enCours = COMMANDES.filter(c=>c.statut==="en cours").length;
+  const terminees = COMMANDES.filter(c=>c.statut==="terminée").length;
+  document.getElementById("content").innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">${fmt(totalR)}</div><div class="stat-lbl">Revenus totaux (FCFA)</div><div class="stat-trend">↑ +18% ce mois</div></div>
+      <div class="stat-card"><div class="stat-icon">🚗</div><div class="stat-val">${COMMANDES.length + 847}</div><div class="stat-lbl">Total courses</div><div class="stat-trend">↑ +12% ce mois</div></div>
+      <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-val">${CLIENTS.length + 234}</div><div class="stat-lbl">Clients inscrits</div><div class="stat-trend">↑ +24 nouveaux</div></div>
+      <div class="stat-card"><div class="stat-icon">🚗</div><div class="stat-val">${CHAUFFEURS.filter(c=>c.statut==="actif").length}</div><div class="stat-lbl">Chauffeurs actifs</div><div class="stat-trend">⭐ Note moy. 4.8</div></div>
+    </div>
+    <div style="font-size:16px;font-weight:800;margin-bottom:12px">⚡ Actions rapides</div>
+    <div class="action-grid">
+      <div class="action-card" onclick="go('chauffeurs')"><div class="action-ico">➕</div><div class="action-lbl">Ajouter chauffeur</div></div>
+      <div class="action-card" onclick="go('attribution')"><div class="action-ico">🎯</div><div class="action-lbl">Attribuer course</div></div>
+      <div class="action-card" onclick="go('promos')"><div class="action-ico">🎁</div><div class="action-lbl">Créer promo</div></div>
+      <div class="action-card" onclick="go('paiements')"><div class="action-ico">💰</div><div class="action-lbl">Voir paiements</div></div>
+      <div class="action-card" onclick="go('blocage')"><div class="action-ico">🚫</div><div class="action-lbl">Gérer fraudes</div></div>
+      <div class="action-card" onclick="go('rapports')"><div class="action-ico">📈</div><div class="action-lbl">Voir rapports</div></div>
+      <div class="action-card" onclick="go('validation')"><div class="action-ico">✅</div><div class="action-lbl">Valider comptes</div></div>
+      <div class="action-card" onclick="go('malinav')"><div class="action-ico">🇲🇱</div><div class="action-lbl">Mali Nav Stats</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">📋 Commandes récentes</div><button class="btn btn-primary btn-small" onclick="go('commandes')">Voir tout</button></div>
+      <table>
+        <thead><tr><th>ID</th><th>Client</th><th>Chauffeur</th><th>Trajet</th><th>Montant</th><th>Statut</th></tr></thead>
+        <tbody>${COMMANDES.map(c=>`<tr>
+          <td><b>${c.id}</b></td><td>${c.client}</td><td>${c.ch}</td>
+          <td>${c.de} → ${c.vers}</td><td><b>${fmt(c.prix)} F</b></td>
+          <td><span class="badge ${c.statut==='terminée'?'badge-green':c.statut==='en cours'?'badge-blue':'badge-yellow'}">${c.statut}</span></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── 2. SUIVI EN DIRECT ──
+function renderLive(){
+  document.getElementById("content").innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">🔴</div><div class="stat-val">${COMMANDES.filter(c=>c.statut==="en cours").length}</div><div class="stat-lbl">En cours</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val">${COMMANDES.filter(c=>c.statut==="en attente").length}</div><div class="stat-lbl">En attente</div></div>
+      <div class="stat-card"><div class="stat-icon">🚗</div><div class="stat-val">${CHAUFFEURS.filter(c=>c.statut==="actif").length}</div><div class="stat-lbl">Chauffeurs actifs</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">${COMMANDES.filter(c=>c.statut==="terminée").length}</div><div class="stat-lbl">Terminées</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🗺️ Carte Bamako — Suivi GPS</div><span class="badge badge-red">● LIVE</span></div>
+      <div style="background:#1a1a2e;border-radius:12px;height:200px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:14px">🗺️ Carte temps réel — Bamako</div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">📋 Commandes en direct</div><button class="btn btn-primary btn-small" onclick="renderLive()">🔄 Actualiser</button></div>
+      <table>
+        <thead><tr><th>ID</th><th>Client</th><th>Chauffeur</th><th>Trajet</th><th>Type</th><th>Montant</th><th>Statut</th></tr></thead>
+        <tbody>${COMMANDES.map(c=>`<tr>
+          <td><b>${c.id}</b></td><td>${c.client}</td><td>${c.ch}</td>
+          <td>${c.de} → ${c.vers}</td><td>${c.type}</td><td>${fmt(c.prix)} F</td>
+          <td><span class="badge ${c.statut==='terminée'?'badge-green':c.statut==='en cours'?'badge-blue':'badge-yellow'}">${c.statut}</span></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── 3. CLIENTS ──
+function renderClients(){
+  document.getElementById("content").innerHTML = `
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">👤 Clients (${CLIENTS.length+234})</div><button class="btn btn-primary btn-small">📥 Exporter</button></div>
+      <table>
+        <thead><tr><th>Client</th><th>Téléphone</th><th>Courses</th><th>Dépenses</th><th>Note</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${CLIENTS.map(c=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="background:var(--blue2)">${c.nom[0]}</div><b>${c.nom}</b></div></td>
+          <td>${c.tel}</td><td>${c.courses}</td><td>${fmt(c.dep)} F</td><td>⭐ ${c.note}</td>
+          <td><span class="badge ${c.statut==='actif'?'badge-green':c.statut==='suspect'?'badge-yellow':'badge-red'}">${c.statut}</span></td>
+          <td><button class="btn btn-small ${c.bloque?'btn-green':'btn-red'}" onclick="toggleBloqueClient(${c.id})">${c.bloque?'✅ Débloquer':'🚫 Bloquer'}</button></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+function toggleBloqueClient(id){
+  const c=CLIENTS.find(x=>x.id===id);
+  if(c){c.bloque=!c.bloque;c.statut=c.bloque?"bloqué":"actif";renderClients();toast(c.bloque?"🚫 "+c.nom+" bloqué":"✅ "+c.nom+" débloqué",c.bloque?"e":"s");}
+}
+
+// ── 4. CHAUFFEURS ──
+function renderChauffeurs(){
+  document.getElementById("content").innerHTML = `
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🚗 Chauffeurs & Livreurs (${CHAUFFEURS.length})</div>
+        <button class="btn btn-primary btn-small" onclick="modalAddChauffeur()">➕ Ajouter</button>
+      </div>
+      <table>
+        <thead><tr><th>Nom</th><th>Type</th><th>Téléphone</th><th>Véhicule</th><th>Zone</th><th>Courses</th><th>Revenus</th><th>Note</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${CHAUFFEURS.map(c=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="background:${c.type==='livreur'?'var(--green)':'var(--blue2)'}">${c.nom[0]}</div><div><b>${c.nom}</b><br><small style="color:var(--muted)">${c.plaque}</small></div></div></td>
+          <td>${c.type==='livreur'?'📦 Livreur':'🚗 Taxi'}</td>
+          <td>${c.tel}</td><td>${c.veh}</td><td>${c.zone}</td><td>${c.courses}</td>
+          <td>${fmt(c.rev)} F</td><td>${c.note>0?'⭐ '+c.note:'—'}</td>
+          <td><span class="badge ${c.statut==='actif'?'badge-green':c.statut==='attente'?'badge-yellow':'badge-red'}">${c.statut}</span></td>
+          <td style="display:flex;gap:4px">
+            ${c.statut==='actif'?`<button class="btn btn-red btn-small" onclick="suspChauffeur(${c.id})">🚫</button>`:`<button class="btn btn-green btn-small" onclick="activChauffeur(${c.id})">✅</button>`}
+          </td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+function modalAddChauffeur(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">➕ Nouveau chauffeur/livreur</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom complet</label><input class="form-input" id="mn" placeholder="Prénom Nom"/></div>
+    <div class="form-group"><label class="form-label">Téléphone</label><input class="form-input" id="mt" placeholder="7X XXX XXX"/></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Type</label>
+        <select class="form-input" id="mty"><option value="taxi">🚗 Chauffeur taxi</option><option value="livreur">📦 Livreur</option></select>
+      </div>
+      <div class="form-group" style="flex:1"><label class="form-label">Zone</label>
+        <select class="form-input" id="mz">${ZONES.map(z=>`<option>${z.nom}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Véhicule</label><input class="form-input" id="mv" placeholder="Marque Modèle"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Plaque</label><input class="form-input" id="mp" placeholder="BA-XXXX"/></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="addChauffeur()">✅ Ajouter</button>
+    </div>`;
+  openModal();
+}
+function addChauffeur(){
+  const n=document.getElementById("mn").value,t=document.getElementById("mt").value,ty=document.getElementById("mty").value,v=document.getElementById("mv").value,p=document.getElementById("mp").value,z=document.getElementById("mz").value;
+  if(!n||!t||!v||!p){toast("⚠️ Remplissez tous les champs","e");return;}
+  CHAUFFEURS.push({id:CHAUFFEURS.length+1,nom:n,tel:t,type:ty,veh:v,plaque:p,statut:"attente",note:0,courses:0,rev:0,zone:z,valide:false,bloque:false});
+  closeModal();renderChauffeurs();toast("✅ "+n+" ajouté !","s");
+}
+function suspChauffeur(id){const c=CHAUFFEURS.find(x=>x.id===id);if(c){c.statut="suspendu";renderChauffeurs();toast("🚫 "+c.nom+" suspendu","e");}}
+function activChauffeur(id){const c=CHAUFFEURS.find(x=>x.id===id);if(c){c.statut="actif";c.valide=true;renderChauffeurs();toast("✅ "+c.nom+" activé","s");}}
+
+// ── 5. VALIDATION ──
+function renderValidation(){
+  const pending=CHAUFFEURS.filter(c=>!c.valide);
+  const badge=document.getElementById("badge-valid");
+  if(badge) badge.textContent=pending.length;
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">⏳ Comptes en attente (${pending.length})</div></div>
+      ${pending.length===0?'<div style="text-align:center;padding:40px;color:var(--muted)">✅ Aucun compte en attente !</div>':`
+      <table>
+        <thead><tr><th>Nom</th><th>Type</th><th>Téléphone</th><th>Véhicule</th><th>Plaque</th><th>Zone</th><th>Actions</th></tr></thead>
+        <tbody>${pending.map(c=>`<tr>
+          <td><b>${c.nom}</b></td><td>${c.type==='livreur'?'📦 Livreur':'🚗 Taxi'}</td>
+          <td>${c.tel}</td><td>${c.veh}</td><td>${c.plaque}</td><td>${c.zone}</td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btn-green btn-small" onclick="validerCompte(${c.id})">✅ Valider</button>
+            <button class="btn btn-red btn-small" onclick="refuserCompte(${c.id})">❌ Refuser</button>
+          </td>
+        </tr>`).join("")}</tbody>
+      </table>`}
+    </div>`;
+}
+function validerCompte(id){const c=CHAUFFEURS.find(x=>x.id===id);if(c){c.valide=true;c.statut="actif";renderValidation();toast("✅ "+c.nom+" validé !","s");}}
+function refuserCompte(id){const c=CHAUFFEURS.find(x=>x.id===id);if(c){CHAUFFEURS.splice(CHAUFFEURS.indexOf(c),1);renderValidation();toast("❌ Compte refusé","e");}}
+
+// ── 6. BLOCAGE ──
+function renderBlocage(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🚫 Clients bloqués (${CLIENTS.filter(c=>c.bloque).length})</div></div>
+      ${CLIENTS.filter(c=>c.bloque).length===0?'<div style="text-align:center;padding:40px;color:var(--muted)">Aucun client bloqué</div>':
+      `<table><thead><tr><th>Client</th><th>Téléphone</th><th>Actions</th></tr></thead><tbody>
+      ${CLIENTS.filter(c=>c.bloque).map(c=>`<tr><td><b>${c.nom}</b></td><td>${c.tel}</td>
+      <td><button class="btn btn-green btn-small" onclick="toggleBloqueClient(${c.id});renderBlocage()">✅ Débloquer</button></td></tr>`).join("")}
+      </tbody></table>`}
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">⚠️ Comptes suspects</div></div>
+      ${CLIENTS.filter(c=>c.statut==="suspect").length===0?'<div style="text-align:center;padding:20px;color:var(--muted)">Aucun compte suspect</div>':
+      `<table><thead><tr><th>Client</th><th>Statut</th><th>Actions</th></tr></thead><tbody>
+      ${CLIENTS.filter(c=>c.statut==="suspect").map(c=>`<tr><td><b>${c.nom}</b></td><td><span class="badge badge-yellow">⚠️ Suspect</span></td>
+      <td style="display:flex;gap:4px"><button class="btn btn-green btn-small" onclick="toggleBloqueClient(${c.id});renderBlocage()">✅</button>
+      <button class="btn btn-red btn-small" onclick="toggleBloqueClient(${c.id});renderBlocage()">🚫</button></td></tr>`).join("")}
+      </tbody></table>`}
+    </div>`;
+}
+
+// ── 7. COMMANDES ──
+function renderCommandes(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">📋 Toutes les commandes</div><button class="btn btn-primary btn-small">📥 Exporter</button></div>
+      <table>
+        <thead><tr><th>ID</th><th>Client</th><th>Chauffeur</th><th>Trajet</th><th>Type</th><th>Montant</th><th>Paiement</th><th>Heure</th><th>Statut</th></tr></thead>
+        <tbody>${COMMANDES.map(c=>`<tr>
+          <td><b>${c.id}</b></td><td>${c.client}</td><td>${c.ch}</td>
+          <td>${c.de} → ${c.vers}</td><td>${c.type}</td><td>${fmt(c.prix)} F</td><td>${c.pay}</td><td>${c.heure}</td>
+          <td><span class="badge ${c.statut==='terminée'?'badge-green':c.statut==='en cours'?'badge-blue':'badge-yellow'}">${c.statut}</span></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── 8. ATTRIBUTION ──
+function renderAttribution(){
+  const sans=COMMANDES.filter(c=>c.ch==="—");
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🎯 Courses sans chauffeur (${sans.length})</div></div>
+      ${sans.length===0?'<div style="text-align:center;padding:40px;color:var(--muted)">✅ Toutes les courses ont un chauffeur !</div>':
+      sans.map(c=>`<div class="pub-card">
+        <b>${c.id}</b> — ${c.client} | ${c.de} → ${c.vers} | ${fmt(c.prix)} FCFA
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          ${CHAUFFEURS.filter(ch=>ch.statut==="actif").map(ch=>`
+            <button class="btn btn-green btn-small" onclick="assignerChauffeur('${c.id}','${ch.nom}')">🚗 ${ch.nom}</button>
+          `).join("")}
+        </div>
+      </div>`).join("")}
+    </div>`;
+}
+function assignerChauffeur(cmdId,nom){
+  const c=COMMANDES.find(x=>x.id===cmdId);
+  if(c){c.ch=nom;c.statut="en cours";renderAttribution();toast("✅ "+nom+" assigné !","s");}
+}
+
+// ── 9. ZONES ──
+function renderZones(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🗺️ Zones de service (${ZONES.length})</div>
+        <button class="btn btn-primary btn-small" onclick="modalAddZone()">➕ Nouvelle zone</button>
+      </div>
+      <table>
+        <thead><tr><th>Zone</th><th>Quartiers</th><th>Supplément</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${ZONES.map(z=>`<tr>
+          <td><b>${z.nom}</b></td>
+          <td style="font-size:12px;color:var(--muted)">${z.quartiers.join(", ")}</td>
+          <td>${z.tarif_sup>0?"+"+fmt(z.tarif_sup)+" F":"Normal"}</td>
+          <td><span class="badge ${z.actif?'badge-green':'badge-yellow'}">${z.actif?'✅ Active':'⏸️ Inactive'}</span></td>
+          <td><button class="btn btn-small ${z.actif?'btn-red':'btn-green'}" onclick="toggleZone(${z.id})">${z.actif?'⏸️':'▶️'}</button></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+function modalAddZone(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">➕ Nouvelle zone</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom de la zone</label><input class="form-input" id="zn" placeholder="Ex: Commune VII"/></div>
+    <div class="form-group"><label class="form-label">Quartiers (séparés par virgule)</label><input class="form-input" id="zq" placeholder="Quartier A, Quartier B"/></div>
+    <div class="form-group"><label class="form-label">Supplément tarifaire (FCFA)</label><input class="form-input" id="zt" type="number" placeholder="0"/></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="addZone()">✅ Créer</button>
+    </div>`;
+  openModal();
+}
+function addZone(){
+  const n=document.getElementById("zn").value,q=document.getElementById("zq").value,t=parseInt(document.getElementById("zt").value)||0;
+  if(!n||!q){toast("⚠️ Remplissez tous les champs","e");return;}
+  ZONES.push({id:ZONES.length+1,nom:n,quartiers:q.split(",").map(x=>x.trim()),tarif_sup:t,actif:true});
+  closeModal();renderZones();toast("✅ Zone "+n+" créée !","s");
+}
+function toggleZone(id){const z=ZONES.find(x=>x.id===id);if(z){z.actif=!z.actif;renderZones();toast((z.actif?"✅ Zone activée":"⏸️ Zone désactivée")+": "+z.nom,z.actif?"s":"e");}}
+
+// ── 10. TARIFS ──
+function renderTarifs(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">💰 Tarifs par trajet</div><button class="btn btn-primary btn-small" onclick="sauvegarderTarifs()">💾 Sauvegarder</button></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+        ${Object.entries(TARIFS).map(([key,t])=>`
+        <div class="pub-card">
+          <div style="font-weight:800;font-size:15px;margin-bottom:12px">${key==='standard'?'🚕 Standard':key==='vip'?'🚙 VIP Premium':key==='moto'?'🏍️ Moto':'📦 Livraison'}</div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1"><label class="form-label">Base (FCFA)</label><input class="form-input" id="t-${key}-base" value="${t.base}" type="number"/></div>
+            <div class="form-group" style="flex:1"><label class="form-label">Prix/km</label><input class="form-input" id="t-${key}-km" value="${t.km}" type="number"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1"><label class="form-label">Prix/min</label><input class="form-input" id="t-${key}-min" value="${t.min}" type="number"/></div>
+            <div class="form-group" style="flex:1"><label class="form-label">Minimum</label><input class="form-input" id="t-${key}-min2" value="${t.minPrix}" type="number"/></div>
+          </div>
+          <div style="background:var(--bg);padding:10px;border-radius:8px;font-size:13px">
+            Exemple 5km·15min : <b>${fmt(Math.max(t.base+t.km*5+t.min*15,t.minPrix))} FCFA</b>
+          </div>
+        </div>`).join("")}
+      </div>
+    </div>`;
+}
+function sauvegarderTarifs(){
+  for(const key of Object.keys(TARIFS)){
+    TARIFS[key].base=parseInt(document.getElementById("t-"+key+"-base")?.value)||TARIFS[key].base;
+    TARIFS[key].km=parseInt(document.getElementById("t-"+key+"-km")?.value)||TARIFS[key].km;
+    TARIFS[key].min=parseInt(document.getElementById("t-"+key+"-min")?.value)||TARIFS[key].min;
+    TARIFS[key].minPrix=parseInt(document.getElementById("t-"+key+"-min2")?.value)||TARIFS[key].minPrix;
+  }
+  toast("✅ Tarifs mis à jour !","s");
+}
+
+// ── 11. PAIEMENTS ──
+function renderPaiements(){
+  const totalR=CHAUFFEURS.reduce((a,c)=>a+c.rev,0)+8500000;
+  document.getElementById("content").innerHTML=`
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">${fmt(totalR)}</div><div class="stat-lbl">Total encaissé (FCFA)</div></div>
+      <div class="stat-card"><div class="stat-icon">🏢</div><div class="stat-val">${fmt(Math.round(totalR*.15))}</div><div class="stat-lbl">Commission MaliTaxi (15%)</div></div>
+      <div class="stat-card"><div class="stat-icon">🚗</div><div class="stat-val">${fmt(Math.round(totalR*.80))}</div><div class="stat-lbl">Revenus chauffeurs (80%)</div></div>
+      <div class="stat-card"><div class="stat-icon">🤝</div><div class="stat-val">${fmt(Math.round(totalR*.05))}</div><div class="stat-lbl">Commission IBI (5%)</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">💰 Commissions par chauffeur</div></div>
+      <table>
+        <thead><tr><th>Chauffeur</th><th>Type</th><th>Courses</th><th>Total</th><th>Commission 15%</th><th>IBI 5%</th><th>Net 80%</th></tr></thead>
+        <tbody>${CHAUFFEURS.filter(c=>c.courses>0).sort((a,b)=>b.rev-a.rev).map(c=>`<tr>
+          <td><b>${c.nom}</b></td><td>${c.type==='livreur'?'📦':'🚗'}</td><td>${c.courses}</td>
+          <td>${fmt(c.rev)} F</td><td>${fmt(Math.round(c.rev*.15))} F</td>
+          <td>${fmt(Math.round(c.rev*.05))} F</td><td><b>${fmt(Math.round(c.rev*.80))} F</b></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── 12. PROMOS ──
+function renderPromos(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🎁 Codes promo (${PROMOS.length})</div><button class="btn btn-primary btn-small" onclick="modalAddPromo()">➕ Nouveau</button></div>
+      <table>
+        <thead><tr><th>Code</th><th>Type</th><th>Valeur</th><th>Utilisations</th><th>Expire</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${PROMOS.map(p=>`<tr>
+          <td><b style="font-family:monospace">${p.code}</b></td>
+          <td>${p.type==='pct'?'% Réduction':'💵 Fixe'}</td>
+          <td>${p.type==='pct'?p.val+'%':fmt(p.val)+' F'}</td>
+          <td>${p.usage}/${p.limite}</td><td>${p.expire}</td>
+          <td><span class="badge ${p.actif?'badge-green':'badge-red'}">${p.actif?'✅ Actif':'❌ Expiré'}</span></td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btn-small ${p.actif?'btn-red':'btn-green'}" onclick="togglePromo(${p.id})">${p.actif?'⏸️':'▶️'}</button>
+            <button class="btn btn-red btn-small" onclick="supprimerPromo(${p.id})">🗑️</button>
+          </td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+function modalAddPromo(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">🎁 Nouveau code promo</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Code</label><input class="form-input" id="pc" placeholder="EX: MALI2026"/></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Type</label>
+        <select class="form-input" id="pt"><option value="pct">% Pourcentage</option><option value="fixe">💵 Montant fixe</option></select>
+      </div>
+      <div class="form-group" style="flex:1"><label class="form-label">Valeur</label><input class="form-input" id="pv" type="number" placeholder="20"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Limite utilisations</label><input class="form-input" id="pl" type="number" placeholder="100"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Date expiration</label><input class="form-input" id="pe" placeholder="31/12/2026"/></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="addPromo()">✅ Créer</button>
+    </div>`;
+  openModal();
+}
+function addPromo(){
+  const c=document.getElementById("pc").value.toUpperCase(),t=document.getElementById("pt").value,v=parseInt(document.getElementById("pv").value),l=parseInt(document.getElementById("pl").value)||100,e=document.getElementById("pe").value;
+  if(!c||!v){toast("⚠️ Remplissez tous les champs","e");return;}
+  PROMOS.push({id:PROMOS.length+1,code:c,type:t,val:v,min:1000,usage:0,limite:l,expire:e||"31/12/2026",actif:true});
+  closeModal();renderPromos();toast("🎁 Code "+c+" créé !","s");
+}
+function togglePromo(id){const p=PROMOS.find(x=>x.id===id);if(p){p.actif=!p.actif;renderPromos();toast(p.actif?"✅ Code activé":"⏸️ Code désactivé",p.actif?"s":"e");}}
+function supprimerPromo(id){const p=PROMOS.find(x=>x.id===id);if(confirm("Supprimer "+p.code+" ?")){PROMOS.splice(PROMOS.indexOf(p),1);renderPromos();toast("🗑️ Code supprimé","e");}}
+
+// ── 13. RAPPORTS ──
+function renderRapports(){
+  const totalR=CHAUFFEURS.reduce((a,c)=>a+c.rev,0)+8500000;
+  document.getElementById("content").innerHTML=`
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">${fmt(totalR)}</div><div class="stat-lbl">Revenus totaux</div><div class="stat-trend">↑ +18%</div></div>
+      <div class="stat-card"><div class="stat-icon">🚗</div><div class="stat-val">${COMMANDES.length+847}</div><div class="stat-lbl">Total courses</div><div class="stat-trend">↑ +12%</div></div>
+      <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-val">4.8</div><div class="stat-lbl">Note moyenne</div><div class="stat-trend">↑ +0.1</div></div>
+      <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-val">${CLIENTS.length+234}</div><div class="stat-lbl">Clients inscrits</div><div class="stat-trend">↑ +24</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🏆 Top chauffeurs</div></div>
+      <table>
+        <thead><tr><th>#</th><th>Chauffeur</th><th>Courses</th><th>Note</th><th>Revenus</th></tr></thead>
+        <tbody>${CHAUFFEURS.filter(c=>c.courses>0).sort((a,b)=>b.rev-a.rev).slice(0,5).map((c,i)=>`<tr>
+          <td><b>${i+1}</b></td><td><b>${c.nom}</b></td><td>${c.courses}</td><td>⭐ ${c.note}</td><td><b>${fmt(c.rev)} F</b></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── 14. PUBLICITÉS ──
+function renderPub(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">📢 Publicités (${PUBS.length})</div><button class="btn btn-primary btn-small" onclick="ajouterPub()">➕ Nouvelle pub</button></div>
+      <table id="pub-list-table">
+        <thead><tr><th>Annonceur</th><th>Catégorie</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody id="pub-list">${PUBS.map(p=>`<tr>
+          <td><b>${p.nom}</b></td>
+          <td><span class="badge badge-blue">${p.cat}</span></td>
+          <td><span class="badge ${p.statut==='actif'?'badge-green':'badge-red'}">${p.statut==='actif'?'✅ Actif':'❌ Inactif'}</span></td>
+          <td><button class="btn btn-small ${p.statut==='actif'?'btn-red':'btn-green'}" onclick="togglePubItem(${p.id})">${p.statut==='actif'?'Désactiver':'Activer'}</button></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>
+    <div class="pub-card">
+      <div style="font-weight:800;margin-bottom:12px">📋 Catégories approuvées</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${["🏨 Hôtels","🏠 Immobilier","🏗️ Construction","📱 Électronique","💄 Beauté","🎉 Événements","🛍️ Shopping"].map(c=>`<span class="badge badge-blue">${c}</span>`).join("")}
+      </div>
+    </div>`;
+}
+function ajouterPub(){
+  const nom=prompt("Nom de l'annonceur:");if(!nom)return;
+  const cat=prompt("Catégorie:");if(!cat)return;
+  PUBS.push({id:PUBS.length+1,nom,cat,statut:"actif"});
+  renderPub();toast("✅ Pub ajoutée !","s");
+}
+function togglePubItem(id){
+  const p=PUBS.find(x=>x.id===id);
+  if(p){p.statut=p.statut==='actif'?'inactif':'actif';renderPub();toast(p.statut==='actif'?"✅ Activé":"⏸️ Désactivé",p.statut==='actif'?"s":"e");}
+}
+
+// ── 15. MALI NAV STATS ──
+function renderMaliNav(){
+  document.getElementById("content").innerHTML=`
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">🇲🇱</div><div class="stat-val">19</div><div class="stat-lbl">Régions couvertes</div></div>
+      <div class="stat-card"><div class="stat-icon">📍</div><div class="stat-val">159</div><div class="stat-lbl">Cercles</div></div>
+      <div class="stat-card"><div class="stat-icon">🏘️</div><div class="stat-val">819</div><div class="stat-lbl">Communes</div></div>
+      <div class="stat-card"><div class="stat-icon">🏡</div><div class="stat-val">12 712</div><div class="stat-lbl">Villages</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🔗 Liens Mali Nav</div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <a href="https://mikailou33-collab.github.io/mali-nav/" target="_blank" class="btn btn-primary" style="display:inline-block;text-decoration:none;text-align:center">🌍 Ouvrir Mali Nav</a>
+        <a href="https://mikailou33-collab.github.io/mali-nav/mali-nav-lite.html" target="_blank" class="btn" style="background:var(--green);color:#fff;display:inline-block;text-decoration:none;text-align:center">📱 Mali Nav Lite</a>
+        <a href="https://mikailou33-collab.github.io/malitaxi-vip/malitaxi-vip-final-12.html" target="_blank" class="btn" style="background:var(--gold);color:#fff;display:inline-block;text-decoration:none;text-align:center">👑 MaliTaxi VIP Client</a>
+      </div>
+    </div>`;
+}
+
+// ── PARAMÈTRES GLOBAUX ──
+let APP_CONFIG = {
+  nom: "MaliTaxi VIP",
+  version: "1.0.0",
+  pays: "Mali 🇲🇱",
+  devise: "FCFA",
+  note_min: "3.5",
+  whatsapp: "96551630019",
+};
+
+let COMMISSIONS = {
+  chauffeur: 80,
+  malitaxi: 15,
+  partenaire: 5,
+};
+
+let PARTENAIRES_CONFIG = [
+  {id:1, nom:"IBI Groupe", type:"Partenaire véhicules", pct:5, contact:"+223 XX XXX XXX", actif:true},
+  {id:2, nom:"MaliTaxi", type:"Plateforme", pct:15, contact:"mikailou33@gmail.com", actif:true},
+];
+
+// ── 16. PARAMÈTRES ──
+function renderParams(){
+  const total = COMMISSIONS.chauffeur + COMMISSIONS.malitaxi + COMMISSIONS.partenaire;
+  document.getElementById("content").innerHTML=`
+    <!-- COMMISSIONS -->
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">💰 Commissions & Partage des revenus</div>
+        <button class="btn btn-primary btn-small" onclick="sauverCommissions()">💾 Sauvegarder</button>
+      </div>
+      <div style="background:${total===100?"#dcfce7":"#fee2e2"};padding:10px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:700;color:${total===100?"#16a34a":"#dc2626"}">
+        ${total===100?"✅ Total = 100% — Correct !":"⚠️ Total = "+total+"% — Doit être 100% !"}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <div style="background:#eff6ff;border-radius:14px;padding:20px;text-align:center">
+          <div style="font-size:32px">🚗</div>
+          <div style="font-weight:900;font-size:15px;margin:8px 0">Chauffeur</div>
+          <input type="number" id="pct-chauffeur" value="${COMMISSIONS.chauffeur}" min="0" max="100"
+            style="width:80px;text-align:center;font-size:24px;font-weight:900;color:var(--blue);border:2px solid var(--border);border-radius:10px;padding:6px;font-family:inherit"
+            onchange="updateTotal()"/>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">% des revenus</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:14px;padding:20px;text-align:center">
+          <div style="font-size:32px">🏢</div>
+          <div style="font-weight:900;font-size:15px;margin:8px 0">MaliTaxi</div>
+          <input type="number" id="pct-malitaxi" value="${COMMISSIONS.malitaxi}" min="0" max="100"
+            style="width:80px;text-align:center;font-size:24px;font-weight:900;color:var(--green);border:2px solid var(--border);border-radius:10px;padding:6px;font-family:inherit"
+            onchange="updateTotal()"/>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">% des revenus</div>
+        </div>
+        <div style="background:#fefce8;border-radius:14px;padding:20px;text-align:center">
+          <div style="font-size:32px">🤝</div>
+          <div style="font-weight:900;font-size:15px;margin:8px 0">IBI Groupe</div>
+          <input type="number" id="pct-partenaire" value="${COMMISSIONS.partenaire}" min="0" max="100"
+            style="width:80px;text-align:center;font-size:24px;font-weight:900;color:var(--gold);border:2px solid var(--border);border-radius:10px;padding:6px;font-family:inherit"
+            onchange="updateTotal()"/>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">% des revenus</div>
+        </div>
+      </div>
+      <div id="total-check" style="margin-top:16px;text-align:center;font-size:14px;font-weight:700;color:var(--green)">
+        ✅ Total : ${total}%
+      </div>
+    </div>
+
+    <!-- PARTENAIRES -->
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🤝 Partenaires</div>
+        <button class="btn btn-primary btn-small" onclick="ajouterPartenaire()">➕ Nouveau</button>
+      </div>
+      <table>
+        <thead><tr><th>Partenaire</th><th>Type</th><th>%</th><th>Contact</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${PARTENAIRES_CONFIG.map(p=>`<tr>
+          <td><b>${p.nom}</b></td>
+          <td>${p.type}</td>
+          <td><b style="color:var(--gold)">${p.pct}%</b></td>
+          <td>${p.contact}</td>
+          <td><span class="badge ${p.actif?"badge-green":"badge-red"}">${p.actif?"✅ Actif":"❌ Inactif"}</span></td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btn-primary btn-small" onclick="modifierPartenaire(${p.id})">✏️ Modifier</button>
+            <button class="btn btn-small ${p.actif?"btn-red":"btn-green"}" onclick="togglePartenaire(${p.id})">${p.actif?"Désactiver":"Activer"}</button>
+          </td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>
+
+    <!-- MON COMPTE -->
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">👤 Mon compte admin</div>
+        <button class="btn btn-primary btn-small" onclick="sauverCompte()">💾 Sauvegarder</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group"><label class="form-label">Nom affiché</label>
+          <input class="form-input" id="admin-nom" value="${currentAdmin?.nom||"Admin Principal"}"/>
+        </div>
+        <div class="form-group"><label class="form-label">Identifiant</label>
+          <input class="form-input" id="admin-user" value="admin" readonly style="opacity:.6"/>
+        </div>
+        <div class="form-group"><label class="form-label">Nouveau mot de passe</label>
+          <input class="form-input" id="admin-pass" type="password" placeholder="Laisser vide pour garder l'actuel"/>
+        </div>
+        <div class="form-group"><label class="form-label">Confirmer mot de passe</label>
+          <input class="form-input" id="admin-pass2" type="password" placeholder="Confirmer nouveau mot de passe"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLE GPS -->
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🌍 Restriction géographique</div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--bg);border-radius:12px;margin-bottom:12px">
+        <div>
+          <div style="font-weight:800">🏙️ Mode Bamako uniquement</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Taxi/Moto/Livraison bloqués hors Bamako</div>
+        </div>
+        <div id="gps-toggle" onclick="toggleGPS()" style="width:52px;height:28px;background:var(--green);border-radius:14px;cursor:pointer;position:relative;transition:.3s">
+          <div style="position:absolute;right:4px;top:4px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.3s"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--bg);border-radius:12px">
+        <div>
+          <div style="font-weight:800">🌍 Mode Global (toutes régions)</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Services disponibles partout au Mali</div>
+        </div>
+        <button class="btn btn-primary btn-small" onclick="activerModeGlobal()">Activer</button>
+      </div>
+    </div>
+    <!-- CONFIG APP -->
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">⚙️ Configuration application</div>
+        <button class="btn btn-primary btn-small" onclick="sauverConfig()">💾 Sauvegarder</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group"><label class="form-label">🏷️ Nom de l'app</label>
+          <input class="form-input" id="cfg-nom" value="${APP_CONFIG.nom}"/>
+        </div>
+        <div class="form-group"><label class="form-label">📱 Version</label>
+          <input class="form-input" id="cfg-version" value="${APP_CONFIG.version}"/>
+        </div>
+        <div class="form-group"><label class="form-label">💱 Devise</label>
+          <input class="form-input" id="cfg-devise" value="${APP_CONFIG.devise}"/>
+        </div>
+        <div class="form-group"><label class="form-label">⭐ Note minimum chauffeur</label>
+          <input class="form-input" id="cfg-note" value="${APP_CONFIG.note_min}" type="number" step="0.1" min="1" max="5"/>
+        </div>
+        <div class="form-group"><label class="form-label">📱 WhatsApp admin</label>
+          <input class="form-input" id="cfg-wa" value="${APP_CONFIG.whatsapp}"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPLICATIONS -->
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">📱 Applications MaliTaxi</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${[
+          ["👑","MaliTaxi VIP Client","malitaxi-vip-final-12.html","#1E40AF"],
+          ["🚕","MaliTaxi Lite","malitaxi-lite-18.html","#059669"],
+          ["🚗","Chauffeur Pro","chauffeur-vip-pro-20.html","#D97706"],
+          ["🚕","Chauffeur Lite","chauffeur-lite-7.html","#7C3AED"],
+          ["🇲🇱","Mali Nav","../mali-nav/","#DC2626"]
+        ].map(([ico,nom,url,col])=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:10px;border-left:4px solid ${col}">
+            <span style="font-weight:700">${ico} ${nom}</span>
+            <a href="https://mikailou33-collab.github.io/malitaxi-vip/${url}" target="_blank" class="btn btn-primary btn-small" style="background:${col}">Ouvrir</a>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">📋 Journal d'activités</div>
+        <button class="btn btn-red btn-small" onclick="ACTIVITY_LOG=[];renderParams();toast('🗑️ Journal effacé','e')">🗑️ Effacer</button>
+      </div>
+      ${ACTIVITY_LOG.length===0?'<div style="text-align:center;padding:20px;color:var(--muted)">Aucune activité enregistrée</div>':
+      `<table><thead><tr><th>Date</th><th>Heure</th><th>Utilisateur</th><th>Action</th></tr></thead><tbody>
+      ${ACTIVITY_LOG.map(l=>`<tr><td>${l.date}</td><td>${l.time}</td><td>${l.user}</td><td>${l.action} — ${l.detail}</td></tr>`).join("")}
+      </tbody></table>`}
+    </div>`;
+}
+
+let gpsRestriction = true;
+function toggleGPS(){
+  gpsRestriction = !gpsRestriction;
+  const toggle = document.getElementById('gps-toggle');
+  if(toggle){
+    toggle.style.background = gpsRestriction ? 'var(--green)' : 'var(--red)';
+    toggle.querySelector('div').style.right = gpsRestriction ? '4px' : 'auto';
+    toggle.querySelector('div').style.left = gpsRestriction ? 'auto' : '4px';
+  }
+  toast(gpsRestriction ? '🏙️ Mode Bamako activé' : '🌍 Mode Global activé', 's');
+  logActivity('Paramètres', (gpsRestriction?'🏙️ Restriction Bamako activée':'🌍 Mode global activé'));
+}
+function activerModeGlobal(){
+  gpsRestriction = false;
+  toast('🌍 Mode Global activé — Services disponibles partout !', 's');
+  logActivity('Paramètres', '🌍 Mode global activé par admin');
+}
+function updateTotal(){
+  const c=parseInt(document.getElementById("pct-chauffeur")?.value)||0;
+  const m=parseInt(document.getElementById("pct-malitaxi")?.value)||0;
+  const p=parseInt(document.getElementById("pct-partenaire")?.value)||0;
+  const total=c+m+p;
+  const el=document.getElementById("total-check");
+  if(el){
+    el.textContent=(total===100?"✅":"⚠️")+" Total : "+total+"%";
+    el.style.color=total===100?"var(--green)":"var(--red)";
+  }
+}
+
+function sauverCommissions(){
+  const c=parseInt(document.getElementById("pct-chauffeur")?.value)||0;
+  const m=parseInt(document.getElementById("pct-malitaxi")?.value)||0;
+  const p=parseInt(document.getElementById("pct-partenaire")?.value)||0;
+  if(c+m+p!==100){toast("⚠️ Le total doit être 100% ! Actuellement "+(c+m+p)+"%","e");return;}
+  COMMISSIONS.chauffeur=c;COMMISSIONS.malitaxi=m;COMMISSIONS.partenaire=p;
+  logActivity("Paramètres","💰 Commissions modifiées: "+c+"/"+m+"/"+p+"%");
+  toast("✅ Commissions sauvegardées !","s");
+}
+
+function sauverCompte(){
+  const nom=document.getElementById("admin-nom")?.value;
+  const pass=document.getElementById("admin-pass")?.value;
+  const pass2=document.getElementById("admin-pass2")?.value;
+  if(pass&&pass!==pass2){toast("⚠️ Les mots de passe ne correspondent pas !","e");return;}
+  if(nom&&currentAdmin){
+    currentAdmin.nom=nom;
+    document.getElementById("sb-name").textContent=nom;
+    document.getElementById("sb-av").textContent=nom[0];
+  }
+  if(pass){
+    ADMIN_ACCOUNTS.admin.pass=pass;
+    logActivity("Paramètres","🔑 Mot de passe modifié");
+  }
+  toast("✅ Compte mis à jour !","s");
+}
+
+function sauverConfig(){
+  APP_CONFIG.nom=document.getElementById("cfg-nom")?.value||APP_CONFIG.nom;
+  APP_CONFIG.version=document.getElementById("cfg-version")?.value||APP_CONFIG.version;
+  APP_CONFIG.devise=document.getElementById("cfg-devise")?.value||APP_CONFIG.devise;
+  APP_CONFIG.note_min=document.getElementById("cfg-note")?.value||APP_CONFIG.note_min;
+  APP_CONFIG.whatsapp=document.getElementById("cfg-wa")?.value||APP_CONFIG.whatsapp;
+  logActivity("Paramètres","⚙️ Configuration mise à jour");
+  toast("✅ Configuration sauvegardée !","s");
+}
+
+function ajouterPartenaire(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">🤝 Nouveau partenaire</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom partenaire</label><input class="form-input" id="pn" placeholder="Ex: IBI Groupe"/></div>
+    <div class="form-group"><label class="form-label">Type</label><input class="form-input" id="pt2" placeholder="Ex: Partenaire véhicules"/></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Pourcentage (%)</label><input class="form-input" id="pp2" type="number" placeholder="5" min="0" max="100"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Contact</label><input class="form-input" id="pct2" placeholder="+223 XX XXX XXX"/></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="creerPartenaire()">✅ Ajouter</button>
+    </div>`;
+  openModal();
+}
+
+function creerPartenaire(){
+  const n=document.getElementById("pn").value,t=document.getElementById("pt2").value,
+    p=parseInt(document.getElementById("pp2").value)||0,c=document.getElementById("pct2").value;
+  if(!n){toast("⚠️ Entrez le nom","e");return;}
+  PARTENAIRES_CONFIG.push({id:PARTENAIRES_CONFIG.length+1,nom:n,type:t,pct:p,contact:c||"—",actif:true});
+  closeModal();renderParams();toast("✅ "+n+" ajouté !","s");
+}
+
+function modifierPartenaire(id){
+  const p=PARTENAIRES_CONFIG.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">✏️ Modifier ${p.nom}</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom</label><input class="form-input" id="mn2" value="${p.nom}"/></div>
+    <div class="form-group"><label class="form-label">Type</label><input class="form-input" id="mt2" value="${p.type}"/></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Pourcentage (%)</label><input class="form-input" id="mp2" type="number" value="${p.pct}"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Contact</label><input class="form-input" id="mc2" value="${p.contact}"/></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="sauverPartenaire(${id})">✅ Sauvegarder</button>
+    </div>`;
+  openModal();
+}
+
+function sauverPartenaire(id){
+  const p=PARTENAIRES_CONFIG.find(x=>x.id===id);
+  if(p){
+    p.nom=document.getElementById("mn2").value||p.nom;
+    p.type=document.getElementById("mt2").value||p.type;
+    p.pct=parseInt(document.getElementById("mp2").value)||p.pct;
+    p.contact=document.getElementById("mc2").value||p.contact;
+    closeModal();renderParams();toast("✅ "+p.nom+" modifié !","s");
+  }
+}
+
+function togglePartenaire(id){
+  const p=PARTENAIRES_CONFIG.find(x=>x.id===id);
+  if(p){p.actif=!p.actif;renderParams();toast((p.actif?"✅ ":"❌ ")+p.nom+(p.actif?" activé":" désactivé"),p.actif?"s":"e");}
+}
+
+// ── MODAL ──
+function openModal(){document.getElementById("modal-bg").style.display="flex";}
+function closeModal(){document.getElementById("modal-bg").style.display="none";}
+document.getElementById("modal-bg").addEventListener("click",e=>{if(e.target===document.getElementById("modal-bg"))closeModal();});
+
+// ── TOAST ──
+function toast(msg,type="s"){
+  const old=document.getElementById("toast-el");if(old)old.remove();
+  const t=document.createElement("div");t.id="toast-el";t.className="toast toast-"+type;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{if(t.parentNode)t.remove();},3500);
+}
+
+// ── INIT ──
+window.addEventListener("load",function(){
+  document.getElementById("pg-login").style.display="flex";
+  document.getElementById("pg-admin").style.display="none";
+});
+
+
+// ════════════════════════════════════════
+// MODULE BUS & PUBLICITÉS RÉGIONALES
+// ════════════════════════════════════════
+
+const REGIONS_MALI = [
+  {id:"kayes",nom:"Kayes",emoji:"🚂",region:"R1"},
+  {id:"koulikoro",nom:"Koulikoro",emoji:"🌍",region:"R2"},
+  {id:"sikasso",nom:"Sikasso",emoji:"🌿",region:"R3"},
+  {id:"segou",nom:"Ségou",emoji:"🏺",region:"R4"},
+  {id:"mopti",nom:"Mopti",emoji:"🐊",region:"R5"},
+  {id:"tombouctou",nom:"Tombouctou",emoji:"🕌",region:"R6"},
+  {id:"gao",nom:"Gao",emoji:"⭐",region:"R7"},
+  {id:"kidal",nom:"Kidal",emoji:"🏔️",region:"R8"},
+  {id:"taoudenit",nom:"Taoudénit",emoji:"🧂",region:"R9"},
+  {id:"menaka",nom:"Ménaka",emoji:"🦁",region:"R10"},
+  {id:"bougouni",nom:"Bougouni",emoji:"🌳",region:"R11"},
+  {id:"dioila",nom:"Dioïla",emoji:"🌾",region:"R12"},
+  {id:"nioro",nom:"Nioro",emoji:"🏔️",region:"R13"},
+  {id:"kita",nom:"Kita",emoji:"🌄",region:"R15"},
+  {id:"nara",nom:"Nara",emoji:"🏜️",region:"R16"},
+  {id:"bandiagara",nom:"Bandiagara",emoji:"🏔️",region:"R17"},
+  {id:"san",nom:"San",emoji:"🌾",region:"R18"},
+  {id:"douentza",nom:"Douentza",emoji:"🐘",region:"R19"},
+  {id:"koutiala",nom:"Koutiala",emoji:"🌱",region:"RC"},
+  {id:"bamako",nom:"District Bamako",emoji:"🏙️",region:"CAP"},
+];
+
+const COMPAGNIES_BUS = [
+  {id:1,nom:"SONEF",trajets:"Bamako-Ségou-Mopti",actif:true,tel:"+22376000001",prix_base:3500},
+  {id:2,nom:"Rimbo Transport",trajets:"Toutes destinations",actif:true,tel:"+22376000002",prix_base:4000},
+  {id:3,nom:"Bani Transport",trajets:"Nord Mali",actif:true,tel:"+22376000003",prix_base:5000},
+  {id:4,nom:"Bittar Transport",trajets:"Kayes-Dakar",actif:true,tel:"+22376000004",prix_base:8000},
+  {id:5,nom:"Diarra Bus",trajets:"Sikasso-Bougouni",actif:true,tel:"+22376000005",prix_base:3000},
+  {id:6,nom:"Autre compagnie",trajets:"Variable",actif:false,tel:"—",prix_base:0},
+];
+
+const TARIFS_BUS = [
+  {de:"Bamako",vers:"Ségou",duree:"3h",prix:3500,compagnie:"SONEF"},
+  {de:"Bamako",vers:"Mopti",duree:"7h",prix:6000,compagnie:"SONEF"},
+  {de:"Bamako",vers:"Sikasso",duree:"5h",prix:5000,compagnie:"Diarra Bus"},
+  {de:"Bamako",vers:"Kayes",duree:"8h",prix:7000,compagnie:"Bittar"},
+  {de:"Bamako",vers:"Gao",duree:"14h",prix:12000,compagnie:"Rimbo"},
+  {de:"Bamako",vers:"Tombouctou",duree:"16h",prix:15000,compagnie:"Rimbo"},
+  {de:"Bamako",vers:"Koutiala",duree:"6h",prix:5500,compagnie:"SONEF"},
+  {de:"Bamako",vers:"Bougouni",duree:"4h",prix:4000,compagnie:"Diarra Bus"},
+  {de:"Ségou",vers:"Mopti",duree:"4h",prix:4000,compagnie:"SONEF"},
+  {de:"Ségou",vers:"Niono",duree:"2h",prix:2000,compagnie:"SONEF"},
+];
+
+const RESERVATIONS_BUS = [
+  {id:"BUS001",client:"Aminata Sanogo",tel:"79111222",de:"Bamako",vers:"Ségou",date:"14/06/2026",dateRetour:"21/06/2026",heure:"09h00",places:2,compagnie:"SONEF",paiement:"Orange Money",prix:7000,type:"aller-retour",statut:"confirmé"},
+  {id:"BUS002",client:"Boubacar Diarra",tel:"76333444",de:"Bamako",vers:"Mopti",date:"15/06/2026",dateRetour:"",heure:"05h30",places:1,compagnie:"Rimbo",paiement:"Wave",prix:6000,type:"aller simple",statut:"en attente"},
+  {id:"BUS003",client:"Mariam Coulibaly",tel:"65555666",de:"Bamako",vers:"Kayes",date:"16/06/2026",dateRetour:"23/06/2026",heure:"14h00",places:3,compagnie:"Bittar",paiement:"Orange Money",prix:21000,type:"aller-retour",statut:"confirmé"},
+  {id:"BUS004",client:"Oumar Traoré",tel:"70777888",de:"Ségou",vers:"Mopti",date:"14/06/2026",dateRetour:"",heure:"09h00",places:1,compagnie:"SONEF",paiement:"Moov",prix:4000,type:"aller simple",statut:"annulé"},
+  {id:"BUS005",client:"Fatoumata Keita",tel:"66789012",de:"Bamako",vers:"Sikasso",date:"17/06/2026",dateRetour:"24/06/2026",heure:"17h30",places:2,compagnie:"Diarra Bus",paiement:"Wave",prix:10000,type:"aller-retour",statut:"en attente"},
+];
+
+let PUBS_REGIONS = [
+  {id:1,region:"segou",nom_region:"Ségou",partenaire:"Hôtel Djoliba",cat:"Hôtel",actif:true,contact:"76123456",emoji:"🏨",photo:"",video:""},
+  {id:2,region:"mopti",nom_region:"Mopti",partenaire:"Lodge du Delta",cat:"Tourisme",actif:true,contact:"65987654",emoji:"🏕️",photo:"",video:""},
+  {id:3,region:"kayes",nom_region:"Kayes",partenaire:"Immo Kayes",cat:"Immobilier",actif:false,contact:"70456789",emoji:"🏠",photo:"",video:""},
+  {id:4,region:"sikasso",nom_region:"Sikasso",partenaire:"Agro Sikasso",cat:"Agriculture",actif:true,contact:"79234567",emoji:"🌿",photo:"",video:""},
+  {id:5,region:"bamako",nom_region:"Bamako",partenaire:"Hôtel Laïco",cat:"Hôtel",actif:true,contact:"76000001",emoji:"🏨",photo:"",video:""},
+  {id:6,region:"bamako",nom_region:"Bamako",partenaire:"Immo Mali",cat:"Immobilier",actif:true,contact:"76000002",emoji:"🏠",photo:"",video:""},
+];
+
+// ── RÉSERVATIONS BUS ──
+function renderBus(){
+  const total=RESERVATIONS_BUS.reduce((a,r)=>a+(r.statut!=="annulé"?r.prix:0),0);
+  document.getElementById("content").innerHTML=`
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">🎫</div><div class="stat-val">${RESERVATIONS_BUS.length}</div><div class="stat-lbl">Total réservations</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">${RESERVATIONS_BUS.filter(r=>r.statut==="confirmé").length}</div><div class="stat-lbl">Confirmées</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val">${RESERVATIONS_BUS.filter(r=>r.statut==="en attente").length}</div><div class="stat-lbl">En attente</div></div>
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">${fmt(total)}</div><div class="stat-lbl">Revenus (FCFA)</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr">
+        <div class="table-title">🚌 Réservations Bus</div>
+        <div style="display:flex;gap:8px">
+          <select class="form-input" onchange="filtrerBus(this.value)" style="padding:6px 10px;font-size:13px;border-radius:8px;border:1px solid var(--border)">
+            <option value="tous">Tous</option>
+            <option value="en attente">En attente</option>
+            <option value="confirmé">Confirmés</option>
+            <option value="annulé">Annulés</option>
+          </select>
+          <button class="btn btn-primary btn-small" onclick="nouvelleReservation()">➕ Nouvelle</button>
+        </div>
+      </div>
+      <table id="bus-table">
+        <thead><tr><th>ID</th><th>Client</th><th>Téléphone</th><th>Trajet</th><th>Type</th><th>Date aller</th><th>Date retour</th><th>Heure</th><th>Places</th><th>Compagnie</th><th>Paiement</th><th>Prix</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody id="bus-tbody">${RESERVATIONS_BUS.map(r=>`<tr data-statut="${r.statut}">
+          <td><b>${r.id}</b></td>
+          <td>${r.client}</td>
+          <td>${r.tel}</td>
+          <td><b>${r.de}</b> → ${r.vers}</td>
+          <td><span class="badge ${r.type==="aller-retour"?"badge-blue":"badge-green"}">${r.type==="aller-retour"?"🔄 A/R":"→ Aller"}</span></td>
+          <td>${r.date}</td>
+          <td>${r.dateRetour||"—"}</td>
+          <td>${r.heure}</td>
+          <td style="text-align:center">${r.places}</td>
+          <td>${r.compagnie}</td>
+          <td>${r.paiement}</td>
+          <td><b>${fmt(r.prix)} F</b></td>
+          <td><span class="badge ${r.statut==="confirmé"?"badge-green":r.statut==="en attente"?"badge-yellow":"badge-red"}">${r.statut}</span></td>
+          <td style="display:flex;gap:4px">
+            ${r.statut==="en attente"?`
+              <button class="btn btn-green btn-small" onclick="confirmerBus('${r.id}')">✅</button>
+              <button class="btn btn-red btn-small" onclick="annulerBus('${r.id}')">❌</button>
+            `:r.statut==="confirmé"?`
+              <button class="btn btn-small" style="background:#fef3c7;color:#d97706" onclick="whatsappClient('${r.tel}','${r.client}')">📱</button>
+            `:""}
+          </td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+function filtrerBus(val){
+  document.querySelectorAll("#bus-tbody tr").forEach(tr=>{
+    tr.style.display=(val==="tous"||tr.dataset.statut===val)?"":"none";
+  });
+}
+
+function confirmerBus(id){
+  const r=RESERVATIONS_BUS.find(x=>x.id===id);
+  if(r){r.statut="confirmé";renderBus();toast("✅ Réservation "+id+" confirmée !","s");}
+}
+
+function annulerBus(id){
+  if(!confirm("Annuler la réservation "+id+" ?")) return;
+  const r=RESERVATIONS_BUS.find(x=>x.id===id);
+  if(r){r.statut="annulé";renderBus();toast("❌ Réservation annulée","e");}
+}
+
+function whatsappClient(tel,nom){
+  const msg=encodeURIComponent("Bonjour "+nom+", votre billet bus MaliTaxi est confirmé ✅");
+  window.open("https://wa.me/"+tel.replace(/[^0-9]/g,"")+"?text="+msg,"_blank");
+}
+
+function nouvelleReservation(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">🎫 Nouvelle réservation bus</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Nom client</label><input class="form-input" id="bn" placeholder="Prénom Nom"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Téléphone</label><input class="form-input" id="bt" placeholder="+223 XX XXX XXX"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Départ</label>
+        <select class="form-input" id="bde"><option>Bamako</option>${REGIONS_MALI.map(r=>`<option>${r.nom}</option>`).join("")}</select>
+      </div>
+      <div class="form-group" style="flex:1"><label class="form-label">Destination</label>
+        <select class="form-input" id="bvers">${REGIONS_MALI.map(r=>`<option>${r.nom}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Date</label><input class="form-input" id="bdate" type="date"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Compagnie</label>
+        <select class="form-input" id="bcomp">${COMPAGNIES_BUS.filter(c=>c.actif).map(c=>`<option>${c.nom}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Places</label><input class="form-input" id="bplaces" type="number" value="1" min="1" max="10"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Paiement</label>
+        <select class="form-input" id="bpay"><option>Orange Money</option><option>Wave</option><option>Moov Money</option><option>Cash</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Type de billet</label>
+        <select class="form-input" id="btype" onchange="document.getElementById('retour-row').style.display=this.value==='aller-retour'?'flex':'none'">
+          <option value="aller simple">→ Aller simple</option>
+          <option value="aller-retour">🔄 Aller-Retour</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1" id="retour-row" style="display:none"><label class="form-label">Date retour</label><input class="form-input" id="bretour" type="date"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Prix total (FCFA)</label><input class="form-input" id="bprix" type="number" placeholder="5000"/></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="ajouterReservBus()">✅ Créer</button>
+    </div>`;
+  openModal();
+}
+
+function ajouterReservBus(){
+  const n=document.getElementById("bn").value,t=document.getElementById("bt").value,
+    de=document.getElementById("bde").value,vers=document.getElementById("bvers").value,
+    date=document.getElementById("bdate").value,comp=document.getElementById("bcomp").value,
+    places=parseInt(document.getElementById("bplaces").value)||1,
+    pay=document.getElementById("bpay").value,prix=parseInt(document.getElementById("bprix").value)||0;
+  if(!n||!t||!date){toast("⚠️ Remplissez tous les champs","e");return;}
+  const id="BUS"+String(RESERVATIONS_BUS.length+1).padStart(3,"0");
+  const btype=document.getElementById("btype")?.value||"aller simple";
+  const bretour=document.getElementById("bretour")?.value||"";
+  RESERVATIONS_BUS.unshift({id,client:n,tel:t,de,vers,date:date.split("-").reverse().join("/"),dateRetour:bretour?bretour.split("-").reverse().join("/"):"",heure:"09h00",places,compagnie:comp,paiement:pay,prix,type:btype,statut:"en attente"});
+  closeModal();renderBus();toast("🎫 Réservation "+id+" créée !","s");
+}
+
+// ── COMPAGNIES BUS ──
+function renderCompagnies(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🏢 Compagnies de transport (${COMPAGNIES_BUS.length})</div>
+        <button class="btn btn-primary btn-small" onclick="ajouterCompagnie()">➕ Ajouter</button>
+      </div>
+      <table>
+        <thead><tr><th>Compagnie</th><th>Trajets</th><th>Téléphone</th><th>Prix base</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${COMPAGNIES_BUS.map(c=>`<tr>
+          <td><b>${c.nom}</b></td>
+          <td style="font-size:12px;color:var(--muted)">${c.trajets}</td>
+          <td>${c.tel}</td>
+          <td>${c.prix_base>0?fmt(c.prix_base)+" F":"—"}</td>
+          <td><span class="badge ${c.actif?"badge-green":"badge-red"}">${c.actif?"✅ Actif":"❌ Inactif"}</span></td>
+          <td><button class="btn btn-small ${c.actif?"btn-red":"btn-green"}" onclick="toggleCompagnie(${c.id})">${c.actif?"Désactiver":"Activer"}</button></td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+function toggleCompagnie(id){
+  const c=COMPAGNIES_BUS.find(x=>x.id===id);
+  if(c){c.actif=!c.actif;renderCompagnies();toast((c.actif?"✅ ":"❌ ")+c.nom+(c.actif?" activée":" désactivée"),c.actif?"s":"e");}
+}
+
+function ajouterCompagnie(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">🏢 Nouvelle compagnie</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Nom compagnie</label><input class="form-input" id="cn" placeholder="Ex: Mali Express"/></div>
+    <div class="form-group"><label class="form-label">Trajets couverts</label><input class="form-input" id="ct" placeholder="Ex: Bamako-Ségou-Mopti"/></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Téléphone</label><input class="form-input" id="ctel" placeholder="+223 XX XXX XXX"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Prix de base (FCFA)</label><input class="form-input" id="cprix" type="number" placeholder="3500"/></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="creerCompagnie()">✅ Créer</button>
+    </div>`;
+  openModal();
+}
+
+function creerCompagnie(){
+  const n=document.getElementById("cn").value,t=document.getElementById("ct").value,
+    tel=document.getElementById("ctel").value,prix=parseInt(document.getElementById("cprix").value)||0;
+  if(!n||!t){toast("⚠️ Remplissez tous les champs","e");return;}
+  COMPAGNIES_BUS.push({id:COMPAGNIES_BUS.length+1,nom:n,trajets:t,actif:true,tel,prix_base:prix});
+  closeModal();renderCompagnies();toast("✅ "+n+" ajoutée !","s");
+}
+
+// ── TARIFS BUS ──
+function renderTarifsbus(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">💰 Tarifs bus par trajet</div>
+        <button class="btn btn-primary btn-small" onclick="ajouterTarifBus()">➕ Nouveau tarif</button>
+      </div>
+      <table id="tarifs-bus-table">
+        <thead><tr><th>Départ</th><th>Arrivée</th><th>Durée</th><th>Prix</th><th>Compagnie</th><th>Actions</th></tr></thead>
+        <tbody>${TARIFS_BUS.map((t,i)=>`<tr>
+          <td><b>${t.de}</b></td>
+          <td><b>${t.vers}</b></td>
+          <td>⏱️ ${t.duree}</td>
+          <td><b style="color:var(--blue)">${fmt(t.prix)} F</b></td>
+          <td>${t.compagnie}</td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btn-small btn-primary" onclick="modifierTarifBus(${i})">✏️</button>
+            <button class="btn btn-small btn-red" onclick="supprimerTarifBus(${i})">🗑️</button>
+          </td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+function ajouterTarifBus(){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">➕ Nouveau tarif bus</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Départ</label>
+        <select class="form-input" id="tde"><option>Bamako</option>${REGIONS_MALI.map(r=>`<option>${r.nom}</option>`).join("")}</select>
+      </div>
+      <div class="form-group" style="flex:1"><label class="form-label">Arrivée</label>
+        <select class="form-input" id="tvers">${REGIONS_MALI.map(r=>`<option>${r.nom}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Durée</label><input class="form-input" id="tduree" placeholder="Ex: 3h"/></div>
+      <div class="form-group" style="flex:1"><label class="form-label">Prix (FCFA)</label><input class="form-input" id="tprix" type="number" placeholder="3500"/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Compagnie</label>
+      <select class="form-input" id="tcomp">${COMPAGNIES_BUS.filter(c=>c.actif).map(c=>`<option>${c.nom}</option>`).join("")}</select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="creerTarifBus()">✅ Créer</button>
+    </div>`;
+  openModal();
+}
+
+function creerTarifBus(){
+  const de=document.getElementById("tde").value,vers=document.getElementById("tvers").value,
+    duree=document.getElementById("tduree").value,prix=parseInt(document.getElementById("tprix").value)||0,
+    comp=document.getElementById("tcomp").value;
+  if(!duree||!prix){toast("⚠️ Remplissez tous les champs","e");return;}
+  TARIFS_BUS.push({de,vers,duree,prix,compagnie:comp});
+  closeModal();renderTarifsbus();toast("✅ Tarif ajouté !","s");
+}
+
+function supprimerTarifBus(i){
+  if(confirm("Supprimer ce tarif ?")){ TARIFS_BUS.splice(i,1);renderTarifsbus();toast("🗑️ Tarif supprimé","e");}
+}
+
+function modifierTarifBus(i){
+  const t=TARIFS_BUS[i];
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">✏️ Modifier tarif</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Prix (FCFA)</label><input class="form-input" id="mtp" type="number" value="${t.prix}"/></div>
+    <div class="form-group"><label class="form-label">Durée</label><input class="form-input" id="mtd" value="${t.duree}"/></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="TARIFS_BUS[${i}].prix=parseInt(document.getElementById('mtp').value)||TARIFS_BUS[${i}].prix;TARIFS_BUS[${i}].duree=document.getElementById('mtd').value;closeModal();renderTarifsbus();toast('✅ Tarif modifié','s')">✅ Sauver</button>
+    </div>`;
+  openModal();
+}
+
+// ── PUBLICITÉS RÉGIONALES AVEC MEDIA ──
+function renderPubregion(){
+  document.getElementById("content").innerHTML=`
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-icon">📢</div><div class="stat-val">${PUBS_REGIONS.length}</div><div class="stat-lbl">Total partenaires</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val">${PUBS_REGIONS.filter(p=>p.actif).length}</div><div class="stat-lbl">Actifs</div></div>
+      <div class="stat-card"><div class="stat-icon">🗺️</div><div class="stat-val">${[...new Set(PUBS_REGIONS.map(p=>p.region))].length}</div><div class="stat-lbl">Régions couvertes</div></div>
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-val">${fmt(PUBS_REGIONS.filter(p=>p.actif).length*25000)}</div><div class="stat-lbl">Revenus pub (FCFA)</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr">
+        <div class="table-title">📢 Partenaires par région</div>
+        <button class="btn btn-primary btn-small" onclick="ajouterPubRegion()">➕ Nouveau partenaire</button>
+      </div>
+      <table>
+        <thead><tr><th>Région</th><th>Visuel</th><th>Partenaire</th><th>Catégorie</th><th>Media</th><th>Contact</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${PUBS_REGIONS.map(p=>`<tr>
+          <td><b>${REGIONS_MALI.find(r=>r.id===p.region)?.emoji||"🌍"} ${p.nom_region}</b></td>
+          <td><div style="width:60px;height:40px;background:linear-gradient(135deg,#1E40AF,#3B82F6);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px">${p.emoji||"🏢"}</div></td>
+          <td><b>${p.partenaire}</b></td>
+          <td><span class="badge badge-blue">${p.cat}</span></td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btn-small" style="background:#dbeafe;color:#1d4ed8" onclick="ajouterPhoto(${p.id})">📷 Photo</button>
+            <button class="btn btn-small" style="background:#f3e8ff;color:#7c3aed" onclick="ajouterVideo(${p.id})">🎥 Vidéo</button>
+          </td>
+          <td>${p.contact}</td>
+          <td><span class="badge ${p.actif?"badge-green":"badge-red"}">${p.actif?"✅ Actif":"❌ Inactif"}</span></td>
+          <td style="display:flex;gap:4px">
+            <button class="btn btn-small ${p.actif?"btn-red":"btn-green"}" onclick="togglePubRegion(${p.id})">${p.actif?"Désactiver":"Activer"}</button>
+            <button class="btn btn-red btn-small" onclick="supprimerPubRegion(${p.id})">🗑️</button>
+          </td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><div class="table-title">🗺️ Couverture par région</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+        ${REGIONS_MALI.map(r=>{
+          const pubs=PUBS_REGIONS.filter(p=>p.region===r.id&&p.actif);
+          return `<div style="background:${pubs.length>0?"#eff6ff":"#f8fafc"};border-radius:10px;padding:12px;border:1px solid ${pubs.length>0?"#3b82f6":"#e2e8f0"}">
+            <div style="font-size:20px">${r.emoji}</div>
+            <div style="font-weight:700;font-size:13px;margin-top:4px">${r.nom}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${pubs.length>0?pubs.length+" partenaire"+(pubs.length>1?"s":""):"Aucun partenaire"}</div>
+            <button class="btn btn-primary btn-small" style="margin-top:8px;width:100%" onclick="ajouterPubPourRegion('${r.id}','${r.nom}')">➕</button>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+}
+
+function togglePubRegion(id){
+  const p=PUBS_REGIONS.find(x=>x.id===id);
+  if(p){p.actif=!p.actif;renderPubregion();toast((p.actif?"✅ ":"❌ ")+p.partenaire+(p.actif?" activé":" désactivé"),p.actif?"s":"e");}
+}
+
+function supprimerPubRegion(id){
+  const p=PUBS_REGIONS.find(x=>x.id===id);
+  if(confirm("Supprimer "+p.partenaire+" ?")){PUBS_REGIONS.splice(PUBS_REGIONS.indexOf(p),1);renderPubregion();toast("🗑️ Partenaire supprimé","e");}
+}
+
+function ajouterPubRegion(){ajouterPubPourRegion("","");}
+
+function ajouterPubPourRegion(regionId,regionNom){
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">➕ Nouveau partenaire</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Région</label>
+      <select class="form-input" id="pr">${REGIONS_MALI.map(r=>`<option value="${r.id}" ${r.id===regionId?"selected":""}>${r.emoji} ${r.nom}</option>`).join("")}</select>
+    </div>
+    <div class="form-group"><label class="form-label">Nom du partenaire</label><input class="form-input" id="pp" placeholder="Ex: Hôtel du Fleuve"/></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1"><label class="form-label">Catégorie</label>
+        <select class="form-input" id="pc2">
+          <option>Hôtel</option><option>Immobilier</option><option>Construction</option>
+          <option>Électronique</option><option>Beauté</option><option>Événements</option>
+          <option>Shopping</option><option>Tourisme</option><option>Agriculture</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1"><label class="form-label">Contact (téléphone)</label><input class="form-input" id="ptel2" placeholder="7X XXX XXX"/></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="creerPubRegion()">✅ Ajouter</button>
+    </div>`;
+  openModal();
+}
+
+function ajouterPhoto(id){
+  const p=PUBS_REGIONS.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">📷 Photo — ${p.partenaire}</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Lien photo (URL image)</label>
+      <input class="form-input" id="photo-url" placeholder="https://exemple.com/photo.jpg" value="${p.photo||""}"/>
+    </div>
+    <div id="photo-preview" style="margin:12px 0;${p.photo?"":"display:none"}">
+      ${p.photo?`<img src="${p.photo}" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover">`:""}
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">💡 Astuce: Utilisez un lien Google Drive, Imgur, ou hébergeur d'images</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="sauverPhoto(${id})">✅ Sauvegarder</button>
+    </div>`;
+  openModal();
+}
+
+function sauverPhoto(id){
+  const p=PUBS_REGIONS.find(x=>x.id===id);
+  const url=document.getElementById("photo-url").value;
+  if(p){p.photo=url;closeModal();renderPubregion();toast("📷 Photo mise à jour pour "+p.partenaire,"s");}
+}
+
+function ajouterVideo(id){
+  const p=PUBS_REGIONS.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById("modal-box").innerHTML=`
+    <div class="modal-hdr"><div class="modal-title">🎥 Vidéo — ${p.partenaire}</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+    <div class="form-group"><label class="form-label">Lien vidéo YouTube</label>
+      <input class="form-input" id="video-url" placeholder="https://youtube.com/watch?v=..." value="${p.video||""}"/>
+    </div>
+    ${p.video?`<div style="margin:12px 0"><iframe width="100%" height="180" src="https://www.youtube.com/embed/${p.video.includes("v=")?p.video.split("v=")[1].split("&")[0]:p.video.split("/").pop()}" frameborder="0" allowfullscreen style="border-radius:10px"></iframe></div>`:""}
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">💡 Collez le lien YouTube de la vidéo publicitaire du partenaire</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn" style="background:var(--border)" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="sauverVideo(${id})">✅ Sauvegarder</button>
+    </div>`;
+  openModal();
+}
+
+function sauverVideo(id){
+  const p=PUBS_REGIONS.find(x=>x.id===id);
+  const url=document.getElementById("video-url").value;
+  if(p){p.video=url;closeModal();renderPubregion();toast("🎥 Vidéo mise à jour pour "+p.partenaire,"s");}
+}
+
+function creerPubRegion(){
+  const rId=document.getElementById("pr").value,
+    rNom=REGIONS_MALI.find(x=>x.id===rId)?.nom||rId,
+    nom=document.getElementById("pp").value,
+    cat=document.getElementById("pc2").value,
+    tel=document.getElementById("ptel2").value;
+  if(!nom){toast("⚠️ Entrez le nom du partenaire","e");return;}
+  const emojis={"Hôtel":"🏨","Immobilier":"🏠","Construction":"🏗️","Électronique":"📱","Beauté":"💄","Événements":"🎉","Shopping":"🛍️","Tourisme":"🏕️","Agriculture":"🌿","Autre":"🏢"};
+  PUBS_REGIONS.push({id:PUBS_REGIONS.length+1,region:rId,nom_region:rNom,partenaire:nom,cat,actif:true,contact:tel||"—",emoji:emojis[cat]||"🏢",photo:"",video:""});
+  closeModal();renderPubregion();toast("✅ "+nom+" ajouté pour "+rNom+" !","s");
+}
+
+// ── MISE À JOUR NAVIGATION ──
+const _goOld2 = go;
+go = function(p){
+  const fns = {
+    bus: renderBus,
+    compagnies: renderCompagnies,
+    tarifsbus: renderTarifsbus,
+    pubregion: renderPubregion,
+  };
+  if(fns[p]){
+    document.querySelectorAll(".sb-item").forEach(e=>e.classList.remove("active"));
+    const si=document.getElementById("si-"+p);if(si)si.classList.add("active");
+    const titles={
+      bus:"🚌 Réservations Bus",
+      compagnies:"🏢 Compagnies Bus",
+      tarifsbus:"💰 Tarifs Bus",
+      pubregion:"📢 Publicités Régionales",
+    };
+    if(titles[p]) document.getElementById("pg-ttl").textContent=titles[p];
+    fns[p]();
+  } else {
+    _goOld2(p);
+  }
+};
+
+
+function ouvrirMaliNavLite(){
+  window.open("https://mikailou33-collab.github.io/mali-nav/mali-nav-lite.html","_blank");
+}
+
+function renderPositions(){
+  var c=document.getElementById('content');
+  c.innerHTML='<div style="padding:20px"><h2 style="margin-bottom:16px">📍 Positions clients en temps réel</h2><div id="pos-list"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement...</div></div></div>';
+  
+  db.ref('positions').orderByChild('timestamp').limitToLast(20).on('value', function(snap){
+    var data = snap.val();
+    var list = document.getElementById('pos-list');
+    if(!data){
+      list.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">📍 Aucune position client pour le moment</div>';
+      return;
+    }
+    var html='<div style="display:grid;gap:10px">';
+    Object.keys(data).reverse().forEach(function(key){
+      var p=data[key];
+      var date=new Date(p.timestamp).toLocaleString('fr-FR');
+      var mapsUrl='https://www.google.com/maps?q='+p.lat+','+p.lng;
+      html+='<div style="background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border)">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<div><div style="font-weight:800;font-size:14px">'+p.nom+'</div>'
+        +'<div style="font-size:12px;color:var(--muted)">'+p.tel+' · '+p.service+'</div></div>'
+        +'<span style="background:rgba(5,150,105,.2);color:#34d399;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700">'+p.statut+'</span>'
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--muted);margin-bottom:8px">📅 '+date+' · 🎯 Précision: '+p.accuracy+'m</div>'
+        +'<div style="display:flex;gap:8px">'
+        +'<a href="'+mapsUrl+'" target="_blank" style="flex:1;padding:8px;background:var(--blue);border-radius:8px;color:#fff;text-decoration:none;text-align:center;font-size:12px;font-weight:700">🗺️ Voir sur Maps</a>'
+        +'<button onclick="db.ref('positions/'+key+'').remove()" style="padding:8px 12px;background:rgba(220,38,38,.2);border:1px solid rgba(220,38,38,.3);border-radius:8px;color:#f87171;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🗑️ Supprimer</button>'
+        +'</div></div>';
+    });
+    html+='</div>';
+    list.innerHTML=html;
+  });
+}
+
+</script>
+</body>
+</html>
