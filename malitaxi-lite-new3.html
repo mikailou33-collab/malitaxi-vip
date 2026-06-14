@@ -230,7 +230,7 @@ body{font-family:system-ui,sans-serif;background:var(--dark);color:#fff;min-heig
       <div class="pos-city" id="pos-city">Bamako, Mali</div>
       <div class="pos-sub">Position détectée automatiquement</div>
     </div>
-    <div style="font-size:12px;color:var(--gold);font-weight:700;cursor:pointer" onclick="detecterPosition()">🔄</div>
+    <div style="font-size:12px;color:var(--gold);font-weight:700;cursor:pointer" onclick="envoyerPositionLite()" style="background:linear-gradient(135deg,#F5A623,#e8920f);border-radius:8px;padding:6px 10px;border:none;color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">🔄 Envoyer</div>
   </div>
 
   <!-- SERVICES -->
@@ -688,6 +688,55 @@ function showToast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg;t.style.display='block';
   setTimeout(function(){t.style.display='none';},3000);
+}
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+window.addEventListener('load', function(){
+  var s=document.createElement('script');
+  s.src='https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+  s.onload=function(){
+    if(!firebase.apps.length){
+      firebase.initializeApp({
+        apiKey:"AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+        databaseURL:"https://malitaxi-default-rtdb.firebaseio.com",
+        projectId:"malitaxi"
+      });
+    }
+    window.dbLite=firebase.database();
+  };
+  document.head.appendChild(s);
+});
+
+function envoyerPositionLite(){
+  if(!navigator.geolocation){ showToast('GPS non disponible'); return; }
+  showToast('📍 Envoi position...');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var data={
+      lat:pos.coords.latitude,
+      lng:pos.coords.longitude,
+      accuracy:Math.round(pos.coords.accuracy),
+      timestamp:new Date().toISOString(),
+      nom:currentUser?currentUser.nom:'Client Lite',
+      tel:currentUser?currentUser.tel:'+223 XX XX XX XX',
+      service:'taxi',
+      statut:'en_attente',
+      app:'MaliTaxi Lite'
+    };
+    if(window.dbLite){
+      window.dbLite.ref('positions/lite_'+Date.now()).set(data).then(function(){
+        showToast('✅ Position envoyée !');
+      }).catch(function(){
+        showToast('❌ Erreur envoi');
+      });
+    } else {
+      showToast('⚠️ Firebase non connecté');
+    }
+  }, function(){
+    showToast('❌ GPS non disponible');
+  });
 }
 </script>
 </body>
