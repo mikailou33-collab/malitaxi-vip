@@ -432,7 +432,7 @@ function envoyerPosition(){
   </div>
 
   <!-- LOCATION -->
-  <div class="loc-box">
+  <div class="loc-box" style="display:flex;align-items:center">
     <span style="font-size:20px">📍</span>
     <div><div class="loc-lbl">Votre position</div><div class="loc-city">Bamako, Mali</div></div>
   </div>
@@ -1121,6 +1121,7 @@ function renderContent(){
   const c=document.getElementById("content");
   if(["taxi","moto","livraison"].includes(svc)){ c.innerHTML=renderRide(); return; }
   if(svc==="aeroport"){ c.innerHTML=renderAvion(); return; }
+  if(svc==="malinav"){ window.open("https://mikailou33-collab.github.io/mali-nav/mali-nav-lite.html","_blank"); setSvc("taxi"); return; }
   if(svc==="bus"){ c.innerHTML=renderBus(); return; }
 }
 

@@ -279,6 +279,53 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
 [data-svc="aeroport"],[data-svc="bus"]{display:none!important}.svc-btn[onclick*="aeroport"],.svc-btn[onclick*="bus"]{display:none!important}</style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+  authDomain: "malitaxi.firebaseapp.com",
+  databaseURL: "https://malitaxi-default-rtdb.firebaseio.com",
+  projectId: "malitaxi",
+  storageBucket: "malitaxi.firebasestorage.app",
+  messagingSenderId: "505754219310",
+  appId: "1:505754219310:web:1098a82ac81ee10eec00bf"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Envoyer position client vers Firebase
+function envoyerPosition(){
+  if(!navigator.geolocation){
+    showToast('GPS non disponible');
+    return;
+  }
+  showToast('📍 Envoi position...');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const clientId = 'client_' + Date.now();
+    const data = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: Math.round(pos.coords.accuracy),
+      timestamp: new Date().toISOString(),
+      nom: localStorage.getItem('malitaxi_nom') || 'Client VIP',
+      tel: localStorage.getItem('malitaxi_tel') || '+223 XX XX XX XX',
+      service: currentService || 'taxi',
+      statut: 'en_attente'
+    };
+    db.ref('positions/' + clientId).set(data).then(function(){
+      showToast('✅ Position envoyée à MaliTaxi !');
+      localStorage.setItem('malitaxi_clientId', clientId);
+    }).catch(function(err){
+      showToast('❌ Erreur envoi position');
+    });
+  }, function(){
+    showToast('❌ Impossible de détecter votre position');
+  });
+}
+</script>
 </head>
 <body>
 
