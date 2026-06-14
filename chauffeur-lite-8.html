@@ -654,9 +654,9 @@ function deconnexion(){if(confirm("Se déconnecter ?")){document.getElementById(
 showSplash();
 </script>
 
-<div id="histo-lite-panel" style="display:none;position:fixed;inset:0;background:#0F0F1A;z-index:900;overflow-y:auto;font-family:inherit;padding:20px">
+<div id="histo-lite-panel" style="display:none;position:fixed;inset:0;background:#0F0F1A;z-index:900;overflow-y:auto;font-family:inherit;padding:20px 20px 20px 20px">
 <div style="max-width:420px;margin:0 auto">
-<button onclick="document.getElementById('histo-lite-panel').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;margin-bottom:16px">← Retour</button>
+<div style="position:sticky;top:0;background:#0F0F1A;padding-bottom:10px;z-index:10"><button onclick="document.getElementById('histo-lite-panel').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer">← Retour</button></div>
 <h2 style="color:#F5A623;margin-bottom:16px">📋 Historique courses</h2>
 <div style="background:#1A1A2E;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid #10b981">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -692,7 +692,7 @@ showSplash();
 
 <div id="docs-lite-panel" style="display:none;position:fixed;inset:0;background:#0F0F1A;z-index:900;overflow-y:auto;font-family:inherit;padding:20px">
 <div style="max-width:420px;margin:0 auto">
-<button onclick="document.getElementById('docs-lite-panel').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;margin-bottom:16px">← Retour</button>
+<div style="position:sticky;top:0;background:#0F0F1A;padding-bottom:10px;z-index:10"><button onclick="document.getElementById('docs-lite-panel').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer">← Retour</button></div>
 <h2 style="color:#F5A623;margin-bottom:16px">📄 Mes Documents</h2>
 <div style="background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8)">⚠️ Tous les documents doivent etre valides pour conduire.</div>
 <div style="background:#1A1A2E;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid #10b981">
