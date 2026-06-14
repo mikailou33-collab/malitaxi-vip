@@ -332,14 +332,14 @@ function go(p){
     blocage:"🚫 Blocage fraudes",commandes:"📋 Commandes",attribution:"🎯 Attribution courses",
     zones:"🗺️ Zones de service",tarifs:"💰 Tarifs & Distance",paiements:"💳 Paiements & Commissions",
     promos:"🎁 Promotions",rapports:"📈 Rapports & Stats",pub:"📢 Publicités",
-    params:"⚙️ Paramètres",malinav:"🇲🇱 Mali Nav Stats"
+    params:"⚙️ Paramètres",malinav:"🇲🇱 Mali Nav Stats", positions:"📍 Positions clients"
   }[p] || p;
   const fns = {
     dashboard:renderDash, live:renderLive, clients:renderClients,
     chauffeurs:renderChauffeurs, validation:renderValidation, blocage:renderBlocage,
     commandes:renderCommandes, attribution:renderAttribution, zones:renderZones,
     tarifs:renderTarifs, paiements:renderPaiements, promos:renderPromos,
-    rapports:renderRapports, pub:renderPub, params:renderParams, malinav:renderMaliNav
+    rapports:renderRapports, pub:renderPub, params:renderParams, malinav:renderMaliNav, positions:renderPositions
   };
   if(fns[p]) fns[p]();
 }
