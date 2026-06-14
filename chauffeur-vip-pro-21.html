@@ -937,5 +937,40 @@ showSplash();
 
 
 </script>
+<div id="docs-panel" style="display:none;position:fixed;inset:0;background:#0F0F1A;z-index:900;overflow-y:auto;font-family:inherit;padding:20px">
+<div style="max-width:420px;margin:0 auto">
+<button onclick="document.getElementById('docs-panel').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:8px 16px;border-radius:8px;cursor:pointer;margin-bottom:16px">← Retour</button>
+<h2 style="color:#F5A623;margin-bottom:16px">📄 Mes Documents</h2>
+<div style="background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,.8)">⚠️ Tous les documents doivent etre valides pour conduire. Verification sous 24-48h.</div>
+<div style="background:#1A1A2E;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid #10b981">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<div style="font-size:14px;font-weight:700;color:#fff">🪪 Carte Nationale d Identite</div>
+<span style="color:#10b981;font-size:12px;font-weight:700">✅ Valide</span></div>
+<div style="font-size:11px;color:rgba(255,255,255,.4)">📅 01/01/2025</div></div>
+<div style="background:#1A1A2E;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid #F5A623">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<div style="font-size:14px;font-weight:700;color:#fff">🚗 Permis de conduire</div>
+<span style="color:#F5A623;font-size:12px;font-weight:700">⏳ En attente</span></div>
+<div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px">📅 10/06/2026</div>
+<button onclick="alert('Document soumis! Verification 24-48h.')" style="padding:8px 16px;background:#F5A623;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit">📷 Uploader</button></div>
+<div style="background:#1A1A2E;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid #dc2626">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<div style="font-size:14px;font-weight:700;color:#fff">📋 Carte grise vehicule</div>
+<span style="color:#dc2626;font-size:12px;font-weight:700">❌ Rejete</span></div>
+<div style="font-size:11px;color:#fca5a5;margin-bottom:8px">Document rejete. Photo floue. Renvoyer svp.</div>
+<button onclick="alert('Document renvoye! Verification 24-48h.')" style="padding:8px 16px;background:#F5A623;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit">📷 Renvoyer</button></div>
+<div style="background:#1A1A2E;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid #F5A623">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<div style="font-size:14px;font-weight:700;color:#fff">🛡️ Assurance vehicule</div>
+<span style="color:#F5A623;font-size:12px;font-weight:700">⏳ En attente</span></div>
+<button onclick="alert('Document soumis! Verification 24-48h.')" style="padding:8px 16px;background:#F5A623;border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit">📷 Uploader</button></div>
+<div style="background:#1A1A2E;border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid #10b981">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<div style="font-size:14px;font-weight:700;color:#fff">📜 Casier judiciaire</div>
+<span style="color:#10b981;font-size:12px;font-weight:700">✅ Valide</span></div>
+<div style="font-size:11px;color:rgba(255,255,255,.4)">📅 15/03/2026</div></div>
+<button onclick="window.open('https://wa.me/+22396551630019','_blank')" style="width:100%;padding:12px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.3);border-radius:10px;color:#25D366;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px">📱 Contacter MaliTaxi</button>
+</div></div>
+<script>function openDocuments(){document.getElementById('docs-panel').style.display='block';}</script>
 </body>
 </html>
