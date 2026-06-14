@@ -173,6 +173,7 @@ tr:hover td{background:var(--bg);}
     <div class="sb-item" id="si-promos" onclick="go('promos')"><span class="sb-ico">🎁</span> Promotions</div>
     <div class="sb-item" id="si-rapports" onclick="go('rapports')"><span class="sb-ico">📈</span> Rapports & Stats</div>
     <div class="sb-sec">Mali Nav</div>
+    <div class="sb-item" id="si-positions" onclick="go('positions')"><span class="sb-ico">📍</span> Positions clients</div>
     <div class="sb-item" id="si-malinav" onclick="go('malinav')"><span class="sb-ico">🇲🇱</span> Mali Nav Stats</div>
     <div class="sb-item" id="si-maliNavLite" onclick="ouvrirMaliNavLite()"><span class="sb-ico">📱</span> Mali Nav Lite</div>
     <div class="sb-sec">Bus & Régions</div>
@@ -1623,6 +1624,70 @@ go = function(p){
 
 function ouvrirMaliNavLite(){
   window.open("https://mikailou33-collab.github.io/mali-nav/mali-nav-lite.html","_blank");
+}
+</script>
+
+<script>
+// Charger Firebase de facon asynchrone
+window.addEventListener('load', function(){
+  var s1 = document.createElement('script');
+  s1.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+  s1.onload = function(){
+    var s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+    s2.onload = function(){
+      firebase.initializeApp({
+        apiKey: "AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+        authDomain: "malitaxi.firebaseapp.com",
+        databaseURL: "https://malitaxi-default-rtdb.firebaseio.com",
+        projectId: "malitaxi",
+        storageBucket: "malitaxi.firebasestorage.app",
+        messagingSenderId: "505754219310",
+        appId: "1:505754219310:web:1098a82ac81ee10eec00bf"
+      });
+      window.db = firebase.database();
+      console.log('Firebase OK');
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+});
+
+function renderPositions(){
+  var c=document.getElementById('content');
+  c.innerHTML='<div style="padding:20px"><h2 style="margin-bottom:16px">📍 Positions clients en temps réel</h2><div id="pos-list"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement Firebase...</div></div></div>';
+  setTimeout(function(){
+    if(!window.db){ 
+      document.getElementById('pos-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">⚠️ Firebase non connecté. Vérifiez votre connexion internet.</div>';
+      return;
+    }
+    window.db.ref("positions").orderByChild("timestamp").limitToLast(20).on("value", function(snap){
+      var data=snap.val();
+      var list=document.getElementById("pos-list");
+      if(!list) return;
+      if(!data){
+        list.innerHTML="<div style='text-align:center;padding:40px;color:var(--muted)'>📍 Aucune position client pour le moment</div>";
+        return;
+      }
+      var html="<div style='display:grid;gap:10px'>";
+      Object.keys(data).reverse().forEach(function(key){
+        var p=data[key];
+        var date=new Date(p.timestamp).toLocaleString("fr-FR");
+        var mapsUrl="https://www.google.com/maps?q="+p.lat+","+p.lng;
+        html+="<div style='background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border)'>"
+          +"<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>"
+          +"<div><div style='font-weight:800;font-size:14px'>"+p.nom+"</div>"
+          +"<div style='font-size:12px;color:var(--muted)'>"+p.tel+" · "+p.service+"</div></div>"
+          +"<span style='background:rgba(5,150,105,.2);color:#34d399;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700'>"+p.statut+"</span>"
+          +"</div>"
+          +"<div style='font-size:12px;color:var(--muted);margin-bottom:8px'>📅 "+date+"</div>"
+          +"<a href='"+mapsUrl+"' target='_blank' style='display:block;padding:8px;background:var(--blue);border-radius:8px;color:#fff;text-decoration:none;text-align:center;font-size:12px;font-weight:700'>🗺️ Voir sur Google Maps</a>"
+          +"</div>";
+      });
+      html+="</div>";
+      list.innerHTML=html;
+    });
+  }, 2000);
 }
 </script>
 </body>
