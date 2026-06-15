@@ -2941,6 +2941,27 @@ function confirmerLivraison(){
 
   // Afficher confirmation
   const code = 'LIV-' + Math.random().toString(36).slice(2,8).toUpperCase();
+  // Générer code 4 chiffres pour confirmation livraison
+  const codeConfirm = Math.floor(1000 + Math.random() * 9000).toString();
+  
+  // Envoyer à Firebase
+  if(window.db){
+    window.db.ref('livraisons/' + code).set({
+      code: code,
+      codeConfirmation: codeConfirm,
+      depart: depart,
+      arrivee: arrivee,
+      destinataire: nom,
+      tel: tel,
+      type: livraisonData.type,
+      paiement: livraisonData.paiement,
+      prix: livraisonData.prix || 1200,
+      statut: 'en_attente',
+      timestamp: new Date().toISOString(),
+      chauffeur: null,
+      app: 'MaliTaxi VIP'
+    });
+  }
   const prix = livraisonData.prix || 1200;
   
   const confDiv = document.createElement('div');
@@ -2952,6 +2973,11 @@ function confirmerLivraison(){
       <div style="background:rgba(245,166,35,.1);border-radius:10px;padding:12px;margin:14px 0;font-size:13px">
         <div style="color:rgba(255,255,255,.6)">Code de suivi</div>
         <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:2px">${code}</div>
+      </div>
+      <div style="background:rgba(5,150,105,.15);border-radius:10px;padding:12px;margin:10px 0;font-size:13px">
+        <div style="color:rgba(255,255,255,.6)">🔐 Code de confirmation livraison</div>
+        <div style="font-size:28px;font-weight:900;color:#34d399;letter-spacing:4px">${codeConfirm}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">Donnez ce code au livreur à la livraison</div>
       </div>
       <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:6px">📍 ${depart} → ${arrivee}</div>
       <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:6px">👤 Pour : ${nom} (${tel})</div>
