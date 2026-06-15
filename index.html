@@ -1,457 +1,497 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mali Nav — Navigation au Mali</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#f5c400">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Mali Nav">
-<meta name="application-name" content="Mali Nav VIP">
-<meta name="description" content="Navigation au Mali — 19 Régions + Bamako • Bus • MaliTaxi">
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('/mali-nav/sw.js')
-      .then(function(reg){ console.log('SW Mali Nav enregistré'); })
-      .catch(function(err){ console.log('SW erreur:', err); });
-  });
-}
-</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MaliTaxi VIP - Transport & Voyage au Mali 🇲🇱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#f1f5f9;--sub:#94a3b8;--yellow:#f5c400;--green:#14a34a;--red:#dc2626}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow-x:hidden}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+*{box-sizing:border-box;margin:0;padding:0;scroll-behavior:smooth}
+:root{
+  --black:#000;--dark:#0A0A00;--card:#111100;
+  --gold:#FFD700;--gold2:#F5A623;--gold3:#C8860A;
+  --text:#FFF8E7;--muted:#A89060;--border:rgba(255,215,0,0.2)
+}
+body{font-family:'Outfit',sans-serif;background:var(--black);color:var(--text);overflow-x:hidden}
 
-/* HEADER */
-.header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:20px 16px 16px;flex-shrink:0;border-bottom:1px solid var(--border)}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:44px;height:44px;background:var(--yellow);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-.logo-title{font-size:22px;font-weight:900;color:var(--yellow)}
-.logo-sub{font-size:10px;color:var(--sub);font-weight:600;margin-top:1px}
-.malitaxi-btn{background:linear-gradient(135deg,#f5c400,#f59e0b);border:none;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit}
-.malitaxi-btn-icon{font-size:18px}
-.malitaxi-btn-text{font-size:11px;font-weight:900;color:#1a1f2e}
+/* NAVBAR */
+nav{position:fixed;top:0;width:100%;background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:100;padding:0 20px}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:70px}
+.nav-logo{display:flex;align-items:center;gap:12px}
+.nav-logo-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold3));display:flex;align-items:center;justify-content:center;font-size:22px}
+.nav-logo-text{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;transition:color .2s}
+.nav-links a:hover{color:var(--gold)}
+.nav-cta{background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000;padding:10px 22px;border-radius:25px;font-size:13px;font-weight:800;text-decoration:none;transition:all .2s}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,215,0,0.4)}
 
-/* SEARCH */
-.search-wrap{position:relative}
-.search-input{width:100%;padding:12px 16px 12px 42px;background:rgba(255,255,255,0.08);border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;color:var(--text);outline:none}
-.search-input::placeholder{color:var(--sub)}
-.search-input:focus{border-color:var(--yellow)}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px}
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,rgba(255,215,0,0.08) 0%,transparent 70%)}
+.hero::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFD700' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:25px;padding:7px 18px;font-size:13px;font-weight:700;color:var(--gold);margin-bottom:24px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(48px,10vw,90px);font-weight:900;line-height:1.05;margin-bottom:20px;background:linear-gradient(135deg,#FFF8E7 0%,var(--gold) 50%,var(--gold3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:clamp(16px,3vw,20px);color:var(--muted);max-width:600px;margin:0 auto 40px;line-height:1.6;font-weight:300}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000;padding:15px 32px;border-radius:30px;font-size:15px;font-weight:800;text-decoration:none;transition:all .3s;display:inline-flex;align-items:center;gap:8px}
+.btn-gold:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(255,215,0,0.5)}
+.btn-outline{border:2px solid rgba(255,215,0,0.4);color:var(--gold);padding:15px 32px;border-radius:30px;font-size:15px;font-weight:800;text-decoration:none;transition:all .3s}
+.btn-outline:hover{background:rgba(255,215,0,0.1);border-color:var(--gold)}
+.hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--gold);display:block}
+.stat-lbl{font-size:13px;color:var(--muted);margin-top:4px}
 
-/* STATS */
-.stats{display:flex;gap:8px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border)}
-.stat{flex:1;text-align:center;padding:8px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
-.stat-num{font-size:18px;font-weight:900;color:var(--yellow)}
-.stat-lbl{font-size:9px;color:var(--sub);font-weight:700;margin-top:1px}
+/* APPS SECTION */
+.section{padding:100px 20px;max-width:1200px;margin:0 auto}
+.section-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,215,0,0.08);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:var(--gold);margin-bottom:16px;letter-spacing:1px}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(32px,6vw,52px);font-weight:900;margin-bottom:14px;line-height:1.1}
+.section-sub{font-size:17px;color:var(--muted);max-width:500px;line-height:1.6}
 
-/* SCROLL */
-.scroll{flex:1;overflow-y:auto;padding:12px 16px 90px}
+/* APP CARDS */
+.apps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:50px}
+.app-card{background:linear-gradient(135deg,#0D0D00,#1A1400);border:1px solid var(--border);border-radius:24px;padding:28px;transition:all .3s;position:relative;overflow:hidden}
+.app-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .3s}
+.app-card:hover{transform:translateY(-6px);border-color:rgba(255,215,0,0.5);box-shadow:0 20px 50px rgba(255,215,0,0.1)}
+.app-card:hover::before{opacity:1}
+.app-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:18px}
+.app-icon.gold{background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(200,134,10,0.2));border:1px solid rgba(255,215,0,0.3)}
+.app-icon.blue{background:linear-gradient(135deg,rgba(52,152,219,0.2),rgba(41,128,185,0.2));border:1px solid rgba(52,152,219,0.3)}
+.app-card h3{font-size:18px;font-weight:800;margin-bottom:8px}
+.app-card p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.app-features{list-style:none;margin-bottom:20px}
+.app-features li{font-size:12px;color:var(--muted);padding:4px 0;display:flex;align-items:center;gap:8px}
+.app-features li::before{content:"✓";color:var(--gold);font-weight:800;font-size:11px}
+.app-link{display:inline-flex;align-items:center;gap:6px;color:var(--gold);font-size:13px;font-weight:700;text-decoration:none;transition:gap .2s}
+.app-link:hover{gap:10px}
 
-/* SECTION */
-.section-title{font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;margin-top:16px;display:flex;align-items:center;gap:6px}
-.section-title:first-child{margin-top:0}
+/* SERVICES */
+.services-bg{background:linear-gradient(135deg,#050500,#0D0D00);padding:100px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:50px;max-width:1200px;margin-left:auto;margin-right:auto}
+.service-card{background:rgba(255,215,0,0.03);border:1px solid var(--border);border-radius:20px;padding:24px 20px;text-align:center;transition:all .3s;cursor:pointer}
+.service-card:hover{background:rgba(255,215,0,0.07);border-color:rgba(255,215,0,0.4);transform:translateY(-4px)}
+.service-ico{font-size:40px;margin-bottom:14px;display:block}
+.service-name{font-size:14px;font-weight:800;margin-bottom:6px}
+.service-desc{font-size:11px;color:var(--muted);line-height:1.5}
 
-/* BAMAKO CARD */
-.bamako-card{background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;position:relative;overflow:hidden;border:2px solid #3b82f6}
-.bamako-card:active{opacity:0.9}
-.bamako-deco{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.05)}
-.bamako-title{font-size:18px;font-weight:900;color:white;margin-bottom:4px}
-.bamako-sub{font-size:11px;color:rgba(255,255,255,0.7);font-weight:600}
-.bamako-badge{background:var(--yellow);color:#1a1f2e;font-size:10px;font-weight:800;padding:3px 8px;border-radius:50px;display:inline-block;margin-top:8px}
-.bamako-arrow{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:28px;opacity:0.6}
+/* PARTENAIRES */
+.partners-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:44px}
+.partner-cat{background:rgba(255,215,0,0.04);border:1px solid var(--border);border-radius:16px;padding:18px 14px;text-align:center;transition:all .2s}
+.partner-cat:hover{background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.3)}
+.partner-cat-ico{font-size:28px;margin-bottom:8px;display:block}
+.partner-cat-name{font-size:12px;font-weight:700}
 
-/* REGION CARD */
-.region-card{background:var(--card);border-radius:14px;padding:13px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;border:1px solid var(--border);transition:all 0.2s}
-.region-card:active{background:#2d3748;border-color:var(--yellow)}
-.region-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.region-info{flex:1}
-.region-name{font-size:14px;font-weight:800;color:var(--text)}
-.region-sub{font-size:11px;color:var(--sub);font-weight:600;margin-top:2px}
-.region-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:50px;flex-shrink:0}
-.region-arrow{font-size:16px;color:var(--sub);flex-shrink:0}
+/* CHAUFFEUR */
+.chauffeur-bg{background:linear-gradient(135deg,#050500,#0A0800);padding:100px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.chauffeur-content{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.chauffeur-benefits{list-style:none;margin-top:28px}
+.chauffeur-benefits li{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.chauffeur-benefits li:last-child{border-bottom:none}
+.benefit-ico{width:44px;height:44px;border-radius:12px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.chauffeur-apps{display:flex;flex-direction:column;gap:16px}
+.chauffeur-app-card{background:linear-gradient(135deg,#0D0D00,#1A1400);border:1px solid var(--border);border-radius:20px;padding:22px;display:flex;gap:16px;align-items:center;transition:all .3s}
+.chauffeur-app-card:hover{border-color:rgba(255,215,0,0.5);transform:translateX(6px)}
 
-/* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 11px;border:none;background:transparent;font-family:inherit;color:var(--sub);cursor:pointer;gap:3px;font-size:10px;font-weight:700}
-.nav-btn.active{color:var(--yellow)}
-.nav-btn-mali{background:linear-gradient(135deg,#f5c400,#f59e0b) !important;border-radius:50% !important;width:56px !important;height:56px !important;margin-top:-18px;box-shadow:0 4px 16px rgba(245,196,0,0.5);flex-direction:column;align-items:center;justify-content:center;padding:0 !important;border:3px solid #0f172a !important;flex-shrink:0}
-.nav-btn-icon-mali{font-size:24px;display:block}
-.nav-btn-label-mali{font-size:8px;font-weight:900;color:#78350f;margin-top:1px}
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:44px}
+.testi-card{background:linear-gradient(135deg,#0D0D00,#1A1400);border:1px solid var(--border);border-radius:20px;padding:24px}
+.testi-stars{color:var(--gold);font-size:14px;margin-bottom:12px}
+.testi-text{font-size:14px;color:var(--muted);line-height:1.7;font-style:italic;margin-bottom:16px}
+.testi-author{display:flex;align-items:center;gap:12px}
+.testi-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold3));display:flex;align-items:center;justify-content:center;font-size:18px}
+.testi-name{font-size:13px;font-weight:700}
+.testi-loc{font-size:11px;color:var(--muted)}
 
-/* TOAST */
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--card);color:var(--text);padding:8px 16px;border-radius:50px;font-size:12px;font-weight:700;opacity:0;transition:all 0.28s;z-index:999;pointer-events:none;max-width:88%;text-align:center;border:1px solid var(--border)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* DOWNLOAD */
+.download-bg{background:radial-gradient(ellipse at 50% 50%,rgba(255,215,0,0.08) 0%,transparent 70%);padding:100px 20px;text-align:center;border-top:1px solid var(--border)}
+.download-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:44px;max-width:900px;margin-left:auto;margin-right:auto}
+.dl-card{background:linear-gradient(135deg,#0D0D00,#1A1400);border:1px solid var(--border);border-radius:20px;padding:24px;text-align:center;transition:all .3s}
+.dl-card:hover{border-color:rgba(255,215,0,0.5);transform:translateY(-4px)}
+.dl-card-ico{font-size:44px;margin-bottom:14px;display:block}
+.dl-card-name{font-size:16px;font-weight:800;margin-bottom:6px}
+.dl-card-desc{font-size:12px;color:var(--muted);margin-bottom:16px}
+.dl-btn{display:block;background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000;padding:11px 20px;border-radius:20px;font-size:13px;font-weight:800;text-decoration:none;transition:all .2s}
+.dl-btn:hover{transform:scale(1.03);box-shadow:0 8px 20px rgba(255,215,0,0.3)}
 
-/* HIDDEN */
-.hidden{display:none}
+/* CONTACT */
+.contact-bg{background:#050500;padding:100px 20px;border-top:1px solid var(--border)}
+.contact-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.contact-info{display:flex;flex-direction:column;gap:20px;margin-top:30px}
+.contact-item{display:flex;align-items:center;gap:16px;padding:16px;background:rgba(255,215,0,0.03);border:1px solid var(--border);border-radius:14px}
+.contact-ico{width:46px;height:46px;border-radius:12px;background:rgba(255,215,0,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.contact-form{margin-top:30px;display:flex;flex-direction:column;gap:14px}
+.form-input{background:rgba(255,215,0,0.04);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;font-family:inherit;padding:14px 16px;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:rgba(255,215,0,0.5)}
+.form-input::placeholder{color:var(--muted)}
+textarea.form-input{height:120px;resize:none}
+.form-btn{background:linear-gradient(135deg,var(--gold),var(--gold3));color:#000;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .2s}
+.form-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,215,0,0.4)}
+
+/* FOOTER */
+footer{background:#000;border-top:1px solid var(--border);padding:50px 20px 30px}
+.footer-inner{max-width:1200px;margin:0 auto}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand p{color:var(--muted);font-size:13px;line-height:1.7;margin-top:14px;max-width:280px}
+.footer-col h4{font-size:13px;font-weight:800;color:var(--gold);letter-spacing:1px;margin-bottom:16px}
+.footer-col ul{list-style:none}
+.footer-col ul li{margin-bottom:10px}
+.footer-col ul li a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s}
+.footer-col ul li a:hover{color:var(--gold)}
+.footer-bottom{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap}
+.footer-copy{font-size:12px;color:var(--muted)}
+.footer-flags{font-size:20px;display:flex;gap:8px}
+
+/* SCROLL ANIMATIONS */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeInUp .7s ease forwards}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .chauffeur-content{grid-template-columns:1fr}
+  .contact-grid{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .footer-top{grid-template-columns:1fr}
+  .hero-stats{gap:24px}
+}
+
+/* GOLD DIVIDER */
+.gold-divider{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-top">
-    <div class="logo">
-      <div class="logo-icon">🗺️</div>
-      <div>
-        <div class="logo-title">Mali Nav</div>
-        <div class="logo-sub">🇲🇱 Navigation au Mali — 19 Régions</div>
-      </div>
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">🚕</div>
+      <span class="nav-logo-text">MaliTaxi</span>
     </div>
-    <button class="malitaxi-btn" onclick="ouvrirMaliTaxi()">
-      <span class="malitaxi-btn-icon">🚖</span>
-      <div><div class="malitaxi-btn-text">MaliTaxi</div><div style="font-size:9px;color:#78350f;font-weight:600">VIP</div></div>
-    </button>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#apps">Applications</a></li>
+      <li><a href="#partenaires">Partenaires</a></li>
+      <li><a href="#chauffeur">Devenir chauffeur</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#telecharger" class="nav-cta">📱 Télécharger</a>
   </div>
-  <div class="search-wrap">
-    <span class="search-icon">🔍</span>
-    <input class="search-input" id="search" placeholder="Rechercher une région..." oninput="filtrer(this.value)">
-  </div>
-</div>
-
-<!-- STATS -->
-<div class="stats">
-  <div class="stat">
-    <div class="stat-num">19</div>
-    <div class="stat-lbl">RÉGIONS</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">159</div>
-    <div class="stat-lbl">CERCLES</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">819</div>
-    <div class="stat-lbl">COMMUNES</div>
-  </div>
-  <div class="stat">
-    <div class="stat-num">12 712</div>
-    <div class="stat-lbl">VILLAGES</div>
-  </div>
-</div>
-
-<!-- CONTENU -->
-<div class="scroll" id="scroll-content">
-
-  <!-- BAMAKO -->
-  <div class="section-title">🏙️ Capitale</div>
-  <div class="bamako-card" onclick="ouvrirRegion('district-bamako.html')">
-    <div class="bamako-deco"></div>
-    <div style="font-size:32px;margin-bottom:6px">🏙️</div>
-    <div class="bamako-title">District de Bamako</div>
-    <div class="bamako-sub">Capitale du Mali • 6 Communes • ~3 millions hab.</div>
-    <div class="bamako-badge">🚖 MaliTaxi disponible</div>
-    <div class="bamako-arrow">→</div>
-  </div>
-
-  <!-- RÉGIONS NORD -->
-  <div class="section-title" id="titre-nord">🏜️ Régions Nord</div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-tombouctou.html')" data-nom="Tombouctou">
-    <div class="region-icon" style="background:#1a1f2e">🕌</div>
-    <div class="region-info">
-      <div class="region-name">Tombouctou</div>
-      <div class="region-sub">Région 6 • Cité mystérieuse • UNESCO</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R6</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-gao.html')" data-nom="Gao">
-    <div class="region-icon" style="background:#1a1f2e">⭐</div>
-    <div class="region-info">
-      <div class="region-name">Gao</div>
-      <div class="region-sub">Région 7 • Fleuve Niger • Songhaï</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R7</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-kidal.html')" data-nom="Kidal">
-    <div class="region-icon" style="background:#1a1f2e">🏔️</div>
-    <div class="region-info">
-      <div class="region-name">Kidal</div>
-      <div class="region-sub">Région 8 • Adrar des Ifoghas • Touareg</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R8</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-taoudenit.html')" data-nom="Taoudénit">
-    <div class="region-icon" style="background:#1a1f2e">🧂</div>
-    <div class="region-info">
-      <div class="region-name">Taoudénit</div>
-      <div class="region-sub">Région 9 • Mines de sel • 25% du Mali</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R9</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-menaka.html')" data-nom="Ménaka">
-    <div class="region-icon" style="background:#1a1f2e">🦁</div>
-    <div class="region-info">
-      <div class="region-name">Ménaka</div>
-      <div class="region-sub">Région 10 • Kel Dinnik • Frontière Niger</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R10</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-douentza.html')" data-nom="Douentza">
-    <div class="region-icon" style="background:#1a1f2e">🐘</div>
-    <div class="region-info">
-      <div class="region-name">Douentza</div>
-      <div class="region-sub">Région 19 • Éléphants du Gourma • Hombori</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R19</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <!-- RÉGIONS CENTRE -->
-  <div class="section-title" id="titre-centre">🌊 Régions Centre</div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-mopti.html')" data-nom="Mopti">
-    <div class="region-icon" style="background:#0c4a6e22">🐊</div>
-    <div class="region-info">
-      <div class="region-name">Mopti</div>
-      <div class="region-sub">Région 5 • Venise du Mali • Delta Niger</div>
-    </div>
-    <span class="region-badge" style="background:#0c4a6e22;color:#38bdf8">R5</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-segou.html')" data-nom="Ségou">
-    <div class="region-icon" style="background:#0c4a6e22">🏺</div>
-    <div class="region-info">
-      <div class="region-name">Ségou</div>
-      <div class="region-sub">Région 4 • Office du Niger • Fleuve Niger</div>
-    </div>
-    <span class="region-badge" style="background:#0c4a6e22;color:#38bdf8">R4</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-bandiagara.html')" data-nom="Bandiagara">
-    <div class="region-icon" style="background:#78350f22">🏔️</div>
-    <div class="region-info">
-      <div class="region-name">Bandiagara</div>
-      <div class="region-sub">Région 17 • Falaise UNESCO • Pays Dogon</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R17</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-san.html')" data-nom="San">
-    <div class="region-icon" style="background:#14532d22">🌾</div>
-    <div class="region-info">
-      <div class="region-name">San</div>
-      <div class="region-sub">Région 18 • Grenier du Mali • Fleuve Bani</div>
-    </div>
-    <span class="region-badge" style="background:#14532d22;color:#4ade80">R18</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-nara.html')" data-nom="Nara">
-    <div class="region-icon" style="background:#78350f22">🏜️</div>
-    <div class="region-info">
-      <div class="region-name">Nara</div>
-      <div class="region-sub">Région 16 • Royaume Bakhounou • Sahel</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R16</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <!-- RÉGIONS OUEST -->
-  <div class="section-title" id="titre-ouest">🚂 Régions Ouest</div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-kayes-v2.html')" data-nom="Kayes">
-    <div class="region-icon" style="background:#1e3a8a22">🚂</div>
-    <div class="region-info">
-      <div class="region-name">Kayes</div>
-      <div class="region-sub">Région 1 • Chemin de fer • Fleuve Sénégal</div>
-    </div>
-    <span class="region-badge" style="background:#1e3a8a22;color:#60a5fa">R1</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-koulikoro.html')" data-nom="Koulikoro">
-    <div class="region-icon" style="background:#1e3a8a22">🌍</div>
-    <div class="region-info">
-      <div class="region-name">Koulikoro</div>
-      <div class="region-sub">Région 2 • Autour de Bamako • Niger</div>
-    </div>
-    <span class="region-badge" style="background:#1e3a8a22;color:#60a5fa">R2</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-kita.html')" data-nom="Kita">
-    <div class="region-icon" style="background:#1e3a8a22">🌄</div>
-    <div class="region-info">
-      <div class="region-name">Kita</div>
-      <div class="region-sub">Région 15 • Mont Kita 604m • Pèlerinage</div>
-    </div>
-    <span class="region-badge" style="background:#1e3a8a22;color:#60a5fa">R15</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-nioro.html')" data-nom="Nioro">
-    <div class="region-icon" style="background:#78350f22">🏔️</div>
-    <div class="region-info">
-      <div class="region-name">Nioro</div>
-      <div class="region-sub">Région 13 • Hamawiyya • Frontière Mauritanie</div>
-    </div>
-    <span class="region-badge" style="background:#78350f22;color:#f59e0b">R13</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-dioila.html')" data-nom="Dioïla">
-    <div class="region-icon" style="background:#5b21b622">🌾</div>
-    <div class="region-info">
-      <div class="region-name">Dioïla</div>
-      <div class="region-sub">Région 12 • Banico • Agriculture</div>
-    </div>
-    <span class="region-badge" style="background:#5b21b622;color:#c084fc">R12</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <!-- RÉGIONS SUD -->
-  <div class="section-title" id="titre-sud">🌿 Régions Sud</div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-sikasso.html')" data-nom="Sikasso">
-    <div class="region-icon" style="background:#14532d22">🌿</div>
-    <div class="region-info">
-      <div class="region-name">Sikasso</div>
-      <div class="region-sub">Région 3 • Kenedougou • Kouroukan</div>
-    </div>
-    <span class="region-badge" style="background:#14532d22;color:#4ade80">R3</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-bougouni.html')" data-nom="Bougouni">
-    <div class="region-icon" style="background:#14532d22">🌳</div>
-    <div class="region-info">
-      <div class="region-name">Bougouni</div>
-      <div class="region-sub">Région 11 • Wassoulou • Sud Mali</div>
-    </div>
-    <span class="region-badge" style="background:#14532d22;color:#4ade80">R11</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <div class="region-card" onclick="ouvrirRegion('region-koutiala.html')" data-nom="Koutiala">
-    <div class="region-icon" style="background:#14532d22">🌱</div>
-    <div class="region-info">
-      <div class="region-name">Koutiala</div>
-      <div class="region-sub">Or Blanc • Capital du coton • CMDT</div>
-    </div>
-    <span class="region-badge" style="background:#14532d22;color:#4ade80">RC</span>
-    <span class="region-arrow">→</span>
-  </div>
-
-  <!-- VIDE AUCUN RÉSULTAT -->
-  <div id="no-result" class="hidden" style="text-align:center;padding:40px 20px;color:var(--sub)">
-    <div style="font-size:48px;margin-bottom:12px">🔍</div>
-    <div style="font-size:15px;font-weight:700">Aucune région trouvée</div>
-    <div style="font-size:12px;margin-top:6px">Essayez un autre nom</div>
-  </div>
-
-</div>
-
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button class="nav-btn active" onclick="showToast('🗺️ Accueil Mali Nav')">
-    <span style="font-size:20px">🗺️</span>Accueil
-  </button>
-  <button class="nav-btn" onclick="showToast('🔍 Recherche en cours...')">
-    <span style="font-size:20px">🔍</span>Recherche
-  </button>
-  <button class="nav-btn nav-btn-mali" onclick="ouvrirMaliTaxi()">
-    <span class="nav-btn-icon-mali">🚖</span>
-    <span class="nav-btn-label-mali">MaliTaxi</span>
-  </button>
-  <button class="nav-btn" onclick="showToast('🆘 Urgence: appelez le 15')">
-    <span style="font-size:20px">🆘</span>SOS
-  </button>
-  <button class="nav-btn" onclick="partager()">
-    <span style="font-size:20px">↗️</span>Partager
-  </button>
 </nav>
 
-<div class="toast" id="toast"></div>
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-badge">🇲🇱 N°1 du Transport au Mali</div>
+    <h1>Voyagez en<br/>toute Liberté</h1>
+    <p class="hero-sub">La première application de transport premium au Mali. Taxi, Moto, Livraison — tout en un seul clic depuis Bamako.</p>
+    <div class="hero-btns">
+      <a href="#telecharger" class="btn-gold">📱 Télécharger l'app</a>
+      <a href="#services" class="btn-outline">Découvrir →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">4</span><div class="stat-lbl">Applications</div></div>
+      <div class="stat"><span class="stat-num">10+</span><div class="stat-lbl">Catégories partenaires</div></div>
+      <div class="stat"><span class="stat-num">4</span><div class="stat-lbl">Langues</div></div>
+      <div class="stat"><span class="stat-num">🇲🇱</span><div class="stat-lbl">Bamako, Mali</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- SERVICES -->
+<section class="services-bg" id="services">
+  <div style="max-width:1200px;margin:0 auto;text-align:center">
+    <div class="section-badge">✨ NOS SERVICES</div>
+    <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+    <p class="section-sub" style="margin:0 auto">Du taxi à l'avion, MaliTaxi couvre tous vos besoins de transport à Bamako et partout au Mali.</p>
+    <div class="services-grid">
+      <div class="service-card"><span class="service-ico">🚕</span><div class="service-name">Taxi Standard</div><div class="service-desc">Rapide, fiable et abordable dans tout Bamako</div></div>
+      <div class="service-card"><span class="service-ico">👑</span><div class="service-name">Taxi VIP Premium</div><div class="service-desc">Confort et luxe pour vos déplacements importants</div></div>
+      <div class="service-card"><span class="service-ico">🏍️</span><div class="service-name">Moto Express</div><div class="service-desc">Rapide et économique pour éviter les embouteillages</div></div>
+      <div class="service-card"><span class="service-ico">📦</span><div class="service-name">Livraison</div><div class="service-desc">Envoyez vos colis partout à Bamako</div></div>
+      <div class="service-card"><span class="service-ico">🚌</span><div class="service-name">Bus Inter-villes</div><div class="service-desc">Mali & Afrique de l'Ouest · Choix de compagnie</div></div>
+      <div class="service-card"><span class="service-ico">✈️</span><div class="service-name">Billets d'Avion</div><div class="service-desc">Vols domestiques & internationaux · Toutes compagnies</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- APPS -->
+<section id="apps" style="padding:100px 20px">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="section-badge">📱 NOS APPLICATIONS</div>
+    <h2 class="section-title">4 Apps pour tout le monde</h2>
+    <p class="section-sub">Clients et chauffeurs — chacun a son application dédiée.</p>
+    <div class="apps-grid">
+      <div class="app-card">
+        <div class="app-icon gold">👑</div>
+        <h3>MaliTaxi VIP</h3>
+        <p>L'expérience premium pour les clients exigeants. Toutes les fonctionnalités.</p>
+        <ul class="app-features">
+          <li>Taxi VIP & Standard</li>
+          <li>Bus + Avion multi-compagnies</li>
+          <li>Carte GPS temps réel</li>
+          <li>10 catégories partenaires</li>
+          <li>4 langues</li>
+        </ul>
+        <a href="https://mikailou33-collab.github.io/malitaxi-vip/malitaxi-vip-final-21.html" class="app-link" target="_blank">Essayer maintenant →</a>
+      </div>
+      <div class="app-card">
+        <div class="app-icon blue">🚕</div>
+        <h3>MaliTaxi Lite</h3>
+        <p>Simple et rapide pour tous les clients. L'essentiel du transport.</p>
+        <ul class="app-features">
+          <li>Taxi & Moto</li>
+          <li>Bus avec choix compagnie</li>
+          <li>Agences de voyage</li>
+          <li>10 catégories partenaires</li>
+          <li>4 langues</li>
+        </ul>
+        <a href="https://mikailou33-collab.github.io/malitaxi-vip/malitaxi-lite-15.html" class="app-link" target="_blank">Essayer maintenant →</a>
+      </div>
+      <div class="app-card">
+        <div class="app-icon gold">🚗</div>
+        <h3>Chauffeur Pro</h3>
+        <p>L'app complète pour les chauffeurs professionnels. Toutes les fonctionnalités.</p>
+        <ul class="app-features">
+          <li>Carte GPS Bamako</li>
+          <li>Courses VIP & Standard</li>
+          <li>Statistiques détaillées</li>
+          <li>Son + Notifications</li>
+          <li>Paiement détaillé</li>
+        </ul>
+        <a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-vip-pro-21.html" class="app-link" target="_blank">Essayer maintenant →</a>
+      </div>
+      <div class="app-card">
+        <div class="app-icon blue">🚕</div>
+        <h3>Chauffeur Lite</h3>
+        <p>Simple et efficace pour les chauffeurs. L'essentiel pour travailler.</p>
+        <ul class="app-features">
+          <li>Carte GPS simple</li>
+          <li>Courses VIP & Standard</li>
+          <li>Revenus basiques</li>
+          <li>Chat client</li>
+          <li>4 langues</li>
+        </ul>
+        <a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-lite-8.html" class="app-link" target="_blank">Essayer maintenant →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- PARTENAIRES -->
+<section class="services-bg" id="partenaires">
+  <div style="max-width:1200px;margin:0 auto;text-align:center">
+    <div class="section-badge">🤝 PARTENAIRES</div>
+    <h2 class="section-title">Nos partenaires à Bamako</h2>
+    <p class="section-sub" style="margin:0 auto">Découvrez les meilleurs établissements de Bamako directement dans l'app.</p>
+    <div class="partners-grid">
+      <div class="partner-cat"><span class="partner-cat-ico">🏨</span><div class="partner-cat-name">Hôtels</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">🍽️</span><div class="partner-cat-name">Restauration</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">🛒</span><div class="partner-cat-name">Alimentation</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">🧃</span><div class="partner-cat-name">Sucreries & Boissons</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">👗</span><div class="partner-cat-name">Boutiques</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">🥐</span><div class="partner-cat-name">Pâtisserie</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">💇</span><div class="partner-cat-name">Salon de beauté</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">💆</span><div class="partner-cat-name">Spa</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">🏠</span><div class="partner-cat-name">Agence immobilière</div></div>
+      <div class="partner-cat"><span class="partner-cat-ico">📸</span><div class="partner-cat-name">Photo/Shooting</div></div>
+    </div>
+    <div style="margin-top:40px;padding:24px;background:rgba(255,215,0,0.05);border:1px solid var(--border);border-radius:20px;display:inline-block">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">Vous êtes un partenaire ?</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Rejoignez MaliTaxi et touchez des milliers de clients !</div>
+      <a href="#contact" class="btn-gold" style="font-size:13px;padding:11px 24px">Nous contacter →</a>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- CHAUFFEUR -->
+<section class="chauffeur-bg" id="chauffeur">
+  <div class="chauffeur-content">
+    <div>
+      <div class="section-badge">🚗 CHAUFFEURS</div>
+      <h2 class="section-title">Rejoignez l'équipe MaliTaxi</h2>
+      <p style="color:var(--muted);font-size:16px;line-height:1.7;margin-top:14px">Travaillez à votre rythme et augmentez vos revenus avec MaliTaxi. Conduisez des clients VIP et Standard selon vos disponibilités.</p>
+      <ul class="chauffeur-benefits">
+        <li><div class="benefit-ico">💰</div><div><div style="font-size:14px;font-weight:700;margin-bottom:3px">Revenus élevés</div><div style="font-size:12px;color:var(--muted)">Jusqu'à 35 000 FCFA par course VIP</div></div></li>
+        <li><div class="benefit-ico">🕐</div><div><div style="font-size:14px;font-weight:700;margin-bottom:3px">Horaires flexibles</div><div style="font-size:12px;color:var(--muted)">Travaillez quand vous voulez</div></div></li>
+        <li><div class="benefit-ico">🗺️</div><div><div style="font-size:14px;font-weight:700;margin-bottom:3px">GPS intégré</div><div style="font-size:12px;color:var(--muted)">Navigation facile dans Bamako</div></div></li>
+        <li><div class="benefit-ico">📊</div><div><div style="font-size:14px;font-weight:700;margin-bottom:3px">Statistiques détaillées</div><div style="font-size:12px;color:var(--muted)">Suivez vos revenus en temps réel</div></div></li>
+      </ul>
+    </div>
+    <div class="chauffeur-apps">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;color:var(--gold)">Choisissez votre app :</div>
+      <div class="chauffeur-app-card">
+        <div style="width:54px;height:54px;border-radius:14px;background:rgba(255,215,0,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🚗</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:800;margin-bottom:4px">Chauffeur Pro</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">GPS · Stats · Paiement détaillé</div>
+          <a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-vip-pro-21.html" target="_blank" style="font-size:12px;font-weight:700;color:var(--gold);text-decoration:none">Télécharger →</a>
+        </div>
+      </div>
+      <div class="chauffeur-app-card">
+        <div style="width:54px;height:54px;border-radius:14px;background:rgba(52,152,219,0.15);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🚕</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:800;margin-bottom:4px">Chauffeur Lite</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Simple · Rapide · Efficace</div>
+          <a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-lite-8.html" target="_blank" style="font-size:12px;font-weight:700;color:#3498DB;text-decoration:none">Télécharger →</a>
+        </div>
+      </div>
+      <div style="background:rgba(255,215,0,0.05);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center">
+        <div style="font-size:28px;margin-bottom:10px">📞</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:6px">Besoin d'aide ?</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Notre équipe vous accompagne</div>
+        <a href="#contact" style="font-size:13px;font-weight:700;color:var(--gold);text-decoration:none">Nous contacter →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- TÉMOIGNAGES -->
+<section style="padding:100px 20px">
+  <div style="max-width:1200px;margin:0 auto;text-align:center">
+    <div class="section-badge">⭐ AVIS CLIENTS</div>
+    <h2 class="section-title">Ce que disent nos clients</h2>
+    <div class="testi-grid">
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">"Excellent service ! J'ai commandé un taxi VIP en moins de 2 minutes. Le chauffeur était très professionnel. Je recommande vivement MaliTaxi !"</p><div class="testi-author"><div class="testi-avatar">👩🏿</div><div><div class="testi-name">Aminata Coulibaly</div><div class="testi-loc">Bamako, Mali</div></div></div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">"J'ai réservé mon billet de bus pour Sikasso directement depuis l'app. Choix de compagnie, siège, paiement — tout en quelques clics ! Fantastique."</p><div class="testi-author"><div class="testi-avatar">👨🏿</div><div><div class="testi-name">Ibrahim Keïta</div><div class="testi-loc">Bamako, Mali</div></div></div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">"En tant que chauffeur, MaliTaxi m'a changé la vie ! Je gagne beaucoup plus qu'avant grâce aux courses VIP. L'app est simple et efficace."</p><div class="testi-author"><div class="testi-avatar">👨🏿</div><div><div class="testi-name">Moussa Traoré</div><div class="testi-loc">Chauffeur Pro, Bamako</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- TÉLÉCHARGER -->
+<section class="download-bg" id="telecharger">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="section-badge">📱 TÉLÉCHARGER</div>
+    <h2 class="section-title">Commencez maintenant</h2>
+    <p style="color:var(--muted);font-size:16px;max-width:500px;margin:0 auto">Téléchargez l'application qui vous correspond et profitez du meilleur transport au Mali !</p>
+    <div class="download-grid">
+      <div class="dl-card"><span class="dl-card-ico">👑</span><div class="dl-card-name">MaliTaxi VIP</div><div class="dl-card-desc">Pour les clients premium</div><a href="https://mikailou33-collab.github.io/malitaxi-vip/malitaxi-vip-final-21.html" target="_blank" class="dl-btn">📱 Ouvrir l'app</a></div>
+      <div class="dl-card"><span class="dl-card-ico">🚕</span><div class="dl-card-name">MaliTaxi Lite</div><div class="dl-card-desc">Pour tous les clients</div><a href="https://mikailou33-collab.github.io/malitaxi-vip/malitaxi-lite-15.html" target="_blank" class="dl-btn">📱 Ouvrir l'app</a></div>
+      <div class="dl-card"><span class="dl-card-ico">🚗</span><div class="dl-card-name">Chauffeur Pro</div><div class="dl-card-desc">Pour les chauffeurs premium</div><a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-vip-pro-21.html" target="_blank" class="dl-btn">📱 Ouvrir l'app</a></div>
+      <div class="dl-card"><span class="dl-card-ico">🚕</span><div class="dl-card-name">Chauffeur Lite</div><div class="dl-card-desc">Pour tous les chauffeurs</div><a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-lite-8.html" target="_blank" class="dl-btn">📱 Ouvrir l'app</a></div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- CONTACT -->
+<section class="contact-bg" id="contact">
+  <div class="contact-grid">
+    <div>
+      <div class="section-badge">📞 CONTACT</div>
+      <h2 class="section-title">Parlons ensemble</h2>
+      <p style="color:var(--muted);font-size:15px;line-height:1.7;margin-top:14px">Vous êtes un partenaire, un investisseur, ou vous avez une question ? Notre équipe est disponible pour vous répondre.</p>
+      <div class="contact-info">
+        <div class="contact-item"><div class="contact-ico">📍</div><div><div style="font-size:12px;color:var(--muted)">Adresse</div><div style="font-size:14px;font-weight:700">Bamako, Mali 🇲🇱</div></div></div>
+        <div class="contact-item"><div class="contact-ico">📧</div><div><div style="font-size:12px;color:var(--muted)">Email</div><div style="font-size:14px;font-weight:700">Mikailou33@gmail.com</div></div></div>
+        <div class="contact-item"><div class="contact-ico">💬</div><div><div style="font-size:12px;color:var(--muted)">WhatsApp</div><div style="font-size:14px;font-weight:700">+223 XX XX XX XX</div></div></div>
+        <div class="contact-item"><div class="contact-ico">🌍</div><div><div style="font-size:12px;color:var(--muted)">Langues</div><div style="font-size:14px;font-weight:700">🇫🇷 🇲🇱 🇬🇧 🇸🇦</div></div></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:16px;font-weight:800;margin-bottom:6px;margin-top:10px">Envoyez-nous un message</div>
+      <div class="contact-form">
+        <input class="form-input" placeholder="Votre nom"/>
+        <input class="form-input" placeholder="Votre email"/>
+        <input class="form-input" placeholder="Sujet (Partenariat / Question / Autre)"/>
+        <textarea class="form-input" placeholder="Votre message..."></textarea>
+        <button class="form-btn" onclick="alert('✅ Message envoyé ! Nous vous répondrons bientôt.')">Envoyer le message 📧</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-divider"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold3));display:flex;align-items:center;justify-content:center;font-size:20px">🚕</div>
+          <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">MaliTaxi VIP</span>
+        </div>
+        <p>La première application de transport premium au Mali. Taxi, Bus, Avion à Bamako et partout au Mali.</p>
+      </div>
+      <div class="footer-col">
+        <h4>APPS CLIENTS</h4>
+        <ul>
+          <li><a href="https://mikailou33-collab.github.io/malitaxi-vip/malitaxi-vip-final-21.html" target="_blank">MaliTaxi VIP</a></li>
+          <li><a href="https://mikailou33-collab.github.io/malitaxi-vip/malitaxi-lite-15.html" target="_blank">MaliTaxi Lite</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>APPS CHAUFFEURS</h4>
+        <ul>
+          <li><a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-vip-pro-21.html" target="_blank">Chauffeur Pro</a></li>
+          <li><a href="https://mikailou33-collab.github.io/malitaxi-vip/chauffeur-lite-8.html" target="_blank">Chauffeur Lite</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>LIENS</h4>
+        <ul>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#partenaires">Partenaires</a></li>
+          <li><a href="#chauffeur">Devenir chauffeur</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 MaliTaxi VIP. Tous droits réservés. 🇲🇱</div>
+      <div class="footer-flags">🇫🇷 🇲🇱 🇬🇧 🇸🇦</div>
+    </div>
+  </div>
+</footer>
 
 <script>
-// Ouvrir une région
-function ouvrirRegion(fichier){
-  window.location.href = fichier;
-}
-
-// Ouvrir MaliTaxi VIP
-function ouvrirMaliTaxi(){
-  window.open('https://mikailou33-collab.github.io/malitaxi-vip/','_blank');
-}
-
-// Recherche/filtre
-function filtrer(val){
-  var v = val.toLowerCase().trim();
-  var cards = document.querySelectorAll('.region-card');
-  var titres = document.querySelectorAll('.section-title');
-  var visible = 0;
-
-  cards.forEach(function(card){
-    var nom = (card.getAttribute('data-nom')||'').toLowerCase();
-    var texte = card.textContent.toLowerCase();
-    var show = !v || nom.includes(v) || texte.includes(v);
-    card.style.display = show ? 'flex' : 'none';
-    if(show) visible++;
-  });
-
-  // Cacher les titres de section si tous cachés
-  titres.forEach(function(t){
-    if(t.id && t.id.startsWith('titre-')){
-      // Vérifier si au moins une carte de cette section est visible
-      var next = t.nextElementSibling;
-      var sectionVisible = false;
-      while(next && !next.classList.contains('section-title')){
-        if(next.classList.contains('region-card') && next.style.display !== 'none'){
-          sectionVisible = true; break;
-        }
-        next = next.nextElementSibling;
-      }
-      t.style.display = sectionVisible ? 'flex' : 'none';
+// Smooth animations on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
     }
   });
+}, { threshold: 0.1 });
 
-  // Bamako card
-  var bamako = document.querySelector('.bamako-card');
-  var bamakoTitre = document.querySelector('.section-title:first-child');
-  if(bamako){
-    var showBamako = !v || 'bamako'.includes(v) || 'capitale'.includes(v) || 'district'.includes(v);
-    bamako.style.display = showBamako ? 'block' : 'none';
-    if(bamakoTitre) bamakoTitre.style.display = showBamako ? 'flex' : 'none';
-    if(showBamako) visible++;
-  }
+document.querySelectorAll('.app-card, .service-card, .partner-cat, .testi-card, .dl-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
 
-  document.getElementById('no-result').className = visible === 0 ? '' : 'hidden';
-}
-
-// Partager
-function partager(){
-  var msg = '🗺️ Mali Nav VIP\n🇲🇱 Navigation au Mali\n19 Régions + Bamako\n🚌 Réservation Bus\n🚖 MaliTaxi intégré\n\nhttps://mikailou33-collab.github.io/mali-nav/';
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
-}
-
-// Toast
-var tt;
-function showToast(m){
-  var t=document.getElementById('toast');
-  t.textContent=m;t.classList.add('show');
-  clearTimeout(tt);
-  tt=setTimeout(function(){t.classList.remove('show');},2500);
-}
+// Active nav link
+window.addEventListener('scroll', () => {
+  const sections = document.querySelectorAll('section[id]');
+  sections.forEach(section => {
+    const top = section.getBoundingClientRect().top;
+    if (top < 100 && top > -section.offsetHeight) {
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + section.id ? '#FFD700' : '';
+      });
+    }
+  });
+});
 </script>
 </body>
 </html>
