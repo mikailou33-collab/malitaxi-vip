@@ -173,6 +173,7 @@ tr:hover td{background:var(--bg);}
     <div class="sb-item" id="si-promos" onclick="go('promos')"><span class="sb-ico">🎁</span> Promotions</div>
     <div class="sb-item" id="si-rapports" onclick="go('rapports')"><span class="sb-ico">📈</span> Rapports & Stats</div>
     <div class="sb-sec">Mali Nav</div>
+    <div class="sb-item" id="si-livraisons" onclick="go('livraisons')"><span class="sb-ico">📦</span> Livraisons</div>
     <div class="sb-item" id="si-positions" onclick="go('positions')"><span class="sb-ico">📍</span> Positions clients</div>
     <div class="sb-item" id="si-malinav" onclick="go('malinav')"><span class="sb-ico">🇲🇱</span> Mali Nav Stats</div>
     <div class="sb-item" id="si-maliNavLite" onclick="ouvrirMaliNavLite()"><span class="sb-ico">📱</span> Mali Nav Lite</div>
@@ -332,14 +333,14 @@ function go(p){
     blocage:"🚫 Blocage fraudes",commandes:"📋 Commandes",attribution:"🎯 Attribution courses",
     zones:"🗺️ Zones de service",tarifs:"💰 Tarifs & Distance",paiements:"💳 Paiements & Commissions",
     promos:"🎁 Promotions",rapports:"📈 Rapports & Stats",pub:"📢 Publicités",
-    params:"⚙️ Paramètres",malinav:"🇲🇱 Mali Nav Stats", positions:"📍 Positions clients"
+    params:"⚙️ Paramètres",malinav:"🇲🇱 Mali Nav Stats", livraisons:"📦 Livraisons en cours", positions:"📍 Positions clients"
   }[p] || p;
   const fns = {
     dashboard:renderDash, live:renderLive, clients:renderClients,
     chauffeurs:renderChauffeurs, validation:renderValidation, blocage:renderBlocage,
     commandes:renderCommandes, attribution:renderAttribution, zones:renderZones,
     tarifs:renderTarifs, paiements:renderPaiements, promos:renderPromos,
-    rapports:renderRapports, pub:renderPub, params:renderParams, malinav:renderMaliNav, positions:renderPositions
+    rapports:renderRapports, pub:renderPub, params:renderParams, malinav:renderMaliNav, positions:renderPositions, livraisons:renderLivraisons
   };
   if(fns[p]) fns[p]();
 }
@@ -1689,6 +1690,51 @@ function renderPositions(){
     });
   }, 2000);
 }
+
+function renderLivraisons(){
+  var c=document.getElementById('content');
+  c.innerHTML='<div style="padding:20px"><h2 style="margin-bottom:16px">📦 Livraisons en temps réel</h2><div id="liv-list"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement...</div></div></div>';
+  
+  setTimeout(function(){
+    if(!window.db){ 
+      document.getElementById('liv-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">⚠️ Firebase non connecté</div>';
+      return;
+    }
+    window.db.ref('livraisons').on('value', function(snap){
+      var data=snap.val();
+      var list=document.getElementById('liv-list');
+      if(!list) return;
+      if(!data){
+        list.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">📦 Aucune livraison pour le moment</div>';
+        return;
+      }
+      var html='<div style="display:grid;gap:10px">';
+      Object.keys(data).reverse().forEach(function(key){
+        var l=data[key];
+        var date=new Date(l.timestamp).toLocaleString('fr-FR');
+        var statutColor=l.statut==='livree'?'#10b981':l.statut==='en_route'?'#F5A623':l.statut==='acceptee'?'#2563eb':l.statut==='refusee'?'#dc2626':'#6b7280';
+        var statutLabel=l.statut==='livree'?'✅ Livrée':l.statut==='en_route'?'🏍️ En route':l.statut==='acceptee'?'🚗 Acceptée':l.statut==='refusee'?'❌ Refusée':'⏳ En attente';
+        html+='<div style="background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border);border-left:4px solid '+statutColor+'">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+          +'<div style="font-weight:800;font-size:14px">'+key+'</div>'
+          +'<span style="background:rgba(0,0,0,.2);color:'+statutColor+';padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700">'+statutLabel+'</span>'
+          +'</div>'
+          +'<div style="font-size:12px;color:var(--muted);margin-bottom:4px">📍 '+l.depart+' → '+l.arrivee+'</div>'
+          +'<div style="font-size:12px;color:var(--muted);margin-bottom:4px">👤 '+l.destinataire+' · 📱 '+l.tel+'</div>'
+          +'<div style="font-size:12px;color:var(--muted);margin-bottom:8px">💰 '+l.prix.toLocaleString('fr-FR')+' FCFA · 📦 '+l.type+'</div>'
+          +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">'
+          +'<span>📅 '+date+'</span>'
+          +'<span style="color:#F5A623;font-weight:700">🔐 Code: '+l.codeConfirmation+'</span>'
+          +'</div>'
+          +(l.statut==='en_attente'?'<button onclick="window.db.ref('livraisons/'+key+'').remove()" style="margin-top:8px;padding:6px 12px;background:rgba(220,38,38,.2);border:1px solid rgba(220,38,38,.3);border-radius:6px;color:#f87171;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🗑️ Supprimer</button>':'')
+          +'</div>';
+      });
+      html+='</div>';
+      list.innerHTML=html;
+    });
+  }, 1500);
+}
+
 </script>
 </body>
 </html>
