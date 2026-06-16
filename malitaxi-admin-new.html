@@ -326,7 +326,7 @@ function go(p){
     chauffeurs:renderChauffeurs, validation:renderValidation, blocage:renderBlocage,
     commandes:renderCommandes, attribution:renderAttribution, zones:renderZones,
     tarifs:renderTarifs, paiements:renderPaiements, promos:renderPromos,
-    rapports:renderRapports, pub:renderPub, pubvideo:renderPub, params:renderParams, malinav:renderMaliNav, positions:renderPositions, livraisons:renderLivraisons
+    rapports:renderRapports, pub:renderPubRegional, pubvideo:renderPub, params:renderParams, malinav:renderMaliNav, positions:renderPositions, livraisons:renderLivraisons
   };
   if(fns[p]) fns[p]();
 }
@@ -1733,6 +1733,29 @@ function chargerLivraisons(){
     html+='</div>';
     list.innerHTML=html;
   });
+}
+
+
+function renderPubRegional(){
+  document.getElementById("content").innerHTML=`
+    <div class="table-wrap">
+      <div class="table-hdr">
+        <div class="table-title">🗺️ Publicités régionales Mali Nav</div>
+        <button class="btn btn-primary" onclick="showToast('Fonctionnalité en développement')">+ Nouvelle pub régionale</button>
+      </div>
+      <div style="display:grid;gap:12px">
+        ${["Kayes","Koulikoro","Sikasso","Ségou","Mopti","Tombouctou","Gao"].map(r=>`
+          <div style="background:#f8fafc;border-radius:12px;padding:14px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-weight:800;font-size:14px">🗺️ Région de ${r}</div>
+              <div style="font-size:12px;color:#64748b;margin-top:2px">0 pub active</div>
+            </div>
+            <button class="btn btn-primary btn-small" onclick="showToast('Ajouter pub pour ${r}')">+ Ajouter pub</button>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
 }
 
 </script>
