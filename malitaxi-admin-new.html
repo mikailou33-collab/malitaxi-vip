@@ -319,14 +319,14 @@ function go(p){
     blocage:"🚫 Blocage fraudes",commandes:"📋 Commandes",attribution:"🎯 Attribution courses",
     zones:"🗺️ Zones de service",tarifs:"💰 Tarifs & Distance",paiements:"💳 Paiements & Commissions",
     promos:"🎁 Promotions",rapports:"📈 Rapports & Stats",pub:"📢 Publicités",
-    params:"⚙️ Paramètres",malinav:"🇲🇱 Mali Nav Stats"
+    params:"⚙️ Paramètres",malinav:"🇲🇱 Mali Nav Stats", positions:"📍 Positions clients", livraisons:"📦 Livraisons"
   }[p] || p;
   const fns = {
     dashboard:renderDash, live:renderLive, clients:renderClients,
     chauffeurs:renderChauffeurs, validation:renderValidation, blocage:renderBlocage,
     commandes:renderCommandes, attribution:renderAttribution, zones:renderZones,
     tarifs:renderTarifs, paiements:renderPaiements, promos:renderPromos,
-    rapports:renderRapports, pub:renderPub, params:renderParams, malinav:renderMaliNav
+    rapports:renderRapports, pub:renderPub, params:renderParams, malinav:renderMaliNav, positions:renderPositions, livraisons:renderLivraisons
   };
   if(fns[p]) fns[p]();
 }
@@ -1612,6 +1612,129 @@ go = function(p){
 function ouvrirMaliNavLite(){
   window.open("https://mikailou33-collab.github.io/mali-nav/mali-nav-lite.html","_blank");
 }
+
+function renderPositions(){
+  var c=document.getElementById('content');
+  c.innerHTML='<div style="padding:24px"><h2 style="margin-bottom:16px;font-size:20px;font-weight:800">📍 Positions clients en temps réel</h2><div id="pos-list"><div style="text-align:center;padding:40px;color:#64748b">⏳ Connexion Firebase...</div></div></div>';
+  
+  // Charger Firebase dynamiquement
+  if(!window.dbAdmin){
+    var s1=document.createElement('script');
+    s1.src='https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+    s1.onload=function(){
+      var s2=document.createElement('script');
+      s2.src='https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+      s2.onload=function(){
+        if(!firebase.apps.length){
+          firebase.initializeApp({
+            apiKey:"AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+            databaseURL:"https://malitaxi-default-rtdb.firebaseio.com",
+            projectId:"malitaxi"
+          });
+        }
+        window.dbAdmin=firebase.database();
+        chargerPositions();
+      };
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s1);
+  } else {
+    chargerPositions();
+  }
+}
+
+function chargerPositions(){
+  window.dbAdmin.ref('positions').orderByChild('timestamp').limitToLast(20).on('value',function(snap){
+    var data=snap.val();
+    var list=document.getElementById('pos-list');
+    if(!list) return;
+    if(!data){
+      list.innerHTML='<div style="text-align:center;padding:40px;color:#64748b">📍 Aucune position pour le moment</div>';
+      return;
+    }
+    var html='<div style="display:grid;gap:10px">';
+    Object.keys(data).reverse().forEach(function(key){
+      var p=data[key];
+      var date=new Date(p.timestamp).toLocaleString('fr-FR');
+      var mapsUrl='https://www.google.com/maps?q='+p.lat+','+p.lng;
+      html+='<div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #e2e8f0">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<div><div style="font-weight:800;font-size:14px">'+p.nom+'</div>'
+        +'<div style="font-size:12px;color:#64748b">'+p.tel+' · '+p.service+'</div></div>'
+        +'<span style="background:#dcfce7;color:#16a34a;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700">'+p.statut+'</span>'
+        +'</div>'
+        +'<div style="font-size:12px;color:#64748b;margin-bottom:8px">📅 '+date+'</div>'
+        +'<a href="'+mapsUrl+'" target="_blank" style="display:block;padding:8px;background:#1E40AF;border-radius:8px;color:#fff;text-decoration:none;text-align:center;font-size:12px;font-weight:700">🗺️ Voir sur Google Maps</a>'
+        +'</div>';
+    });
+    html+='</div>';
+    list.innerHTML=html;
+  });
+}
+
+function renderLivraisons(){
+  var c=document.getElementById('content');
+  c.innerHTML='<div style="padding:24px"><h2 style="margin-bottom:16px;font-size:20px;font-weight:800">📦 Livraisons en temps réel</h2><div id="liv-list"><div style="text-align:center;padding:40px;color:#64748b">⏳ Connexion Firebase...</div></div></div>';
+  
+  if(!window.dbAdmin){
+    var s1=document.createElement('script');
+    s1.src='https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+    s1.onload=function(){
+      var s2=document.createElement('script');
+      s2.src='https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+      s2.onload=function(){
+        if(!firebase.apps.length){
+          firebase.initializeApp({
+            apiKey:"AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+            databaseURL:"https://malitaxi-default-rtdb.firebaseio.com",
+            projectId:"malitaxi"
+          });
+        }
+        window.dbAdmin=firebase.database();
+        chargerLivraisons();
+      };
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s1);
+  } else {
+    chargerLivraisons();
+  }
+}
+
+function chargerLivraisons(){
+  window.dbAdmin.ref('livraisons').on('value',function(snap){
+    var data=snap.val();
+    var list=document.getElementById('liv-list');
+    if(!list) return;
+    if(!data){
+      list.innerHTML='<div style="text-align:center;padding:40px;color:#64748b">📦 Aucune livraison pour le moment</div>';
+      return;
+    }
+    var statutColors={'livree':'#10b981','en_route':'#F59E0B','acceptee':'#3B82F6','refusee':'#DC2626','en_attente':'#64748b'};
+    var statutLabels={'livree':'✅ Livrée','en_route':'🏍️ En route','acceptee':'🚗 Acceptée','refusee':'❌ Refusée','en_attente':'⏳ En attente'};
+    var html='<div style="display:grid;gap:10px">';
+    Object.keys(data).reverse().forEach(function(key){
+      var l=data[key];
+      var date=new Date(l.timestamp).toLocaleString('fr-FR');
+      var col=statutColors[l.statut]||'#64748b';
+      var lbl=statutLabels[l.statut]||l.statut;
+      html+='<div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #e2e8f0;border-left:4px solid '+col+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+        +'<div style="font-weight:800;font-size:14px">'+key+'</div>'
+        +'<span style="color:'+col+';font-size:11px;font-weight:700">'+lbl+'</span>'
+        +'</div>'
+        +'<div style="font-size:12px;color:#64748b;margin-bottom:4px">📍 '+l.depart+' → '+l.arrivee+'</div>'
+        +'<div style="font-size:12px;color:#64748b;margin-bottom:4px">👤 '+l.destinataire+' · 📱 '+l.tel+'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-top:8px">'
+        +'<span>💰 '+(l.prix||0).toLocaleString('fr-FR')+' FCFA</span>'
+        +'<span style="color:#D97706;font-weight:700">🔐 '+l.codeConfirmation+'</span>'
+        +'</div></div>';
+    });
+    html+='</div>';
+    list.innerHTML=html;
+  });
+}
+
 </script>
 </body>
 </html>
