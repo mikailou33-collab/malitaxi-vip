@@ -134,8 +134,8 @@ function afficherNotifCourse(key,course){
     +'💰 '+fmt(course.prix)+' FCFA · 📍 '+course.km+' km · ⏱ '+course.duree+' min'
     +'</div>'
     +'<div class="notif-btns">'
-    +'<button class="btn-refuser" onclick="refuserCourse(''+key+'')">❌ Refuser</button>'
-    +'<button class="btn-accepter" onclick="accepterCourse(''+key+'')">✅ Accepter</button>'
+    +'<button class="btn-refuser" onclick="refuserCourse(\'' +key+ '\')">❌ Refuser</button>'
+    +'<button class="btn-accepter" onclick="accepterCourse(\'' +key+ '\')">✅ Accepter</button>'
     +'</div>'
     +'<div class="timer-bar"><div class="timer-fill" id="timer-'+key+'" style="width:100%"></div></div>';
   document.body.appendChild(div);
@@ -163,8 +163,8 @@ function afficherNotifLivraison(key,liv){
     +'💰 '+fmt(liv.prix||0)+' FCFA'
     +'</div>'
     +'<div class="notif-btns">'
-    +'<button class="btn-refuser" onclick="refuserLivraison(''+key+'')">❌ Refuser</button>'
-    +'<button class="btn-accepter" onclick="accepterLivraison(''+key+'')">✅ Accepter</button>'
+    +'<button class="btn-refuser" onclick="refuserLivraison(\'' +key+ '\')">❌ Refuser</button>'
+    +'<button class="btn-accepter" onclick="accepterLivraison(\'' +key+ '\')">✅ Accepter</button>'
     +'</div>'
     +'<div class="timer-bar"><div class="timer-fill" id="timer-liv-'+key+'" style="width:100%"></div></div>';
   document.body.appendChild(div);
