@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MaliTaxi VIP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#1A1A2E;--card:#22223A;--card2:#2A2A45;--gold:#F5A623;--text:#FFF;--muted:#8A8AA8;--border:#333355;--green:#2ECC71;--red:#E74C3C;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:420px;margin:0 auto;}
+.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px;text-align:center;}
+.btn{width:100%;padding:15px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;}
+.btn-gold{background:linear-gradient(135deg,#F5A623,#FF8C00);color:#1A0A00;}
+.btn-outline{background:transparent;border:2px solid #333355;color:#8A8AA8;}
+.auth{padding:30px 24px;min-height:100vh;}
+.inp{width:100%;padding:13px 15px;background:#22223A;border:1px solid #333355;border-radius:12px;color:#FFF;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px;}
+.inp:focus{border-color:#F5A623;}
+.inp::placeholder{color:#8A8AA8;}
+.app{display:none;padding:16px;padding-bottom:80px;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.svc-btn{background:#22223A;border:1px solid #333355;border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;}
+.svc-btn.active{border-color:#F5A623;background:rgba(245,166,35,.1);}
+.svc-ico{font-size:26px;margin-bottom:6px;}
+.svc-lbl{font-size:11px;font-weight:700;color:#8A8AA8;}
+.svc-btn.active .svc-lbl{color:#F5A623;}
+.card{background:#22223A;border-radius:16px;padding:16px;margin-bottom:14px;border:1px solid #333355;}
+.inp-row{display:flex;align-items:center;gap:10px;background:#2A2A45;border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+.inp-row input{flex:1;background:none;border:none;color:#FFF;font-size:14px;font-family:inherit;outline:none;}
+.price-box{background:linear-gradient(135deg,#22223A,rgba(245,166,35,.08));border:1px solid rgba(245,166,35,.3);border-radius:16px;padding:14px 16px;margin-bottom:14px;}
+.price-big{font-size:28px;font-weight:900;color:#F5A623;}
+.cmd-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,#F5A623,#FF8C00);color:#1A0A00;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:8px;}
+.nav-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#22223A;border-top:1px solid #333355;display:flex;padding:8px 0;}
+.nav-item{flex:1;text-align:center;padding:8px 4px;cursor:pointer;}
+.nav-ico{font-size:22px;}
+.nav-lbl{font-size:10px;color:#8A8AA8;margin-top:3px;}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:999;display:none;}
+.tracking{text-align:center;padding:30px 20px;}
+</style>
+</head>
+<body>
+<div id="splash" class="splash">
+  <div style="font-size:64px;margin-bottom:16px">🚖</div>
+  <div style="font-size:28px;font-weight:900;color:#F5A623;margin-bottom:8px">MaliTaxi VIP</div>
+  <div style="font-size:14px;color:#8A8AA8;margin-bottom:40px">Transport premium au Mali</div>
+  <button class="btn btn-gold" onclick="showAuth()">🚀 Commencer</button>
+  <button class="btn btn-outline" onclick="guestMode()">Continuer sans compte</button>
+</div>
+<div id="auth" class="auth" style="display:none">
+  <div style="font-size:32px;margin-bottom:8px">👋</div>
+  <div style="font-size:22px;font-weight:900;margin-bottom:4px">Connexion</div>
+  <div style="font-size:13px;color:#8A8AA8;margin-bottom:24px">Accédez à votre compte MaliTaxi</div>
+  <input class="inp" id="auth-email" placeholder="Email" type="email"/>
+  <input class="inp" id="auth-nom" placeholder="Votre nom"/>
+  <button class="btn btn-gold" onclick="doLogin()">Connexion →</button>
+  <button class="btn btn-outline" onclick="guestMode()">Mode invité</button>
+</div>
+<div id="app" class="app">
+  <div class="header">
+    <div>
+      <div style="font-size:13px;color:#8A8AA8">Bonjour 👋</div>
+      <div style="font-size:18px;font-weight:800" id="user-name">Client VIP 👑</div>
+    </div>
+    <div style="font-size:28px">😊</div>
+  </div>
+  <div class="svc-grid">
+    <div class="svc-btn active" id="svc-taxi" onclick="setSvc('taxi',this)"><div class="svc-ico">🚕</div><div class="svc-lbl">Taxi</div></div>
+    <div class="svc-btn" id="svc-moto" onclick="setSvc('moto',this)"><div class="svc-ico">🏍️</div><div class="svc-lbl">Moto</div></div>
+    <div class="svc-btn" id="svc-livraison" onclick="setSvc('livraison',this)"><div class="svc-ico">📦</div><div class="svc-lbl">Livraison</div></div>
+    <div class="svc-btn" id="svc-bus" onclick="setSvc('bus',this)"><div class="svc-ico">🚌</div><div class="svc-lbl">Bus</div></div>
+  </div>
+  <div id="contenu"></div>
+</div>
+<div class="nav-bar">
+  <div class="nav-item"><div class="nav-ico">🏠</div><div class="nav-lbl">Accueil</div></div>
+  <div class="nav-item"><div class="nav-ico">📋</div><div class="nav-lbl">Courses</div></div>
+  <div class="nav-item"><div class="nav-ico">👤</div><div class="nav-lbl">Profil</div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+  authDomain:"malitaxi.firebaseapp.com",
+  databaseURL:"https://malitaxi-default-rtdb.firebaseio.com",
+  projectId:"malitaxi"
+});
+var db=firebase.database();
+var svc='taxi';
+var rideDepart='';
+var rideDest='';
+var rideEstimPrix=0;
+var rideEstimKm=0;
+var rideEstimMin=0;
+var rideStep=0;
+var rideCurrentId=null;
+var userName='Client VIP';
+var userEmail='client@malitaxi.com';
+var TARIFS={taxi:{base:300,km:150,min:20,minPrix:500},moto:{base:200,km:100,min:15,minPrix:400}};
+function fmt(n){return Number(n).toLocaleString('fr-FR');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
+function showAuth(){document.getElementById('splash').style.display='none';document.getElementById('auth').style.display='block';}
+function guestMode(){document.getElementById('splash').style.display='none';document.getElementById('auth').style.display='none';launchApp('Client Invité','invite@malitaxi.com');}
+function doLogin(){var nom=document.getElementById('auth-nom').value||'Client VIP';var email=document.getElementById('auth-email').value||'client@malitaxi.com';document.getElementById('auth').style.display='none';launchApp(nom,email);}
+function launchApp(nom,email){userName=nom;userEmail=email;document.getElementById('user-name').textContent=nom+' 👑';document.getElementById('app').style.display='block';renderContenu();}
+function setSvc(id,el){svc=id;document.querySelectorAll('.svc-btn').forEach(function(b){b.classList.remove('active');});el.classList.add('active');rideStep=0;renderContenu();}
+function renderContenu(){if(rideStep===0){renderForm();}else{renderTracking();}}
+function renderForm(){
+  var tarif=TARIFS[svc]||TARIFS.taxi;
+  var km=parseFloat((2+Math.random()*5).toFixed(1));
+  var min=Math.round(km*3+Math.random()*5);
+  var prix=Math.max(tarif.base+tarif.km*km+tarif.min*min,tarif.minPrix);
+  rideEstimKm=km;rideEstimMin=min;rideEstimPrix=Math.round(prix);
+  var ico=svc==='moto'?'🏍️':'🚕';
+  document.getElementById('contenu').innerHTML=
+    '<div class="card">'
+    +'<div style="font-size:15px;font-weight:800;margin-bottom:14px">'+ico+' Commander</div>'
+    +'<div class="inp-row"><span>🟢</span><input id="inp-depart" placeholder="Point de départ"/></div>'
+    +'<div class="inp-row"><span>🔴</span><input id="inp-dest" placeholder="Destination"/></div>'
+    +'<div class="price-box">'
+    +'<div style="font-size:11px;color:#8A8AA8;font-weight:700;margin-bottom:6px">💰 ESTIMATION</div>'
+    +'<div class="price-big">'+fmt(Math.round(prix))+' FCFA</div>'
+    +'<div style="font-size:11px;color:#8A8AA8;margin-top:4px">~'+km+' km · ~'+min+' min</div>'
+    +'</div>'
+    +'<button class="cmd-btn" onclick="confirmerCourse()">'+ico+' Commander — '+fmt(Math.round(prix))+' FCFA</button>'
+    +'</div>';
+}
+function renderTracking(){
+  document.getElementById('contenu').innerHTML=
+    '<div class="tracking">'
+    +'<div style="font-size:56px;margin-bottom:16px">🚕</div>'
+    +'<div style="display:inline-block;background:rgba(245,166,35,.15);border:1px solid #F5A623;border-radius:20px;padding:6px 16px;font-size:13px;font-weight:700;color:#F5A623;margin-bottom:16px">✅ Commande envoyée !</div>'
+    +'<div style="font-size:16px;font-weight:800;margin-bottom:8px">Recherche d'un chauffeur...</div>'
+    +'<div style="font-size:13px;color:#8A8AA8;margin-bottom:20px">'+rideDepart+' → '+rideDest+'</div>'
+    +'<div style="font-size:24px;font-weight:900;color:#F5A623;margin-bottom:24px">'+fmt(rideEstimPrix)+' FCFA</div>'
+    +'<button onclick="annulerCourse()" style="padding:12px 24px;border-radius:12px;border:1px solid #333355;background:transparent;color:#8A8AA8;font-family:inherit;font-weight:700;cursor:pointer;">❌ Annuler</button>'
+    +'</div>';
+  if(rideCurrentId){
+    db.ref('courses/'+rideCurrentId).on('value',function(snap){
+      var d=snap.val();
+      if(d&&d.statut==='acceptee'){
+        document.getElementById('contenu').innerHTML=
+          '<div class="tracking">'
+          +'<div style="font-size:56px;margin-bottom:16px">🎉</div>'
+          +'<div style="display:inline-block;background:rgba(46,204,113,.15);border:1px solid #2ECC71;border-radius:20px;padding:6px 16px;font-size:13px;font-weight:700;color:#2ECC71;margin-bottom:16px">Chauffeur trouvé !</div>'
+          +'<div style="font-size:16px;font-weight:800;margin-bottom:8px">'+(d.chauffeur||'Votre chauffeur')+' arrive !</div>'
+          +'<div style="font-size:13px;color:#8A8AA8">Restez à votre point de départ</div>'
+          +'</div>';
+      }
+    });
+  }
+}
+function confirmerCourse(){
+  var depart=document.getElementById('inp-depart').value.trim();
+  var dest=document.getElementById('inp-dest').value.trim();
+  if(!depart){showToast('⚠️ Entrez un point de départ !');return;}
+  if(!dest){showToast('⚠️ Entrez une destination !');return;}
+  rideDepart=depart;rideDest=dest;
+  var data={type:svc,depart:rideDepart,arrivee:rideDest,prix:rideEstimPrix,km:rideEstimKm,duree:rideEstimMin,client:userEmail,clientNom:userName,statut:'en_attente',timestamp:Date.now()};
+  db.ref('courses').push(data).then(function(ref){
+    rideCurrentId=ref.key;
+    showToast('✅ Course envoyée !');
+    var msg=encodeURIComponent('🚖 NOUVELLE COURSE | '+data.depart+' → '+data.arrivee+' | '+fmt(data.prix)+' FCFA | '+data.clientNom);
+    fetch('https://api.callmebot.com/whatsapp.php?phone=96551630019&text='+msg+'&apikey=1518458').catch(function(){});
+    rideStep=1;renderContenu();
+  }).catch(function(e){showToast('❌ Erreur: '+e.message);});
+}
+function annulerCourse(){
+  if(rideCurrentId){db.ref('courses/'+rideCurrentId).update({statut:'annulee'});}
+  rideStep=0;rideCurrentId=null;renderContenu();
+}
+</script>
+</body>
+</html>

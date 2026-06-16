@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MaliTaxi Chauffeur Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0D1117;--card:#161B22;--card2:#21262D;--gold:#F5A623;--text:#E6EDF3;--muted:#7D8590;--border:#30363D;--green:#2ECC71;--red:#E74C3C;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:420px;margin:0 auto;}
+.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 24px;text-align:center;}
+.btn{width:100%;padding:15px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;}
+.btn-gold{background:linear-gradient(135deg,#F5A623,#FF8C00);color:#1A0A00;}
+.auth{padding:30px 24px;min-height:100vh;}
+.inp{width:100%;padding:13px 15px;background:#161B22;border:1px solid #30363D;border-radius:12px;color:#E6EDF3;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px;}
+.inp::placeholder{color:#7D8590;}
+.app{display:none;padding:16px;padding-bottom:80px;}
+.header{background:#161B22;border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.stat-card{background:#161B22;border-radius:14px;padding:14px;text-align:center;}
+.stat-val{font-size:20px;font-weight:900;color:#F5A623;}
+.stat-lbl{font-size:11px;color:#7D8590;margin-top:4px;}
+.waiting{text-align:center;padding:40px 20px;background:#161B22;border-radius:16px;}
+.nav-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#161B22;border-top:1px solid #30363D;display:flex;padding:8px 0;}
+.nav-item{flex:1;text-align:center;padding:8px 4px;}
+.nav-ico{font-size:22px;}
+.nav-lbl{font-size:10px;color:#7D8590;margin-top:3px;}
+.notif-popup{position:fixed;top:80px;left:50%;transform:translateX(-50%);width:92%;max-width:380px;background:#1A1A2E;border:2px solid #F5A623;border-radius:18px;padding:18px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,.6);animation:slideDown .3s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.notif-btns{display:flex;gap:8px;margin-top:12px;}
+.btn-refuser{flex:1;padding:12px;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.4);border-radius:10px;color:#f87171;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;}
+.btn-accepter{flex:1;padding:12px;background:linear-gradient(135deg,#059669,#10b981);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;}
+.timer-bar{height:4px;background:rgba(245,166,35,.2);border-radius:2px;margin-top:12px;}
+.timer-fill{height:100%;background:#F5A623;border-radius:2px;transition:width 1s linear;}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1D9E75;color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:999;display:none;}
+</style>
+</head>
+<body>
+<div id="splash" class="splash">
+  <div style="font-size:64px;margin-bottom:16px">🚖</div>
+  <div style="font-size:26px;font-weight:900;color:#F5A623;margin-bottom:8px">Chauffeur Pro</div>
+  <div style="font-size:13px;color:#7D8590;margin-bottom:40px">Tableau de bord chauffeur</div>
+  <button class="btn btn-gold" onclick="showAuth()">🚀 Se connecter</button>
+</div>
+<div id="auth" class="auth" style="display:none">
+  <div style="font-size:22px;font-weight:900;margin-bottom:16px">Connexion Chauffeur</div>
+  <input class="inp" id="ch-nom" placeholder="Votre nom"/>
+  <input class="inp" id="ch-tel" placeholder="Téléphone"/>
+  <input class="inp" id="ch-vehicule" placeholder="Véhicule"/>
+  <button class="btn btn-gold" onclick="doLoginChauffeur()">Connexion →</button>
+</div>
+<div id="app" class="app">
+  <div class="header">
+    <div>
+      <div style="font-size:16px;font-weight:800" id="ch-name-display">Chauffeur Pro</div>
+      <div style="font-size:12px;color:#7D8590" id="ch-vehicule-display">Véhicule</div>
+    </div>
+    <div style="padding:8px 16px;border-radius:20px;background:#00E676;color:#000;font-size:12px;font-weight:800;">EN LIGNE</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val" id="stat-courses">0</div><div class="stat-lbl">Courses</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-revenus">0 F</div><div class="stat-lbl">Revenus</div></div>
+  </div>
+  <div class="waiting">
+    <div style="font-size:56px;margin-bottom:16px">⏰</div>
+    <div style="font-size:16px;font-weight:800;margin-bottom:8px">En attente d'une course...</div>
+    <div style="font-size:13px;color:#7D8590">Vous serez notifié dès qu'un client commande</div>
+  </div>
+</div>
+<div class="nav-bar">
+  <div class="nav-item"><div class="nav-ico">🏠</div><div class="nav-lbl">Accueil</div></div>
+  <div class="nav-item"><div class="nav-ico">📋</div><div class="nav-lbl">Courses</div></div>
+  <div class="nav-item"><div class="nav-ico">👤</div><div class="nav-lbl">Profil</div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",databaseURL:"https://malitaxi-default-rtdb.firebaseio.com",projectId:"malitaxi"});
+var db=firebase.database();
+var chNom='Chauffeur Pro';
+var chVehicule='Toyota Corolla';
+var coursesToday=0;
+var notifsPendantes={};
+function fmt(n){return Number(n).toLocaleString('fr-FR');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
+function showAuth(){document.getElementById('splash').style.display='none';document.getElementById('auth').style.display='block';}
+function doLoginChauffeur(){
+  chNom=document.getElementById('ch-nom').value||'Chauffeur Pro';
+  chVehicule=document.getElementById('ch-vehicule').value||'Toyota Corolla';
+  document.getElementById('auth').style.display='none';
+  document.getElementById('ch-name-display').textContent=chNom;
+  document.getElementById('ch-vehicule-display').textContent=chVehicule;
+  document.getElementById('app').style.display='block';
+  demarrerEcoute();
+}
+function demarrerEcoute(){
+  db.ref('courses').on('value',function(snap){
+    var data=snap.val();
+    if(!data)return;
+    Object.keys(data).forEach(function(key){
+      var c=data[key];
+      if(c.statut!=='en_attente')return;
+      if(notifsPendantes[key])return;
+      notifsPendantes[key]=true;
+      afficherNotifCourse(key,c);
+    });
+  });
+  db.ref('livraisons').on('value',function(snap){
+    var data=snap.val();
+    if(!data)return;
+    Object.keys(data).forEach(function(key){
+      var l=data[key];
+      if(l.statut!=='en_attente')return;
+      if(notifsPendantes['liv_'+key])return;
+      notifsPendantes['liv_'+key]=true;
+      afficherNotifLivraison(key,l);
+    });
+  });
+}
+function afficherNotifCourse(key,course){
+  var ico=course.type==='moto'?'🏍️':'🚕';
+  var div=document.createElement('div');
+  div.id='notif-'+key;
+  div.className='notif-popup';
+  div.innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+    +'<div style="font-size:36px">'+ico+'</div>'
+    +'<div><div style="font-size:16px;font-weight:900;color:#F5A623">Nouvelle course !</div>'
+    +'<div style="font-size:12px;color:rgba(255,255,255,.6)">'+course.depart+' → '+course.arrivee+'</div></div></div>'
+    +'<div style="background:rgba(245,166,35,.08);border-radius:10px;padding:10px;font-size:12px;color:rgba(255,255,255,.8);line-height:1.6">'
+    +'👤 '+(course.clientNom||course.client||'Client')+'<br>'
+    +'💰 '+fmt(course.prix)+' FCFA · 📍 '+course.km+' km · ⏱ '+course.duree+' min'
+    +'</div>'
+    +'<div class="notif-btns">'
+    +'<button class="btn-refuser" onclick="refuserCourse(''+key+'')">❌ Refuser</button>'
+    +'<button class="btn-accepter" onclick="accepterCourse(''+key+'')">✅ Accepter</button>'
+    +'</div>'
+    +'<div class="timer-bar"><div class="timer-fill" id="timer-'+key+'" style="width:100%"></div></div>';
+  document.body.appendChild(div);
+  var msg=encodeURIComponent('🚖 COURSE DISPO | '+course.depart+' → '+course.arrivee+' | '+fmt(course.prix)+' FCFA');
+  fetch('https://api.callmebot.com/whatsapp.php?phone=96551630019&text='+msg+'&apikey=1518458').catch(function(){});
+  var t=30;
+  var iv=setInterval(function(){
+    t--;
+    var f=document.getElementById('timer-'+key);
+    if(f)f.style.width=(t/30*100)+'%';
+    if(t<=0){clearInterval(iv);var el=document.getElementById('notif-'+key);if(el)el.remove();delete notifsPendantes[key];}
+  },1000);
+}
+function afficherNotifLivraison(key,liv){
+  var div=document.createElement('div');
+  div.id='notif-liv-'+key;
+  div.className='notif-popup';
+  div.innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+    +'<div style="font-size:36px">📦</div>'
+    +'<div><div style="font-size:16px;font-weight:900;color:#F5A623">Nouvelle livraison !</div>'
+    +'<div style="font-size:12px;color:rgba(255,255,255,.6)">'+(liv.depart||'?')+' → '+(liv.arrivee||'?')+'</div></div></div>'
+    +'<div style="background:rgba(245,166,35,.08);border-radius:10px;padding:10px;font-size:12px;color:rgba(255,255,255,.8);line-height:1.6">'
+    +'👤 '+(liv.destinataire||liv.client||'Client')+'<br>'
+    +'💰 '+fmt(liv.prix||0)+' FCFA'
+    +'</div>'
+    +'<div class="notif-btns">'
+    +'<button class="btn-refuser" onclick="refuserLivraison(''+key+'')">❌ Refuser</button>'
+    +'<button class="btn-accepter" onclick="accepterLivraison(''+key+'')">✅ Accepter</button>'
+    +'</div>'
+    +'<div class="timer-bar"><div class="timer-fill" id="timer-liv-'+key+'" style="width:100%"></div></div>';
+  document.body.appendChild(div);
+  var t=30;
+  var iv=setInterval(function(){
+    t--;
+    var f=document.getElementById('timer-liv-'+key);
+    if(f)f.style.width=(t/30*100)+'%';
+    if(t<=0){clearInterval(iv);var el=document.getElementById('notif-liv-'+key);if(el)el.remove();delete notifsPendantes['liv_'+key];}
+  },1000);
+}
+function accepterCourse(key){
+  document.getElementById('notif-'+key)?.remove();
+  db.ref('courses/'+key).update({statut:'acceptee',chauffeur:chNom,vehicule:chVehicule});
+  coursesToday++;
+  document.getElementById('stat-courses').textContent=coursesToday;
+  showToast('✅ Course acceptée !');
+}
+function refuserCourse(key){
+  document.getElementById('notif-'+key)?.remove();
+  db.ref('courses/'+key).update({statut:'refusee'});
+  delete notifsPendantes[key];
+  showToast('❌ Course refusée');
+}
+function accepterLivraison(key){
+  document.getElementById('notif-liv-'+key)?.remove();
+  db.ref('livraisons/'+key).update({statut:'acceptee',chauffeur:chNom});
+  showToast('✅ Livraison acceptée !');
+}
+function refuserLivraison(key){
+  document.getElementById('notif-liv-'+key)?.remove();
+  db.ref('livraisons/'+key).update({statut:'refusee'});
+  delete notifsPendantes['liv_'+key];
+  showToast('❌ Livraison refusée');
+}
+</script>
+</body>
+</html>
