@@ -1827,5 +1827,54 @@ function sauvegarderPubReg(){
 }
 
 </script>
+
+<!-- MODAL PUB RÉGIONALE -->
+<div id="modal-pub-reg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:28px;width:90%;max-width:480px;box-shadow:0 40px 80px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:18px;font-weight:800">➕ Nouvelle pub régionale</div>
+      <span style="cursor:pointer;font-size:22px;color:#64748b" onclick="document.getElementById('modal-pub-reg').style.display='none'">✕</span>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">🏢 Nom annonceur</label>
+      <input id="pub-nom" class="form-input" placeholder="Ex: Hôtel Laïco Bamako"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">🗺️ Région ciblée</label>
+      <select id="pub-region" class="form-input">
+        <option value="">Choisir...</option>
+        <option>Kayes</option><option>Koulikoro</option><option>Sikasso</option>
+        <option>Ségou</option><option>Mopti</option><option>Tombouctou</option>
+        <option>Gao</option><option>Kidal</option><option>Bougouni</option>
+        <option>Dioïla</option><option>Nioro</option><option>Koutiala</option>
+        <option>Kita</option><option>Nara</option><option>Bandiagara</option>
+        <option>San</option><option>Douentza</option><option>District Bamako</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">📂 Catégorie</label>
+      <select id="pub-cat" class="form-input">
+        <option>Hôtel</option><option>Immobilier</option><option>Construction</option>
+        <option>Électronique</option><option>Beauté</option><option>Événements</option><option>Shopping</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">📝 Description</label>
+      <input id="pub-desc" class="form-input" placeholder="Ex: Offre spéciale clients MaliTaxi"/>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">📱 Téléphone contact</label>
+      <input id="pub-tel" class="form-input" placeholder="Ex: +22376123456"/>
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">💰 Prix mensuel (FCFA)</label>
+      <input id="pub-prix" class="form-input" type="number" placeholder="Ex: 50000"/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="flex:1;background:#f1f5f9;color:#64748b" onclick="document.getElementById('modal-pub-reg').style.display='none'">Annuler</button>
+      <button class="btn btn-primary" style="flex:1" onclick="sauvegarderPubReg()">✅ Enregistrer</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
