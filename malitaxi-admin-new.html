@@ -1737,25 +1737,93 @@ function chargerLivraisons(){
 
 
 function renderPubRegional(){
+  const REGIONS = ["Kayes","Koulikoro","Sikasso","Ségou","Mopti","Tombouctou","Gao","Kidal","Taoudénit","Ménaka","Bougouni","Dioïla","Nioro","Koutiala","Kita","Nara","Bandiagara","San","Douentza","District Bamako"];
+  const CATS = ["Hôtel","Immobilier","Construction","Électronique","Beauté","Événements","Shopping"];
+  
   document.getElementById("content").innerHTML=`
-    <div class="table-wrap">
-      <div class="table-hdr">
-        <div class="table-title">🗺️ Publicités régionales Mali Nav</div>
-        <button class="btn btn-primary" onclick="showToast('Fonctionnalité en développement')">+ Nouvelle pub régionale</button>
+    <div style="padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:800">🗺️ Publicités régionales Mali Nav</h2>
+        <button class="btn btn-primary" onclick="document.getElementById('modal-pub-reg').style.display='flex'">+ Nouvelle pub régionale</button>
       </div>
-      <div style="display:grid;gap:12px">
-        ${["Kayes","Koulikoro","Sikasso","Ségou","Mopti","Tombouctou","Gao"].map(r=>`
-          <div style="background:#f8fafc;border-radius:12px;padding:14px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:grid;gap:10px" id="pub-reg-list">
+        ${REGIONS.map(r=>`
+          <div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
             <div>
               <div style="font-weight:800;font-size:14px">🗺️ Région de ${r}</div>
-              <div style="font-size:12px;color:#64748b;margin-top:2px">0 pub active</div>
+              <div style="font-size:12px;color:#64748b;margin-top:2px">Aucune pub active</div>
             </div>
-            <button class="btn btn-primary btn-small" onclick="showToast('Ajouter pub pour ${r}')">+ Ajouter pub</button>
+            <button class="btn btn-primary btn-small" onclick="ouvrirFormPub('${r}')">+ Ajouter pub</button>
           </div>
         `).join("")}
       </div>
     </div>
+    
+    <!-- MODAL PUB RÉGIONALE -->
+    <div id="modal-pub-reg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:20px;padding:28px;width:90%;max-width:480px;box-shadow:0 40px 80px rgba(0,0,0,.3)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-size:18px;font-weight:800">➕ Nouvelle pub régionale</div>
+          <span style="cursor:pointer;font-size:22px;color:#64748b" onclick="document.getElementById('modal-pub-reg').style.display='none'">✕</span>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">🏢 Nom annonceur</label>
+          <input id="pub-nom" class="form-input" placeholder="Ex: Hôtel Laïco Bamako"/>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">🗺️ Région ciblée</label>
+          <select id="pub-region" class="form-input">
+            <option value="">Choisir une région...</option>
+            ${REGIONS.map(r=>`<option value="${r}">${r}</option>`).join("")}
+          </select>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">📂 Catégorie</label>
+          <select id="pub-cat" class="form-input">
+            ${CATS.map(c=>`<option value="${c}">${c}</option>`).join("")}
+          </select>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">📝 Description</label>
+          <input id="pub-desc" class="form-input" placeholder="Ex: Offre spéciale clients MaliTaxi"/>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">📱 Lien WhatsApp contact</label>
+          <input id="pub-tel" class="form-input" placeholder="Ex: +22376123456"/>
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">💰 Prix mensuel (FCFA)</label>
+          <input id="pub-prix" class="form-input" type="number" placeholder="Ex: 50000"/>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn" style="flex:1;background:#f1f5f9;color:#64748b" onclick="document.getElementById('modal-pub-reg').style.display='none'">Annuler</button>
+          <button class="btn btn-primary" style="flex:1" onclick="sauvegarderPubReg()">✅ Enregistrer</button>
+        </div>
+      </div>
+    </div>
   `;
+}
+
+function ouvrirFormPub(region){
+  document.getElementById('modal-pub-reg').style.display='flex';
+  document.getElementById('pub-region').value=region;
+}
+
+function sauvegarderPubReg(){
+  const nom=document.getElementById('pub-nom').value;
+  const region=document.getElementById('pub-region').value;
+  const cat=document.getElementById('pub-cat').value;
+  const desc=document.getElementById('pub-desc').value;
+  const tel=document.getElementById('pub-tel').value;
+  const prix=document.getElementById('pub-prix').value;
+  
+  if(!nom||!region||!desc){
+    showToast('⚠️ Remplissez tous les champs obligatoires');
+    return;
+  }
+  
+  document.getElementById('modal-pub-reg').style.display='none';
+  showToast('✅ Pub régionale enregistrée pour '+region+' !');
 }
 
 </script>
