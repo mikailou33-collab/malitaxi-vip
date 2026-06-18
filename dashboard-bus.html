@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dashboard Bus — MaliTaxi</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#f1f5f9;--sub:#94a3b8;--yellow:#f5c400;--green:#14a34a;--red:#dc2626;--blue:#2563eb}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* LOGIN */
+.login-page{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-logo{font-size:64px;margin-bottom:16px}
+.login-title{font-size:24px;font-weight:900;color:var(--yellow);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--sub);margin-bottom:24px;text-align:center}
+.login-box{background:var(--card);border-radius:16px;padding:20px;width:100%;border:1px solid var(--border)}
+.login-label{font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;margin-bottom:6px;display:block;margin-top:12px}
+.login-input{width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);outline:none}
+.login-input:focus{border-color:var(--yellow)}
+.login-btn{width:100%;padding:14px;background:var(--yellow);color:#1a1f2e;border:none;border-radius:12px;font-size:15px;font-weight:900;font-family:inherit;cursor:pointer;margin-top:16px}
+.login-err{background:#dc262622;border:1px solid var(--red);border-radius:8px;padding:8px 12px;font-size:12px;color:#f87171;margin-top:10px;display:none}
+
+/* TOPBAR */
+.topbar{background:linear-gradient(135deg,#0f172a,#1e293b);padding:12px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.tb-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tb-info{flex:1}
+.tb-name{font-size:15px;font-weight:900;color:var(--yellow)}
+.tb-sub{font-size:10px;color:var(--sub)}
+.tb-logout{background:rgba(255,255,255,0.1);border:none;border-radius:8px;color:var(--sub);font-size:11px;font-weight:700;padding:6px 10px;cursor:pointer;font-family:inherit}
+
+/* STATS */
+.stats{display:flex;gap:6px;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.stat{flex:1;background:var(--bg);border-radius:10px;padding:8px;text-align:center;border:1px solid var(--border)}
+.stat-num{font-size:18px;font-weight:900}
+.stat-lbl{font-size:8px;color:var(--sub);font-weight:700;margin-top:2px}
+
+/* FILTRES */
+.filters{display:flex;gap:6px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.filter-btn{padding:5px 12px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.filter-btn.active{background:var(--yellow);color:#1a1f2e;border-color:var(--yellow)}
+
+/* LISTE */
+.scroll{flex:1;overflow-y:auto;padding:8px 14px 80px}
+
+.resa-card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid var(--border)}
+.resa-card.pending{border-color:#f59e0b}
+.resa-card.confirmed{border-color:var(--green)}
+.resa-card.refused{border-color:var(--red)}
+.resa-card.sold{border-color:var(--blue)}
+
+.resa-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.resa-ref{font-size:14px;font-weight:900;color:var(--yellow)}
+.resa-status{font-size:10px;font-weight:800;padding:3px 8px;border-radius:50px}
+.resa-status.pending{background:#f59e0b22;color:#f59e0b}
+.resa-status.confirmed{background:#16a34a22;color:#4ade80}
+.resa-status.refused{background:#dc262622;color:#f87171}
+.resa-status.sold{background:#2563eb22;color:#60a5fa}
+
+.resa-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:12px}
+.resa-row-icon{width:16px;text-align:center;font-size:12px}
+.resa-row-label{color:var(--sub);font-weight:600;flex:1}
+.resa-row-val{font-weight:700}
+
+.resa-actions{display:flex;gap:6px;margin-top:10px}
+.btn-action{flex:1;padding:10px;border:none;border-radius:10px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer}
+.btn-confirm{background:var(--green);color:white}
+.btn-refuse{background:var(--red);color:white}
+.btn-wa{background:#25d366;color:white}
+.btn-sold{background:var(--blue);color:white}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 11px;border:none;background:transparent;font-family:inherit;color:var(--sub);cursor:pointer;gap:3px;font-size:10px;font-weight:700}
+.nav-btn.active{color:var(--yellow)}
+
+/* MODAL PLAN BUS */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;align-items:flex-end;justify-content:center}
+.modal-box{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:420px;max-height:88vh;overflow-y:auto;border-top:2px solid var(--border)}
+.modal-hdr{background:linear-gradient(135deg,#0f172a,#1e293b);padding:16px 20px;border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0}
+.modal-close{background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;color:white}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--card);color:var(--text);padding:8px 16px;border-radius:50px;font-size:12px;font-weight:700;opacity:0;transition:all 0.28s;z-index:999;pointer-events:none;max-width:88%;text-align:center;border:1px solid var(--border)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.empty{text-align:center;padding:40px 20px;color:var(--sub)}
+</style>
+</head>
+<body>
+
+<!-- PAGE LOGIN -->
+<div id="login-page" class="login-page">
+  <div class="login-logo">🚌</div>
+  <div class="login-title">Dashboard Bus</div>
+  <div class="login-sub">MaliTaxi — Espace Compagnie<br>Connectez-vous pour gérer vos réservations</div>
+  <div class="login-box">
+    <label class="login-label" style="margin-top:0">🔑 Votre code secret</label>
+    <input class="login-input" id="login-pass" placeholder="Ex: BUS-2026-XXXX" autocomplete="off" style="letter-spacing:2px;font-weight:700">
+    <div class="login-err" id="login-err">❌ Code secret incorrect</div>
+    <button class="login-btn" onclick="seConnecter()">🔐 Se connecter</button>
+  </div>
+  <div style="background:#1e293b;border-radius:12px;padding:10px 14px;margin-top:12px;width:100%;border:1px solid #334155">
+    <div style="font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:4px">ℹ️ Information</div>
+    <div style="font-size:11px;color:#64748b">Votre code secret vous a été fourni par MaliTaxi. Ne le partagez avec personne.</div>
+  </div>
+  <div style="font-size:10px;color:var(--sub);margin-top:16px;text-align:center">
+    Problème de connexion ? Contactez MaliTaxi<br>
+    🇲🇱 Powered by MaliTaxi
+  </div>
+</div>
+
+<!-- PAGE DASHBOARD -->
+<div id="dashboard-page" style="display:none;flex-direction:column;height:100vh">
+
+  <div class="topbar">
+    <div class="tb-icon" id="tb-icon">🚌</div>
+    <div class="tb-info">
+      <div class="tb-name" id="tb-name">Compagnie</div>
+      <div class="tb-sub" id="tb-sub">Dashboard réservations</div>
+    </div>
+    <button class="tb-logout" onclick="seDeconnecter()">⬅️ Quitter</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num" id="stat-total" style="color:var(--yellow)">0</div>
+      <div class="stat-lbl">TOTAL</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-pending" style="color:#f59e0b">0</div>
+      <div class="stat-lbl">EN ATTENTE</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-confirmed" style="color:var(--green)">0</div>
+      <div class="stat-lbl">CONFIRMÉES</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-refused" style="color:var(--red)">0</div>
+      <div class="stat-lbl">REFUSÉES</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" id="f-all" onclick="setFilter('all')">🔢 Toutes</button>
+    <button class="filter-btn" id="f-pending" onclick="setFilter('pending')">⏳ En attente</button>
+    <button class="filter-btn" id="f-confirmed" onclick="setFilter('confirmed')">✅ Confirmées</button>
+    <button class="filter-btn" id="f-refused" onclick="setFilter('refused')">❌ Refusées</button>
+    <button class="filter-btn" id="f-sold" onclick="setFilter('sold')">🎫 Vendus physique</button>
+  </div>
+
+  <div class="scroll" id="liste-resas">
+    <div class="empty" id="empty-state">
+      <div style="font-size:48px;margin-bottom:12px">📭</div>
+      <div style="font-size:14px;font-weight:700">Aucune réservation</div>
+      <div style="font-size:12px;margin-top:4px">Les réservations Mali Nav apparaîtront ici</div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showSection('resas')">
+      <span style="font-size:20px">📋</span>Réservations
+    </button>
+    <button class="nav-btn" onclick="showSection('plan')">
+      <span style="font-size:20px">🪑</span>Plan bus
+    </button>
+    <button class="nav-btn" onclick="showSection('stats')">
+      <span style="font-size:20px">📊</span>Statistiques
+    </button>
+    <button class="nav-btn" onclick="showSection('help')">
+      <span style="font-size:20px">❓</span>Aide
+    </button>
+  </nav>
+
+</div>
+
+<!-- MODAL PLAN BUS -->
+<div class="modal" id="modal-plan">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div style="font-size:16px;font-weight:900;color:white">🪑 Plan du Bus</div>
+      <button class="modal-close" onclick="fermerPlan()">×</button>
+    </div>
+    <div style="padding:16px 20px 28px" id="plan-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── FIREBASE CONFIG ──
+var firebaseConfig = {
+  apiKey: "AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU",
+  databaseURL: "https://malitaxi-default-rtdb.firebaseio.com"
+};
+
+// Charger Firebase dynamiquement
+var db = null;
+var dbReady = false;
+
+function initFirebase(){
+  var s1 = document.createElement('script');
+  s1.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+  s1.onload = function(){
+    var s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+    s2.onload = function(){
+      try {
+        if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        window.db = db;
+        dbReady = true;
+        if(currentUser) chargerReservations();
+      } catch(e){ console.log('Firebase err:', e); }
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+window.addEventListener('load', initFirebase);
+
+// ── DONNÉES DÉMO ──
+var DEMO_RESERVATIONS = [
+  {id:'demo1',ref:'MT-K8P2NQ',compagnie_id:'sonef',compagnie:'SONEF',client:'Amadou Diarra',tel:'+22376123456',trajet:'Bamako → Ségou',siege:15,heure:'09h00',date:'2026-06-09',passagers:1,statut:'pending',timestamp:Date.now()},
+  {id:'demo2',ref:'MT-X7R4VL',compagnie_id:'rimbo',compagnie:'Rimbo',client:'Fatoumata Koné',tel:'+22365987654',trajet:'Mopti → Bamako',siege:8,heure:'05h30',date:'2026-06-10',passagers:2,statut:'confirmed',timestamp:Date.now()-3600000},
+  {id:'demo3',ref:'MT-B3M9WS',compagnie_id:'sonef',compagnie:'SONEF',client:'Ibrahim Coulibaly',tel:'+22370456789',trajet:'Bamako → Kayes',siege:22,heure:'14h00',date:'2026-06-09',passagers:1,statut:'refused',timestamp:Date.now()-7200000},
+];
+
+// ── COMPAGNIES ──
+// Codes secrets uniquement - compagnies ne se connaissent pas
+var COMPAGNIES = {
+  'BUS-2026-K8P2': {nom:'SONEF', id:'sonef', icon:'🚌', color:'#f59e0b'},
+  'BUS-2026-X7R4': {nom:'Rimbo Transport', id:'rimbo', icon:'🚌', color:'#3b82f6'},
+  'BUS-2026-B3M9': {nom:'Bani Transport', id:'bani', icon:'🚌', color:'#14a34a'},
+  'BUS-2026-Q5T1': {nom:'Bittar Transport', id:'bittar', icon:'🚌', color:'#8b5cf6'},
+  'BUS-2026-Y9W6': {nom:'Diarra Bus', id:'diarra', icon:'🚌', color:'#ec4899'},
+  'ADMIN-MT-2026': {nom:'Admin MaliTaxi', id:'admin', icon:'⚙️', color:'#f5c400'}
+};
+
+// Callmebot config
+var CALLMEBOT_API = '1518458';
+var CALLMEBOT_PHONE = '96551630019';
+
+var currentUser = null;
+var currentFilter = 'all';
+var reservations = [];
+
+// ── LOGIN ──
+function seConnecter(){
+  var code = document.getElementById('login-pass').value.trim().toUpperCase();
+  var err = document.getElementById('login-err');
+
+  if(!COMPAGNIES[code]){
+    err.style.display='block';
+    err.textContent='❌ Code secret incorrect';
+    return;
+  }
+
+  currentUser = code;
+  err.style.display='none';
+  document.getElementById('login-page').style.display='none';
+  var dp = document.getElementById('dashboard-page');
+  dp.style.display='flex';
+  dp.style.flexDirection='column';
+
+  var comp = COMPAGNIES[code];
+  document.getElementById('tb-icon').textContent = comp.icon;
+  document.getElementById('tb-name').textContent = comp.nom;
+  document.getElementById('tb-sub').textContent = comp.id==='admin' ? 'Admin — Toutes compagnies' : 'Dashboard — Vos réservations';
+
+  chargerReservations();
+}
+
+function seDeconnecter(){
+  currentUser = null;
+  reservations = [];
+  document.getElementById('login-pass').value='';
+  document.getElementById('dashboard-page').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+}
+
+// ── CHARGER RÉSERVATIONS FIREBASE ──
+function chargerReservations(){
+  if(!db || !dbReady){
+    // Firebase pas encore prêt - données démo
+    reservations = DEMO_RESERVATIONS.slice();
+    majStats();
+    afficherListe();
+    return;
+  }
+  var ref = db.ref('reservations_bus');
+  ref.on('value', function(snap){
+    reservations = [];
+    snap.forEach(function(child){
+      var r = child.val();
+      r.id = child.key;
+      // Filtrer par compagnie si pas admin
+      var comp = COMPAGNIES[currentUser]||{}; if(comp.id==='admin' || r.compagnie_id === comp.id){
+        reservations.push(r);
+      }
+    });
+    // Trier par date (plus récent en premier)
+    reservations.sort(function(a,b){return (b.timestamp||0)-(a.timestamp||0);});
+    majStats();
+    afficherListe();
+  });
+}
+
+// ── STATS ──
+function majStats(){
+  var total = reservations.length;
+  var pending = reservations.filter(function(r){return r.statut==='pending';}).length;
+  var confirmed = reservations.filter(function(r){return r.statut==='confirmed';}).length;
+  var refused = reservations.filter(function(r){return r.statut==='refused';}).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-confirmed').textContent = confirmed;
+  document.getElementById('stat-refused').textContent = refused;
+}
+
+// ── FILTRES ──
+function setFilter(f){
+  currentFilter = f;
+  ['all','pending','confirmed','refused','sold'].forEach(function(x){
+    var b = document.getElementById('f-'+x);
+    if(b) b.className = 'filter-btn'+(x===f?' active':'');
+  });
+  afficherListe();
+}
+
+// ── AFFICHER LISTE ──
+function afficherListe(){
+  var container = document.getElementById('liste-resas');
+  var filtered = currentFilter==='all' ? reservations : reservations.filter(function(r){return r.statut===currentFilter;});
+
+  if(filtered.length===0){
+    container.innerHTML = '<div class="empty"><div style="font-size:48px;margin-bottom:12px">📭</div><div style="font-size:14px;font-weight:700">Aucune réservation</div><div style="font-size:12px;margin-top:4px">Aucune pour ce filtre</div></div>';
+    return;
+  }
+
+  var html = '';
+  filtered.forEach(function(r){
+    var statusLabel = r.statut==='pending'?'⏳ En attente':r.statut==='confirmed'?'✅ Confirmée':r.statut==='refused'?'❌ Refusée':'🎫 Vendu physique';
+    var comp = COMPAGNIES[r.compagnie_id] || {nom:r.compagnie||'Inconnu', icon:'🚌'};
+
+    html += '<div class="resa-card '+r.statut+'">';
+    html += '<div class="resa-header"><span class="resa-ref">'+r.ref+'</span><span class="resa-status '+r.statut+'">'+statusLabel+'</span></div>';
+
+    if(currentUser==='admin'){
+      html += '<div class="resa-row"><span class="resa-row-icon">🚌</span><span class="resa-row-label">Compagnie</span><span class="resa-row-val">'+comp.nom+'</span></div>';
+    }
+    html += '<div class="resa-row"><span class="resa-row-icon">👤</span><span class="resa-row-label">Client</span><span class="resa-row-val">'+(r.client||'—')+'</span></div>';
+    html += '<div class="resa-row"><span class="resa-row-icon">📞</span><span class="resa-row-label">Téléphone</span><span class="resa-row-val">'+(r.tel||'—')+'</span></div>';
+    html += '<div class="resa-row"><span class="resa-row-icon">🗺️</span><span class="resa-row-label">Trajet</span><span class="resa-row-val">'+(r.trajet||'—')+'</span></div>';
+    html += '<div class="resa-row"><span class="resa-row-icon">🪑</span><span class="resa-row-label">Siège</span><span class="resa-row-val">N°'+(r.siege||'—')+'</span></div>';
+    html += '<div class="resa-row"><span class="resa-row-icon">⏰</span><span class="resa-row-label">Départ</span><span class="resa-row-val">'+(r.heure||'—')+'</span></div>';
+    html += '<div class="resa-row"><span class="resa-row-icon">📅</span><span class="resa-row-label">Date</span><span class="resa-row-val">'+(r.date||'—')+'</span></div>';
+    html += '<div class="resa-row"><span class="resa-row-icon">👥</span><span class="resa-row-label">Passagers</span><span class="resa-row-val">'+(r.passagers||1)+'</span></div>';
+
+    if(r.statut==='pending'){
+      html += '<div class="resa-actions">';
+      html += '<button class="btn-action btn-confirm" onclick="confirmer(\''+r.id+'\',\''+r.ref+'\',\''+r.tel+'\',\''+r.compagnie_id+'\')">✅ Confirmer</button>';
+      html += '<button class="btn-action btn-refuse" onclick="refuser(\''+r.id+'\',\''+r.ref+'\',\''+r.tel+'\')">❌ Refuser</button>';
+      html += '</div>';
+    }
+
+    if(r.statut==='confirmed'){
+      html += '<div class="resa-actions">';
+      html += '<button class="btn-action btn-wa" onclick="notifierClient(\''+r.tel+'\',\''+r.ref+'\',\'confirmed\')">📱 Notifier client</button>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+// ── CONFIRMER ──
+function confirmer(id, ref, tel, compId){
+  // Mettre à jour local
+  var r = reservations.find(function(x){return x.id===id;});
+  if(r) r.statut='confirmed';
+  majStats(); afficherListe();
+  showToast('✅ Réservation '+ref+' confirmée !');
+  notifierClientAuto(tel, ref, 'confirmed');
+  if(compId !== 'admin') notifierAdmin(ref, compId, 'confirmed');
+  // Firebase si disponible
+  if(db && dbReady){
+    db.ref('reservations_bus/'+id).update({statut:'confirmed'}).then(function(){
+    showToast('✅ Réservation '+ref+' confirmée !');
+    // Notifier client via Callmebot
+    notifierClientAuto(tel, ref, 'confirmed');
+    }).catch(function(){});
+  }
+}
+
+// ── REFUSER ──
+function refuser(id, ref, tel){
+  var r = reservations.find(function(x){return x.id===id;});
+  if(r) r.statut='refused';
+  majStats(); afficherListe();
+  showToast('❌ Réservation '+ref+' refusée');
+  notifierClientAuto(tel, ref, 'refused');
+  if(db && dbReady){
+    db.ref('reservations_bus/'+id).update({statut:'refused'}).catch(function(){});
+  }
+}
+
+// ── NOTIFIER CLIENT AUTO (Callmebot) ──
+function notifierClientAuto(tel, ref, statut){
+  if(!tel || tel === '—') return;
+  var msg = '';
+  if(statut==='confirmed'){
+    msg = '✅ RÉSERVATION CONFIRMÉE\n━━━━━━━━━━━━━━\n🔖 Réf: '+ref+'\n✅ Votre place est confirmée !\n💰 Payez à la gare le jour du départ\n\n🇲🇱 Bon voyage ! MaliTaxi';
+  } else {
+    msg = '❌ RÉSERVATION REFUSÉE\n━━━━━━━━━━━━━━\n🔖 Réf: '+ref+'\n❌ Votre réservation a été refusée.\nVeuillez choisir un autre horaire.\n\n🇲🇱 MaliTaxi — Service client';
+  }
+  // Nettoyer le numéro
+  var cleanTel = tel.replace(/[^0-9]/g,'');
+  var url = 'https://api.callmebot.com/whatsapp.php?phone='+cleanTel+'&text='+encodeURIComponent(msg)+'&apikey='+CALLMEBOT_API;
+  fetch(url).catch(function(){
+    // Fallback WhatsApp manuel
+    window.open('https://wa.me/'+cleanTel+'?text='+encodeURIComponent(msg),'_blank');
+  });
+}
+
+// ── NOTIFIER ADMIN ──
+function notifierAdmin(ref, compId, statut){
+  var comp = COMPAGNIES[compId] || {nom:'Compagnie'};
+  var msg = '📊 DASHBOARD MALITAXI\n🔖 '+ref+'\n🚌 '+comp.nom+'\n'+
+    (statut==='confirmed'?'✅ Confirmée':'❌ Refusée')+'\n💰 Commission: 150 FCFA\n🇲🇱 MaliTaxi';
+  var url = 'https://api.callmebot.com/whatsapp.php?phone='+CALLMEBOT_PHONE+'&text='+encodeURIComponent(msg)+'&apikey='+CALLMEBOT_API;
+  fetch(url).catch(function(){});
+}
+
+// ── NOTIFIER CLIENT MANUEL ──
+function notifierClient(tel, ref, statut){
+  var cleanTel = (tel||'').replace(/[^0-9]/g,'');
+  var msg = statut==='confirmed'?
+    '✅ Réservation '+ref+' confirmée ! Bon voyage 🇲🇱 MaliTaxi':
+    '❌ Réservation '+ref+' refusée. Contactez-nous. 🇲🇱 MaliTaxi';
+  window.open('https://wa.me/'+cleanTel+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ── SECTIONS ──
+function showSection(s){
+  if(s==='plan') ouvrirPlan();
+  else if(s==='stats') afficherStats();
+  else if(s==='help') afficherAide();
+  else {
+    afficherListe();
+    showToast('📋 Réservations');
+  }
+}
+
+// ── PLAN BUS ──
+function ouvrirPlan(){
+  var siegesReserves = {};
+  reservations.filter(function(r){return r.statut==='confirmed'||r.statut==='pending'||r.statut==='sold';})
+    .forEach(function(r){if(r.siege) siegesReserves[r.siege]=r.statut;});
+
+  var html = '<div style="text-align:center;margin-bottom:12px"><span style="background:#374151;color:white;padding:6px 20px;border-radius:8px;font-size:12px;font-weight:700">👨‍✈️ CHAUFFEUR</span></div>';
+  html += '<div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px;flex-wrap:wrap">';
+  html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#16a34a"></div>Libre</div>';
+  html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#f59e0b"></div>En attente</div>';
+  html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#14a34a"></div>Confirmé</div>';
+  html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#2563eb"></div>Vendu</div>';
+  html += '</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 8px 1fr 1fr;gap:4px;max-width:260px;margin:0 auto">';
+
+  for(var s=1;s<=44;s++){
+    if(s%4===3){html += '<div style="background:transparent"></div>';}
+    var statut = siegesReserves[s]||'free';
+    var bg = statut==='free'?'#16a34a':statut==='pending'?'#f59e0b':statut==='confirmed'?'#14a34a':'#2563eb';
+    var color = statut==='pending'?'#1a1f2e':'white';
+    html += '<div style="padding:8px 4px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;background:'+bg+';color:'+color+'">'+s+'</div>';
+  }
+  html += '</div>';
+  html += '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--sub)">Total: '+Object.keys(siegesReserves).length+' sièges occupés / 44</div>';
+
+  document.getElementById('plan-content').innerHTML = html;
+  document.getElementById('modal-plan').style.display='flex';
+}
+
+function fermerPlan(){document.getElementById('modal-plan').style.display='none';}
+
+// ── STATS DÉTAILLÉES ──
+function afficherStats(){
+  var total = reservations.length;
+  var revenus = reservations.filter(function(r){return r.statut==='confirmed';}).length * 150;
+  var comp = COMPAGNIES[currentUser]||{nom:'Admin'};
+  showToast('💰 Commission totale: '+revenus.toLocaleString()+' FCFA');
+}
+
+// ── AIDE ──
+function afficherAide(){
+  showToast('📞 Support MaliTaxi: +223 XX XX XX XX');
+}
+
+// ── TOAST ──
+var tt;
+function showToast(m){
+  var t=document.getElementById('toast');
+  t.textContent=m;t.classList.add('show');
+  clearTimeout(tt);
+  tt=setTimeout(function(){t.classList.remove('show');},3000);
+}
+</script>
+</body>
+</html>
