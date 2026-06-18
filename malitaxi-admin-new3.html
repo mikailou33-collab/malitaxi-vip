@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MaliTaxi Admin — Tableau de Bord</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --blue:#1a56db;--blue2:#1e429f;--blue3:#e8f0fe;--blue-light:#3b82f6;
+  --gold:#f5c400;--gold2:#f59e0b;
+  --white:#ffffff;--bg:#f0f4ff;--sidebar:#1e2a4a;--sidebar2:#162039;
+  --text:#1e293b;--sub:#64748b;--border:#e2e8f0;
+  --green:#16a34a;--red:#dc2626;--orange:#f59e0b;--purple:#7c3aed;
+  --card:#ffffff;--success:#dcfce7;--danger:#fee2e2;--warning:#fef9c3;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#pg-login{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1e2a4a 0%,#1a56db 100%);padding:20px}
+.login-box{background:white;border-radius:24px;padding:40px 32px;width:100%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,0.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .icon{width:72px;height:72px;background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 12px}
+.login-logo h1{font-size:22px;font-weight:900;color:var(--blue2)}
+.login-logo p{font-size:13px;color:var(--sub);margin-top:4px}
+.inp-group{margin-bottom:16px}
+.inp-group label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.inp{width:100%;padding:13px 16px;border:2px solid var(--border);border-radius:12px;font-size:15px;font-family:inherit;outline:none;transition:border 0.2s}
+.inp:focus{border-color:var(--blue)}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;transition:opacity 0.2s}
+.login-btn:hover{opacity:0.9}
+.login-err{color:var(--red);font-size:13px;text-align:center;margin-top:10px;min-height:20px}
+.login-hint{text-align:center;margin-top:16px;font-size:12px;color:var(--sub);background:var(--bg);padding:10px;border-radius:8px}
+#pg-admin{display:none;min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--sidebar);color:white;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;transition:transform 0.3s}
+.sidebar-header{padding:20px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.sidebar-logo{display:flex;align-items:center;gap:12px}
+.sidebar-logo .logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.sidebar-logo .logo-text{font-size:16px;font-weight:900;color:white}
+.sidebar-logo .logo-sub{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav-section{font-size:10px;font-weight:800;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;padding:16px 12px 6px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:all 0.2s;margin-bottom:2px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:600}
+.nav-item:hover{background:rgba(255,255,255,0.08);color:white}
+.nav-item.active{background:linear-gradient(135deg,var(--blue),var(--blue-light));color:white}
+.nav-item .nav-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.nav-badge{background:var(--red);color:white;font-size:10px;font-weight:800;padding:2px 6px;border-radius:50px;margin-left:auto}
+.sidebar-footer{padding:16px;border-top:1px solid rgba(255,255,255,0.1)}
+.user-info{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#1a1f2e;flex-shrink:0}
+.user-name{font-size:13px;font-weight:700;color:white}
+.user-role{font-size:11px;color:rgba(255,255,255,0.5)}
+.logout-btn{margin-left:auto;background:rgba(255,255,255,0.1);border:none;border-radius:8px;padding:6px 8px;cursor:pointer;color:rgba(255,255,255,0.7);font-size:14px}
+.main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.hamburger{display:none;background:none;border:none;cursor:pointer;font-size:22px;padding:4px}
+.page-title{font-size:20px;font-weight:900;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-btn{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:inherit;display:flex;align-items:center;gap:6px}
+.lang-select{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:inherit}
+.content{padding:24px;flex:1}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border-radius:16px;padding:20px;border:1px solid var(--border);display:flex;align-items:center;gap:16px}
+.stat-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.stat-value{font-size:26px;font-weight:900;color:var(--text)}
+.stat-label{font-size:12px;color:var(--sub);font-weight:600;margin-top:2px}
+.stat-change{font-size:11px;font-weight:700;margin-top:4px}
+.stat-change.up{color:var(--green)}
+.stat-change.down{color:var(--red)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border);overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:15px;font-weight:800;color:var(--text)}
+.card-body{padding:20px}
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:0.5px;padding:10px 12px;text-align:left;border-bottom:2px solid var(--border)}
+.table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:var(--bg)}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:50px;font-size:11px;font-weight:700}
+.badge-green{background:#dcfce7;color:#16a34a}
+.badge-red{background:#fee2e2;color:#dc2626}
+.badge-orange{background:#fef9c3;color:#b45309}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-purple{background:#f3e8ff;color:#7c3aed}
+.btn{padding:9px 16px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:opacity 0.2s}
+.btn:hover{opacity:0.85}
+.btn-blue{background:var(--blue);color:white}
+.btn-green{background:var(--green);color:white}
+.btn-red{background:var(--red);color:white}
+.btn-orange{background:var(--orange);color:white}
+.btn-outline{background:transparent;color:var(--blue);border:2px solid var(--blue)}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;text-transform:uppercase}
+.form-input{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none}
+.form-input:focus{border-color:var(--blue)}
+.form-select{width:100%;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;background:white}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .overlay.show{display:block}
+  .main{margin-left:0}
+  .hamburger{display:block}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .content{padding:16px}
+}
+.section-page{display:none}
+.section-page.active{display:block}
+.chart-bar{display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 4px}
+.bar{flex:1;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--blue),var(--blue2));min-width:20px;transition:height 0.5s}
+.chart-labels{display:flex;gap:8px;margin-top:6px}
+.chart-label{flex:1;text-align:center;font-size:10px;color:var(--sub);font-weight:600}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--sidebar);color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.actions-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.action-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s}
+.action-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
+.action-icon{font-size:28px;margin-bottom:8px}
+.action-label{font-size:12px;font-weight:700;color:var(--text)}
+/* CODE SECRET */
+.code-box{background:linear-gradient(135deg,#1e2a4a,#1a56db);border-radius:12px;padding:16px;margin-bottom:10px;color:white}
+.code-ref{font-size:18px;font-weight:900;letter-spacing:3px;color:#f5c400;font-family:monospace}
+.code-comp{font-size:13px;color:rgba(255,255,255,0.8);margin-top:4px}
+.code-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:50px;display:inline-block;margin-top:6px}
+.comp-card{background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.comp-info{flex:1}
+.comp-nom{font-size:14px;font-weight:800;color:var(--text)}
+.comp-code{font-size:12px;font-family:monospace;font-weight:700;color:var(--blue);background:var(--blue3);padding:3px 8px;border-radius:6px;display:inline-block;margin-top:4px;letter-spacing:1px}
+.comp-meta{font-size:11px;color:var(--sub);margin-top:4px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-box{background:white;border-radius:20px;padding:24px;width:100%;max-width:460px;box-shadow:0 25px 60px rgba(0,0,0,0.3)}
+.modal-title{font-size:18px;font-weight:900;color:var(--text);margin-bottom:20px}
+</style>
+</head>
+<body>
+<div id="pg-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="icon">&#128662;</div>
+      <h1>MaliTaxi Admin</h1>
+      <p>Tableau de bord Mali</p>
+    </div>
+    <div class="inp-group">
+      <label>Identifiant</label>
+      <input class="inp" id="a-user" type="text" placeholder="admin" autocomplete="off"/>
+    </div>
+    <div class="inp-group">
+      <label>Mot de passe</label>
+      <input class="inp" id="a-pass" type="password" placeholder="..."/>
+    </div>
+    <button class="login-btn" id="login-btn">Se connecter</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-hint">admin / malitaxi2026</div>
+  </div>
+</div>
+
+<div id="pg-admin">
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">&#128662;</div>
+          <div>
+            <div class="logo-text">MaliTaxi Admin</div>
+            <div class="logo-sub">Tableau de bord</div>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">Principal</div>
+        <div class="nav-item active" onclick="showPage('dashboard')">
+          <span class="nav-icon">&#128202;</span> Dashboard
+        </div>
+        <div class="nav-item" onclick="showPage('live')">
+          <span class="nav-icon">&#9889;</span> Suivi en direct
+          <span class="nav-badge">3</span>
+        </div>
+        <div class="nav-section">MaliTaxi</div>
+        <div class="nav-item" onclick="showPage('chauffeurs')">
+          <span class="nav-icon">&#128663;</span> Chauffeurs
+        </div>
+        <div class="nav-item" onclick="showPage('courses')">
+          <span class="nav-icon">&#128205;</span> Courses
+        </div>
+        <div class="nav-item" onclick="showPage('paiements')">
+          <span class="nav-icon">&#128176;</span> Paiements
+        </div>
+        <div class="nav-item" onclick="showPage('fraudes')">
+          <span class="nav-icon">&#128683;</span> Fraudes
+          <span class="nav-badge">2</span>
+        </div>
+        <div class="nav-item" onclick="showPage('promos')">
+          <span class="nav-icon">&#127873;</span> Promotions
+        </div>
+        <div class="nav-section">Mali Nav</div>
+        <div class="nav-item" onclick="showPage('regions')">
+          <span class="nav-icon">&#128506;</span> 19 Regions
+        </div>
+        <div class="nav-item" onclick="showPage('bus')">
+          <span class="nav-icon">&#128652;</span> Reservations Bus
+        </div>
+        <div class="nav-item" onclick="showPage('compagnies')">
+          <span class="nav-icon">&#127963;</span> Compagnies Bus
+        </div>
+        <div class="nav-item" onclick="showPage('infomali')">
+          <span class="nav-icon">&#127474;&#127473;</span> Info Mali
+        </div>
+        <div class="nav-item" onclick="showPage('pubs')">
+          <span class="nav-icon">&#128226;</span> Publicites
+        </div>
+        <div class="nav-item" onclick="showPage('emploi')">
+          <span class="nav-icon">&#128188;</span> Emploi Mali
+        </div>
+        <div class="nav-section">Systeme</div>
+        <div class="nav-item" onclick="showPage('rapports')">
+          <span class="nav-icon">&#128200;</span> Rapports
+        </div>
+        <div class="nav-item" onclick="showPage('admins')">
+          <span class="nav-icon">&#128101;</span> Administrateurs
+        </div>
+        <div class="nav-item" onclick="showPage('tarifs')">
+          <span class="nav-icon">&#9881;</span> Tarifs & Config
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="avatar" id="user-avatar">A</div>
+          <div>
+            <div class="user-name" id="user-name">Admin</div>
+            <div class="user-role" id="user-role">Super Admin</div>
+          </div>
+          <button class="logout-btn" onclick="logout()">&#128682;</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+          <div class="page-title" id="page-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <select class="lang-select" onchange="changeLang(this.value)">
+            <option value="fr">FR</option>
+            <option value="en">EN</option>
+          </select>
+          <button class="topbar-btn">&#128276; 3</button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div class="section-page active" id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#dbeafe">&#128663;</div>
+              <div><div class="stat-value">24</div><div class="stat-label">Chauffeurs actifs</div><div class="stat-change up">+3 ce mois</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#dcfce7">&#128205;</div>
+              <div><div class="stat-value">142</div><div class="stat-label">Courses aujourd'hui</div><div class="stat-change up">+18%</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fef9c3">&#128176;</div>
+              <div><div class="stat-value">847K</div><div class="stat-label">Revenus FCFA</div><div class="stat-change up">+12%</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#f3e8ff">&#128652;</div>
+              <div><div class="stat-value">28</div><div class="stat-label">Reservations bus</div><div class="stat-change up">+5 aujourd'hui</div></div>
+            </div>
+          </div>
+          <div class="actions-grid">
+            <div class="action-card" onclick="showPage('chauffeurs')"><div class="action-icon">&#10133;</div><div class="action-label">Ajouter chauffeur</div></div>
+            <div class="action-card" onclick="showPage('compagnies')"><div class="action-icon">&#127963;</div><div class="action-label">Compagnies bus</div></div>
+            <div class="action-card" onclick="showPage('promos')"><div class="action-icon">&#127873;</div><div class="action-label">Creer promo</div></div>
+            <div class="action-card" onclick="showPage('paiements')"><div class="action-icon">&#128176;</div><div class="action-label">Voir paiements</div></div>
+            <div class="action-card" onclick="showPage('fraudes')"><div class="action-icon">&#128683;</div><div class="action-label">Gerer fraudes</div></div>
+            <div class="action-card" onclick="showPage('rapports')"><div class="action-icon">&#128200;</div><div class="action-label">Rapports</div></div>
+            <div class="action-card" onclick="showPage('infomali')"><div class="action-icon">&#127474;&#127473;</div><div class="action-label">Info Mali</div></div>
+            <div class="action-card" onclick="showPage('pubs')"><div class="action-icon">&#128226;</div><div class="action-label">Publicites</div></div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Courses 7 derniers jours</div></div>
+              <div class="card-body">
+                <div class="chart-bar">
+                  <div class="bar" style="height:60%"></div>
+                  <div class="bar" style="height:80%"></div>
+                  <div class="bar" style="height:45%"></div>
+                  <div class="bar" style="height:90%"></div>
+                  <div class="bar" style="height:70%"></div>
+                  <div class="bar" style="height:100%"></div>
+                  <div class="bar" style="height:75%"></div>
+                </div>
+                <div class="chart-labels">
+                  <div class="chart-label">Lun</div><div class="chart-label">Mar</div><div class="chart-label">Mer</div>
+                  <div class="chart-label">Jeu</div><div class="chart-label">Ven</div><div class="chart-label">Sam</div><div class="chart-label">Dim</div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Dernieres courses</div><button class="btn btn-outline" onclick="showPage('courses')">Voir tout</button></div>
+              <div class="card-body" style="padding:0">
+                <table class="table">
+                  <thead><tr><th>Client</th><th>Chauffeur</th><th>Statut</th><th>FCFA</th></tr></thead>
+                  <tbody>
+                    <tr><td>Moussa K.</td><td>Amadou D.</td><td><span class="badge badge-green">Terminee</span></td><td>2500</td></tr>
+                    <tr><td>Fatoumata S.</td><td>Ibrahim T.</td><td><span class="badge badge-orange">En cours</span></td><td>3200</td></tr>
+                    <tr><td>Boubacar T.</td><td>Seydou B.</td><td><span class="badge badge-green">Terminee</span></td><td>1800</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPAGNIES BUS - NOUVELLE SECTION -->
+        <div class="section-page" id="page-compagnies">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <div style="font-size:16px;font-weight:800">&#127963; Gestion Compagnies Bus</div>
+            <button class="btn btn-blue" onclick="ouvrirModalAjout()">&#10133; Ajouter compagnie</button>
+          </div>
+
+          <!-- STATS -->
+          <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#dcfce7">&#127963;</div>
+              <div><div class="stat-value" id="nb-comp">5</div><div class="stat-label">Compagnies partenaires</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#dbeafe">&#127915;</div>
+              <div><div class="stat-value" id="nb-actif">5</div><div class="stat-label">Comptes actifs</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fef9c3">&#128176;</div>
+              <div><div class="stat-value" id="nb-comm">150</div><div class="stat-label">FCFA/billet commission</div></div>
+            </div>
+          </div>
+
+          <!-- INFO DASHBOARD -->
+          <div style="background:linear-gradient(135deg,#1e2a4a,#1a56db);border-radius:14px;padding:16px;margin-bottom:20px;color:white">
+            <div style="font-size:13px;font-weight:800;margin-bottom:6px">&#128279; Lien Dashboard Compagnies</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:10px">Chaque compagnie utilise ce lien unique avec son code secret :</div>
+            <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px;font-size:11px;font-family:monospace;color:#f5c400;word-break:break-all">
+              mikailou33-collab.github.io/malitaxi-vip/dashboard-bus.html
+            </div>
+            <button class="btn" style="background:rgba(255,255,255,0.2);color:white;margin-top:10px;font-size:12px" onclick="copierLien()">&#128203; Copier le lien</button>
+          </div>
+
+          <!-- LISTE COMPAGNIES -->
+          <div id="liste-compagnies">
+            <!-- Generee par JS -->
+          </div>
+        </div>
+
+        <!-- MODAL AJOUTER COMPAGNIE -->
+        <div class="modal-overlay" id="modal-ajout">
+          <div class="modal-box">
+            <div class="modal-title">&#10133; Ajouter une compagnie</div>
+            <div class="form-group">
+              <label class="form-label">Nom de la compagnie</label>
+              <input class="form-input" id="new-nom" placeholder="Ex: Keita Bus"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Trajets principaux</label>
+              <input class="form-input" id="new-trajets" placeholder="Ex: Bamako-Kayes, Bamako-Segou"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telephone contact</label>
+              <input class="form-input" id="new-tel" placeholder="+223 XX XX XX XX"/>
+            </div>
+            <div style="background:#f0f4ff;border-radius:10px;padding:12px;margin-bottom:16px">
+              <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:4px">Code secret genere automatiquement</div>
+              <div style="font-size:18px;font-weight:900;color:#1a56db;font-family:monospace;letter-spacing:2px" id="preview-code">BUS-2026-????</div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-green" style="flex:1" onclick="ajouterCompagnie()">&#10003; Ajouter</button>
+              <button class="btn btn-outline" style="flex:1" onclick="fermerModal()">Annuler</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL VOIR CODE -->
+        <div class="modal-overlay" id="modal-code">
+          <div class="modal-box">
+            <div class="modal-title">&#128273; Code secret</div>
+            <div id="modal-code-content"></div>
+            <button class="btn btn-blue" style="width:100%;margin-top:16px" onclick="fermerModalCode()">Fermer</button>
+          </div>
+        </div>
+
+        <!-- AUTRES PAGES (inchangees) -->
+        <div class="section-page" id="page-chauffeurs">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <div style="font-size:16px;font-weight:800">&#128663; Gestion Chauffeurs</div>
+            <button class="btn btn-blue" onclick="showToast('Formulaire ajout chauffeur')">&#10133; Ajouter</button>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>Nom</th><th>Telephone</th><th>Vehicule</th><th>Note</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td>Amadou Diallo</td><td>+223 76 11 22 33</td><td>Toyota Corolla</td><td>4.9</td><td><span class="badge badge-green">Actif</span></td></tr>
+                  <tr><td>Ibrahim Traore</td><td>+223 70 44 55 66</td><td>Renault Logan</td><td>4.7</td><td><span class="badge badge-green">Actif</span></td></tr>
+                  <tr><td>Seydou Bagayoko</td><td>+223 65 78 90 12</td><td>Hyundai i10</td><td>4.8</td><td><span class="badge badge-orange">En pause</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-courses">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128205; Gestion Courses</div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>ID</th><th>Client</th><th>Depart</th><th>Arrivee</th><th>Prix</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td>#1042</td><td>Moussa K.</td><td>Badalabougou</td><td>ACI 2000</td><td>2500 F</td><td><span class="badge badge-green">Terminee</span></td></tr>
+                  <tr><td>#1043</td><td>Fatoumata S.</td><td>Hamdallaye</td><td>Sotuba</td><td>3200 F</td><td><span class="badge badge-orange">En cours</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-paiements">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128176; Paiements & Commissions</div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div class="card-title">Repartition commissions</div></div>
+            <div class="card-body">
+              <div style="display:flex;gap:16px;flex-wrap:wrap">
+                <div style="flex:1;background:#dbeafe;border-radius:12px;padding:16px;text-align:center;min-width:100px"><div style="font-size:28px;font-weight:900;color:var(--blue)">80%</div><div style="font-size:12px;font-weight:700;color:var(--sub)">Chauffeur</div></div>
+                <div style="flex:1;background:#dcfce7;border-radius:12px;padding:16px;text-align:center;min-width:100px"><div style="font-size:28px;font-weight:900;color:var(--green)">15%</div><div style="font-size:12px;font-weight:700;color:var(--sub)">MaliTaxi</div></div>
+                <div style="flex:1;background:#fef9c3;border-radius:12px;padding:16px;text-align:center;min-width:100px"><div style="font-size:28px;font-weight:900;color:#b45309">5%</div><div style="font-size:12px;font-weight:700;color:var(--sub)">IBI Groupe</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-fraudes">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128683; Gestion Fraudes</div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>Utilisateur</th><th>Type</th><th>Raison</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr><td>+223 76 XX XX</td><td><span class="badge badge-red">Chauffeur</span></td><td>Faux trajets</td><td><button class="btn btn-red" style="padding:5px 10px;font-size:11px">Bloquer</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-promos">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#127873; Promotions</div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>Code</th><th>Reduction</th><th>Utilisations</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td>MALI2026</td><td>20%</td><td>45/100</td><td><span class="badge badge-green">Active</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-regions">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128506; 19 Regions + Bamako</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+            <div class="card" style="cursor:pointer" onclick="showToast('Bamako')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">District de Bamako</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Kayes')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Kayes</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Koulikoro')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Koulikoro</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Sikasso')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Sikasso</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Segou')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Segou</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Mopti')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Mopti</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Tombouctou')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Tombouctou</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Gao')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Gao</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Kidal')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Kidal</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Taoudenit')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Taoudenit</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Menaka')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Menaka</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Bougouni')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Bougouni</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Dioila')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Dioila</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Nioro')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Nioro</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Kita')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Kita</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Nara')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Nara</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Bandiagara')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Bandiagara</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('San')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">San</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Douentza')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Douentza</div></div></div>
+            <div class="card" style="cursor:pointer" onclick="showToast('Koutiala')"><div class="card-body" style="padding:14px"><div style="font-size:13px;font-weight:800">Koutiala</div></div></div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-bus">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128652; Reservations Bus</div>
+          <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="stat-card"><div class="stat-icon" style="background:#dbeafe">&#127915;</div><div><div class="stat-value">28</div><div class="stat-label">Aujourd'hui</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">&#10003;</div><div><div class="stat-value">156</div><div class="stat-label">Ce mois</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#fef9c3">&#128176;</div><div><div class="stat-value">2.4M</div><div class="stat-label">FCFA</div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>Client</th><th>Trajet</th><th>Date</th><th>Compagnie</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td>Moussa K.</td><td>Bamako - Kayes</td><td>18/06/2026</td><td>SONEF</td><td><span class="badge badge-green">Confirmee</span></td></tr>
+                  <tr><td>Fatoumata D.</td><td>Bamako - Sikasso</td><td>19/06/2026</td><td>Rimbo</td><td><span class="badge badge-orange">En attente</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-infomali">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">Info Mali</div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Meteo</div></div>
+              <div class="card-body" style="text-align:center">
+                <div style="font-size:40px">&#9728;</div>
+                <div style="font-size:28px;font-weight:900;color:var(--blue)">38 C</div>
+                <div style="font-size:13px;color:var(--sub)">Bamako</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Taux de change</div></div>
+              <div class="card-body">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg);border-radius:8px"><span>1 USD</span><span style="font-weight:800">655 FCFA</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg);border-radius:8px"><span>1 EUR</span><span style="font-weight:800">655 FCFA</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg);border-radius:8px"><span>1 KWD</span><span style="font-weight:800">2130 FCFA</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-pubs">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128226; Publicites</div>
+          <div class="card">
+            <div class="card-body">
+              <div class="form-group"><label class="form-label">Region</label><select class="form-select"><option>Bamako</option><option>Kayes</option><option>Sikasso</option></select></div>
+              <div class="form-group"><label class="form-label">Lien YouTube</label><input class="form-input" placeholder="https://youtube.com/..."/></div>
+              <button class="btn btn-green" style="width:100%" onclick="showToast('Publicite ajoutee !')">Publier</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-emploi">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128188; Emploi Mali</div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>Poste</th><th>Region</th><th>Candidatures</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td>Chauffeur</td><td>Bamako</td><td>12</td><td><span class="badge badge-green">Active</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-rapports">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128200; Rapports</div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon" style="background:#dbeafe">&#128663;</div><div><div class="stat-value">1,204</div><div class="stat-label">Courses ce mois</div><div class="stat-change up">+18%</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">&#128176;</div><div><div class="stat-value">6.2M</div><div class="stat-label">FCFA ce mois</div><div class="stat-change up">+12%</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#fef9c3">&#128652;</div><div><div class="stat-value">156</div><div class="stat-label">Billets bus</div><div class="stat-change up">+24%</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#f3e8ff">&#128101;</div><div><div class="stat-value">1,204</div><div class="stat-label">Utilisateurs</div><div class="stat-change up">+89</div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="btn btn-blue" onclick="showToast('Export PDF...')">Export PDF</button>
+              <button class="btn btn-green" onclick="showToast('Export Excel...')">Export Excel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-admins">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128101; Administrateurs</div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>Nom</th><th>Login</th><th>Role</th><th>Statut</th></tr></thead>
+                <tbody>
+                  <tr><td>Admin Principal</td><td>admin</td><td><span class="badge badge-blue">Super Admin</span></td><td><span class="badge badge-green">Actif</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-tarifs">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#9881; Tarifs & Config</div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Tarifs MaliTaxi</div></div>
+              <div class="card-body">
+                <div class="form-group"><label class="form-label">Prix de base (FCFA)</label><input class="form-input" type="number" value="500"/></div>
+                <div class="form-group"><label class="form-label">Prix par km</label><input class="form-input" type="number" value="150"/></div>
+                <div class="form-group"><label class="form-label">Rayon Bamako (km)</label><input class="form-input" type="number" value="45"/></div>
+                <button class="btn btn-green" style="width:100%" onclick="showToast('Tarifs sauvegardes !')">Sauvegarder</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Commissions</div></div>
+              <div class="card-body">
+                <div class="form-group"><label class="form-label">Chauffeur (%)</label><input class="form-input" type="number" value="80"/></div>
+                <div class="form-group"><label class="form-label">MaliTaxi (%)</label><input class="form-input" type="number" value="15"/></div>
+                <div class="form-group"><label class="form-label">IBI Groupe (%)</label><input class="form-input" type="number" value="5"/></div>
+                <button class="btn btn-green" style="width:100%" onclick="showToast('Commissions sauvegardees !')">Sauvegarder</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-page" id="page-live">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#9889; Suivi en direct</div>
+          <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="stat-card"><div class="stat-icon" style="background:#fee2e2">&#128308;</div><div><div class="stat-value">3</div><div class="stat-label">En cours</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#fef9c3">&#9203;</div><div><div class="stat-value">7</div><div class="stat-label">En attente</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#dbeafe">&#128663;</div><div><div class="stat-value">12</div><div class="stat-label">Chauffeurs actifs</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:#dcfce7">&#10003;</div><div><div class="stat-value">132</div><div class="stat-label">Terminees</div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="background:#e8f0fe;border-radius:12px;height:200px;display:flex;align-items:center;justify-content:center;font-size:32px">Carte Bamako</div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// LOGIN
+var ACCOUNTS = {
+  admin: {nom:'Admin Principal', role:'Super Admin', pass:'malitaxi2026'},
+  manager: {nom:'Manager', role:'Manager', pass:'manager2026'}
+};
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('a-pass').addEventListener('keydown', function(e){if(e.key==='Enter') doLogin();});
+function doLogin(){
+  var u = document.getElementById('a-user').value.trim();
+  var p = document.getElementById('a-pass').value;
+  var err = document.getElementById('login-err');
+  if(!u||!p){err.textContent='Remplissez tous les champs';return;}
+  var acc = ACCOUNTS[u];
+  if(acc && acc.pass===p){
+    err.textContent='';
+    document.getElementById('pg-login').style.display='none';
+    document.getElementById('pg-admin').style.display='block';
+    document.getElementById('user-name').textContent=acc.nom;
+    document.getElementById('user-role').textContent=acc.role;
+    document.getElementById('user-avatar').textContent=acc.nom[0];
+    chargerCompagnies();
+    showToast('Bienvenue '+acc.nom+' !');
+  }else{
+    err.textContent='Identifiants incorrects';
+  }
+}
+function logout(){
+  document.getElementById('pg-admin').style.display='none';
+  document.getElementById('pg-login').style.display='flex';
+  document.getElementById('a-user').value='';
+  document.getElementById('a-pass').value='';
+}
+
+// NAVIGATION
+var PAGES = {
+  dashboard:'Dashboard',chauffeurs:'Chauffeurs',courses:'Courses',
+  paiements:'Paiements',fraudes:'Fraudes',promos:'Promotions',
+  regions:'19 Regions',bus:'Reservations Bus',compagnies:'Compagnies Bus',
+  infomali:'Info Mali',pubs:'Publicites',emploi:'Emploi Mali',
+  rapports:'Rapports',admins:'Admins',tarifs:'Tarifs',live:'Suivi Live'
+};
+function showPage(id){
+  document.querySelectorAll('.section-page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var pg = document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').indexOf("'"+id+"'")!==-1) n.classList.add('active');
+  });
+  document.getElementById('page-title').textContent = PAGES[id]||id;
+  closeSidebar();
+  if(id==='compagnies') chargerCompagnies();
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+function changeLang(l){showToast('Langue changee !');}
+
+// COMPAGNIES BUS
+var compagnies = [
+  {id:'sonef', nom:'SONEF', trajets:'Bamako-Kayes, Bamako-Segou, Bamako-Mopti', tel:'+223 XX XX XX XX', code:'BUS-2026-K8P2', actif:true},
+  {id:'rimbo', nom:'Rimbo Transport', trajets:'Bamako-Kayes, Bamako-Sikasso', tel:'+223 XX XX XX XX', code:'BUS-2026-X7R4', actif:true},
+  {id:'bani', nom:'Bani Transport', trajets:'Bamako-Mopti, Bamako-Tombouctou', tel:'+223 XX XX XX XX', code:'BUS-2026-B3M9', actif:true},
+  {id:'bittar', nom:'Bittar Transport', trajets:'Bamako-Gao, Bamako-Mopti', tel:'+223 XX XX XX XX', code:'BUS-2026-Q5T1', actif:true},
+  {id:'diarra', nom:'Diarra Bus', trajets:'Bamako-Sikasso, Bamako-Koutiala', tel:'+223 XX XX XX XX', code:'BUS-2026-Y9W6', actif:true}
+];
+
+function genererCode(){
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = 'BUS-2026-';
+  for(var i=0; i<4; i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function chargerCompagnies(){
+  var el = document.getElementById('liste-compagnies');
+  if(!el) return;
+  document.getElementById('nb-comp').textContent = compagnies.length;
+  document.getElementById('nb-actif').textContent = compagnies.filter(function(c){return c.actif;}).length;
+  
+  var h = '';
+  compagnies.forEach(function(c, idx){
+    h += '<div class="comp-card">';
+    h += '<div class="comp-info">';
+    h += '<div class="comp-nom">'+c.nom+'</div>';
+    h += '<div class="comp-code">'+c.code+'</div>';
+    h += '<div class="comp-meta">'+c.trajets+'</div>';
+    h += '</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">';
+    h += '<span class="badge '+(c.actif?'badge-green':'badge-red')+'">'+(c.actif?'Actif':'Inactif')+'</span>';
+    h += '<button class="btn btn-blue" style="padding:5px 10px;font-size:11px" onclick="voirCode('+idx+')">Voir code</button>';
+    h += '<button class="btn '+(c.actif?'btn-red':'btn-green')+'" style="padding:5px 10px;font-size:11px" onclick="toggleActif('+idx+')">'+(c.actif?'Desactiver':'Activer')+'</button>';
+    h += '</div>';
+    h += '</div>';
+  });
+  
+  el.innerHTML = h || '<div style="text-align:center;padding:40px;color:#94a3b8">Aucune compagnie</div>';
+}
+
+function voirCode(idx){
+  var c = compagnies[idx];
+  var h = '<div style="background:linear-gradient(135deg,#1e2a4a,#1a56db);border-radius:14px;padding:20px;margin-bottom:16px;color:white;text-align:center">';
+  h += '<div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:8px">Code secret de</div>';
+  h += '<div style="font-size:18px;font-weight:900;margin-bottom:12px">'+c.nom+'</div>';
+  h += '<div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#f5c400;font-family:monospace;background:rgba(0,0,0,0.3);border-radius:10px;padding:14px">'+c.code+'</div>';
+  h += '</div>';
+  h += '<div style="background:#f0f4ff;border-radius:10px;padding:12px;margin-bottom:12px">';
+  h += '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:4px">Instructions pour '+c.nom+'</div>';
+  h += '<div style="font-size:12px;color:#94a3b8">1. Ouvrir le lien du dashboard<br>2. Entrer le code secret<br>3. Gerer vos reservations</div>';
+  h += '</div>';
+  h += '<button class="btn btn-blue" style="width:100%;margin-bottom:8px" onclick="copierCode(\''+c.code+'\')">Copier le code</button>';
+  h += '<button class="btn btn-green" style="width:100%" onclick="envoyerWA(\''+c.nom+'\',\''+c.code+'\',\''+c.tel+'\')">Envoyer par WhatsApp</button>';
+  
+  document.getElementById('modal-code-content').innerHTML = h;
+  document.getElementById('modal-code').classList.add('show');
+}
+
+function fermerModalCode(){
+  document.getElementById('modal-code').classList.remove('show');
+}
+
+function toggleActif(idx){
+  compagnies[idx].actif = !compagnies[idx].actif;
+  chargerCompagnies();
+  showToast(compagnies[idx].nom+' '+(compagnies[idx].actif?'active':'desactive'));
+}
+
+function ouvrirModalAjout(){
+  document.getElementById('new-nom').value='';
+  document.getElementById('new-trajets').value='';
+  document.getElementById('new-tel').value='';
+  document.getElementById('preview-code').textContent = genererCode();
+  document.getElementById('modal-ajout').classList.add('show');
+}
+
+function fermerModal(){
+  document.getElementById('modal-ajout').classList.remove('show');
+}
+
+function ajouterCompagnie(){
+  var nom = document.getElementById('new-nom').value.trim();
+  var trajets = document.getElementById('new-trajets').value.trim();
+  var tel = document.getElementById('new-tel').value.trim();
+  if(!nom){showToast('Entrez le nom de la compagnie');return;}
+  var code = document.getElementById('preview-code').textContent;
+  var id = nom.toLowerCase().replace(/[^a-z]/g,'').substring(0,10);
+  compagnies.push({id:id, nom:nom, trajets:trajets||'A definir', tel:tel||'Non renseigne', code:code, actif:true});
+  fermerModal();
+  chargerCompagnies();
+  showToast('Compagnie '+nom+' ajoutee ! Code: '+code);
+  // Optionnel: sauvegarder dans Firebase
+  sauvegarderCompagnieFB({id:id, nom:nom, trajets:trajets, tel:tel, code:code, actif:true});
+}
+
+function sauvegarderCompagnieFB(c){
+  if(window.db){
+    window.db.ref('compagnies_bus/'+c.id).set(c).catch(function(){});
+  }
+}
+
+function copierCode(code){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(code).then(function(){
+      showToast('Code copie: '+code);
+    }).catch(function(){showToast('Code: '+code);});
+  } else {
+    showToast('Code: '+code);
+  }
+}
+
+function copierLien(){
+  var lien = 'mikailou33-collab.github.io/malitaxi-vip/dashboard-bus.html';
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(lien).then(function(){showToast('Lien copie !');}).catch(function(){showToast('Lien copie !');});
+  }
+}
+
+function envoyerWA(nom, code, tel){
+  var clean = tel.replace(/[^0-9]/g,'');
+  var msg = 'Bonjour '+nom+',\n\nVoici vos acces MaliTaxi Dashboard :\n\nLien: mikailou33-collab.github.io/malitaxi-vip/dashboard-bus.html\n\nCode secret: '+code+'\n\nNe partagez pas ce code. Bon travail !\nMaliTaxi';
+  window.open('https://wa.me/'+clean+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+// FIREBASE
+function initFB(){
+  var s1 = document.createElement('script');
+  s1.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
+  s1.onload = function(){
+    var s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
+    s2.onload = function(){
+      try{
+        var cfg = {apiKey:'AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU',databaseURL:'https://malitaxi-default-rtdb.firebaseio.com'};
+        if(!firebase.apps.length) firebase.initializeApp(cfg);
+        window.db = firebase.database();
+      }catch(e){}
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+window.addEventListener('load', initFB);
+
+// TOAST
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');}, 3000);
+}
+</script>
+</body>
+</html>
