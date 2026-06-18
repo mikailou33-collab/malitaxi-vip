@@ -231,7 +231,7 @@ const COURSES=[
   {type:"Standard",ico:"🚕",prix:1500,badge:"🚕 Standard",  bg:"rgba(52,152,219,.2)", cl:"#3498DB",client:"Ibrahim Keïta",     note:"4.7",dep:"Bamako Centre",arr:"ACI 2000"},
   {type:"VIP",     ico:"🚙",prix:4000,badge:"👑 VIP",      bg:"rgba(245,166,35,.2)",cl:"#F5A623",client:"Fatoumata Diallo",note:"5.0",dep:"Hippodrome",   arr:"Lafiabougou"},
   {type:"Standard",ico:"🚕",prix:1500,badge:"🚕 Standard",  bg:"rgba(52,152,219,.2)", cl:"#3498DB",client:"Moussa Traoré",    note:"4.5",dep:"Magnambougou", arr:"Quinzambougou"},
-  {type:"Moto",    ico:"🏍️",prix:400, badge:"🏍️ Moto",     bg:"rgba(46,204,113,.2)",cl:"#2ECC71",client:"Seydou Koné",      note:"4.6",dep:"Sogoniko",     arr:"Hamdallaye"},
+  {type:"Moto",ico:"🏍️",prix:400,badge:"🏍️ Moto",bg:"rgba(46,204,113,.2)",cl:"#2ECC71",client:"Seydou Koné",note:"4.6",dep:"Sogoniko",arr:"Hamdallaye"},
   {type:"Livraison",ico:"📦",prix:1200,badge:"📦 Livraison",bg:"rgba(139,92,246,.2)",cl:"#8B5CF6",client:"Mikailou",note:"4.8",dep:"Kalaban Coura",arr:"Badalabougou",destinataire:"Mikailou",code:"4854"},
 ];
 
@@ -651,79 +651,37 @@ function triggerSOS(){document.getElementById("sosbig").textContent="✓";docume
 // ── DÉCONNEXION ──
 function deconnexion(){if(confirm("Se déconnecter ?")){document.getElementById("page-app").style.display="none";document.getElementById("nav").style.display="none";document.getElementById("sosbtn").classList.remove("show");showSplash();}}
 
-// ── LIVRAISON FLUX ──
+
 function renderEnRouteLivraison(){
   const el=document.getElementById("main-content");
   const c=curCourse||COURSES[0];
-  el.innerHTML='<div class="incourse">'
-    +'<div class="ichdr" style="background:linear-gradient(135deg,#1A0A2A,#120020)">'
-    +'<div><div style="font-size:10px;color:rgba(255,255,255,.55)">EN ROUTE VERS LE COLIS</div>'
-    +'<div style="font-size:14px;font-weight:800;color:#8B5CF6;margin-top:2px">📍 '+c.dep+'</div>'
-    +'</div><div style="text-align:right"><div style="font-size:19px;font-weight:800;color:#8B5CF6">'+fmt(c.prix)+'</div><div style="font-size:10px;color:rgba(255,255,255,.55)">FCFA</div></div></div>'
-    +'<div style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:11px;padding:10px 13px;margin:10px 14px">'
-    +'<div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:5px">📦 LIVRAISON</div>'
-    +'<div style="font-size:12px;margin-bottom:2px">📍 Ramassage : <b>'+c.dep+'</b></div>'
-    +'<div style="font-size:12px;margin-bottom:2px">🎯 Livraison : <b>'+c.arr+'</b></div>'
-    +'<div style="font-size:12px;margin-bottom:2px">👤 Destinataire : <b>'+c.destinataire+'</b></div>'
-    +'<div style="font-size:12px">🔐 Code : <b style="color:#8B5CF6">'+c.code+'</b></div>'
-    +'</div>'
-    +'<div class="actb"><button class="bnav" onclick="window.open('https://maps.google.com/?q='+c.dep+'','_blank')">🗺️ GPS</button>'
-    +'<button class="barr" style="background:linear-gradient(135deg,#8B5CF6,#7C3AED)" onclick="colisRecupere()">📦 Colis récupéré</button></div>'
-    +'</div>' + miniS();
+  el.innerHTML='<div class="incourse"><div class="ichdr" style="background:linear-gradient(135deg,#1A0A2A,#120020)"><div><div style="font-size:10px;color:rgba(255,255,255,.55)">EN ROUTE VERS LE COLIS</div><div style="font-size:14px;font-weight:800;color:#8B5CF6;margin-top:2px">📍 '+c.dep+'</div></div><div style="text-align:right"><div style="font-size:19px;font-weight:800;color:#8B5CF6">'+fmt(c.prix)+'</div><div style="font-size:10px;color:rgba(255,255,255,.55)">FCFA</div></div></div>'
+  +'<div style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:11px;padding:12px;margin:10px 14px"><div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:6px">📦 DÉTAILS LIVRAISON</div><div style="font-size:12px;margin-bottom:3px">📍 Ramassage : <b>'+c.dep+'</b></div><div style="font-size:12px;margin-bottom:3px">🎯 Livraison : <b>'+c.arr+'</b></div><div style="font-size:12px;margin-bottom:3px">👤 Destinataire : <b>'+c.destinataire+'</b></div><div style="font-size:13px;font-weight:800;color:#8B5CF6">🔐 Code : '+c.code+'</div></div>'
+  +'<div class="actb"><button class="bnav" onclick="window.open('https://maps.google.com/?q=Kalaban+Coura+Bamako','_blank')">🗺️ GPS</button><button class="barr" style="background:linear-gradient(135deg,#8B5CF6,#7C3AED)" onclick="colisRecupere()">📦 Colis récupéré</button></div></div>'+miniS();
 }
 
 function colisRecupere(){
   const el=document.getElementById("main-content");
   const c=curCourse||COURSES[0];
   toast("📦 Colis récupéré ! En route vers "+c.arr);
-  el.innerHTML='<div class="incourse">'
-    +'<div class="ichdr" style="background:linear-gradient(135deg,#0A1A00,#122800)">'
-    +'<div><div style="font-size:10px;color:rgba(255,255,255,.55)">COLIS EN MAIN 🟢</div>'
-    +'<div style="font-size:14px;font-weight:800;color:var(--green);margin-top:2px">→ '+c.arr+'</div>'
-    +'</div><div style="text-align:right"><div style="font-size:19px;font-weight:800;color:#8B5CF6">'+fmt(c.prix)+'</div><div style="font-size:10px;color:rgba(255,255,255,.55)">FCFA</div></div></div>'
-    +'<div style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:11px;padding:10px 13px;margin:10px 14px">'
-    +'<div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:5px">📦 EN ROUTE VERS DESTINATION</div>'
-    +'<div style="font-size:12px;margin-bottom:2px">🎯 Destination : <b>'+c.arr+'</b></div>'
-    +'<div style="font-size:12px;margin-bottom:2px">👤 Destinataire : <b>'+c.destinataire+'</b></div>'
-    +'<div style="font-size:13px;font-weight:800;color:#8B5CF6">🔐 Code à demander : '+c.code+'</div>'
-    +'</div>'
-    +'<div class="actb"><button class="bnav" onclick="window.open('https://maps.google.com/?q='+c.arr+'','_blank')">🗺️ GPS</button>'
-    +'<button class="barr g" onclick="arriveLivraison()">🏁 Arrivé destination</button></div>'
-    +'</div>' + miniS();
+  el.innerHTML='<div class="incourse"><div class="ichdr" style="background:linear-gradient(135deg,#0A1A00,#122800)"><div><div style="font-size:10px;color:rgba(255,255,255,.55)">COLIS EN MAIN 🟢</div><div style="font-size:14px;font-weight:800;color:var(--green);margin-top:2px">→ '+c.arr+'</div></div><div style="text-align:right"><div style="font-size:19px;font-weight:800;color:#8B5CF6">'+fmt(c.prix)+'</div><div style="font-size:10px;color:rgba(255,255,255,.55)">FCFA</div></div></div>'
+  +'<div style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:11px;padding:12px;margin:10px 14px"><div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:6px">📦 EN ROUTE DESTINATION</div><div style="font-size:12px;margin-bottom:3px">🎯 Destination : <b>'+c.arr+'</b></div><div style="font-size:12px;margin-bottom:3px">👤 Destinataire : <b>'+c.destinataire+'</b></div><div style="font-size:14px;font-weight:900;color:#8B5CF6">🔐 Code à demander : '+c.code+'</div></div>'
+  +'<div class="actb"><button class="bnav" onclick="window.open('https://maps.google.com/?q=Badalabougou+Bamako','_blank')">🗺️ GPS</button><button class="barr g" onclick="arriveLivraison()">🏁 Arrivé destination</button></div></div>'+miniS();
 }
 
 function arriveLivraison(){
   const c=curCourse||COURSES[0];
-  document.getElementById("main-content").innerHTML='<div style="padding:14px">'
-    +'<div style="text-align:center;padding:16px 0">'
-    +'<div style="font-size:48px;margin-bottom:8px">🔐</div>'
-    +'<div style="font-size:16px;font-weight:800;margin-bottom:4px">Demandez le code au destinataire</div>'
-    +'<div style="font-size:12px;color:var(--muted)">👤 '+c.destinataire+' · '+c.arr+'</div>'
-    +'</div>'
-    +'<input id="code-inp" maxlength="4" placeholder="_ _ _ _" style="width:100%;padding:16px;border-radius:12px;border:2px solid #8B5CF6;background:rgba(139,92,246,.1);color:#8B5CF6;font-size:28px;font-weight:900;text-align:center;font-family:inherit;outline:none;margin-bottom:10px"/>'
-    +'<div id="code-err" style="color:var(--red);font-size:12px;font-weight:700;text-align:center;margin-bottom:10px;display:none">❌ Code incorrect</div>'
-    +'<button onclick="validerCode()" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">✅ Valider le code</button>'
-    +'</div>';
+  document.getElementById("main-content").innerHTML='<div style="padding:14px"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:8px">🔐</div><div style="font-size:16px;font-weight:800;margin-bottom:4px">Demandez le code au destinataire</div><div style="font-size:12px;color:var(--muted)">👤 '+c.destinataire+' · '+c.arr+'</div></div><input id="code-inp" maxlength="4" placeholder="_ _ _ _" style="width:100%;padding:16px;border-radius:12px;border:2px solid #8B5CF6;background:rgba(139,92,246,.1);color:#8B5CF6;font-size:28px;font-weight:900;text-align:center;font-family:inherit;outline:none;margin-bottom:10px"/><div id="code-err" style="color:var(--red);font-size:12px;font-weight:700;text-align:center;margin-bottom:10px;display:none">Code incorrect</div><button onclick="validerCode()" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Valider le code</button></div>';
 }
 
 function validerCode(){
   const c=curCourse||COURSES[0];
   const v=document.getElementById("code-inp").value.trim();
-  if(v!==String(c.code)){
-    document.getElementById("code-err").style.display="block";
-    return;
-  }
-  cstep=0;
-  totalC++;totalR+=c.prix;totalKm+=4;updateStats();
-  HIST.unshift({client:c.client,de:c.dep,vers:c.arr,prix:c.prix,date:"À l instant",note:5,type:"Livraison"});
-  document.getElementById("main-content").innerHTML='<div style="padding:14px;text-align:center">'
-    +'<div style="font-size:64px;margin-bottom:12px">📦</div>'
-    +'<div style="font-size:18px;font-weight:800;margin-bottom:4px">Livraison effectuée ✅</div>'
-    +'<div style="font-size:12px;color:var(--muted);margin-bottom:16px">'+c.dep+' → '+c.arr+'</div>'
-    +'<div style="font-size:26px;font-weight:800;color:#8B5CF6;margin-bottom:20px">+'+fmt(c.prix)+' FCFA</div>'
-    +'<button onclick="renderHome();setTimeout(simCourse,4000)" style="padding:14px 28px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">🚗 Prêt pour une autre course</button>'
-    +'</div>';
-  toast("✅ Livraison confirmée ! +"+fmt(c.prix)+" FCFA");
+  if(v!==String(c.code)){document.getElementById("code-err").style.display="block";return;}
+  cstep=0;totalC++;totalR+=c.prix;totalKm+=4;updateStats();
+  HIST.unshift({client:c.client,de:c.dep,vers:c.arr,prix:c.prix,date:"A l instant",note:5,type:"Livraison"});
+  document.getElementById("main-content").innerHTML='<div style="padding:14px;text-align:center"><div style="font-size:64px;margin-bottom:12px">📦</div><div style="font-size:18px;font-weight:800;margin-bottom:4px">Livraison effectuée ✅</div><div style="font-size:12px;color:var(--muted);margin-bottom:16px">'+c.dep+' → '+c.arr+'</div><div style="font-size:26px;font-weight:800;color:#8B5CF6;margin-bottom:20px">+'+fmt(c.prix)+' FCFA</div><button onclick="renderHome();setTimeout(simCourse,4000)" style="padding:14px 28px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">🚗 Pret pour une autre course</button></div>';
+  toast("Livraison confirmée ! +"+fmt(c.prix)+" FCFA");
 }
 
 // ── INIT ──
