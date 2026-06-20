@@ -465,8 +465,8 @@ const SERVICES = [
   {id:"moto",    ico:"🏍️", label:"Moto"    },
   {id:"livraison",ico:"📦",label:"Livraison"},
   {id:"bus",     ico:"🚍", label:"Bus"     },
+{id:"malinav", ico:"🇲🇱",label:"Mali Nav"},
 ];
-
 const RIDE_PRICES = {taxi:"1 500",moto:"400",livraison:"800"};
 const RIDE_ETA   = {taxi:"5",moto:"4",livraison:"10"};
 
@@ -607,6 +607,7 @@ function scheduleWidget(type, scheduled, scheduleDate){
 }
 
 function setSvc(id){
+if(id==="malinav"){ window.open("https://mikailou33-collab.github.io/mali-nav/mali-nav-lite.html","_blank"); return; }
   svc=id;
   if(id!=="bus"){busStep=0;busDest="";busDep=null;busSiege=null;openReg=null;}
   renderServices();
