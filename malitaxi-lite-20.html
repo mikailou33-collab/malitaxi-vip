@@ -1561,10 +1561,10 @@ function confirmerLivraisonLite(){
         📦 Suivre la livraison
       </button>
       <div style="display:flex;gap:9px;margin-bottom:10px">
-        <button onclick="envoyerWhatsAppLivLite('${code}','${nom}','${depart}','${arrivee}',${prix},'${codeConfirm}')" style="flex:1;padding:13px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
+        <button onclick="envoyerWhatsAppLivLite('${code}','${nom}','${depart}','${arrivee}',${prix},'${codeConfirm}','${livraisonDataLite.paiement}')" style="flex:1;padding:13px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
           📱 WhatsApp
         </button>
-        <button onclick="envoyerSMSLivLite('${code}','${nom}','${depart}','${arrivee}')" style="flex:1;padding:13px;background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
+        <button onclick="envoyerSMSLivLite('${code}','${nom}','${depart}','${arrivee}','${livraisonDataLite.paiement}')" style="flex:1;padding:13px;background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
           💬 SMS
         </button>
       </div>
@@ -1576,7 +1576,8 @@ function confirmerLivraisonLite(){
   document.body.appendChild(confDiv);
 }
 
-function envoyerWhatsAppLivLite(code, nom, depart, arrivee, prix, codeConfirm){
+function envoyerWhatsAppLivLite(code, nom, depart, arrivee, prix, codeConfirm, paiement){
+  var payLabels = {orange:'🟠 Orange Money', moov:'🟡 Moov Money', wave:'🔵 Wave', cash:'💵 Cash'};
   const msg = encodeURIComponent(
     '📦 MaliTaxi Lite Livraison\n' +
     '━━━━━━━━━━━━━━━━━\n' +
@@ -1585,14 +1586,16 @@ function envoyerWhatsAppLivLite(code, nom, depart, arrivee, prix, codeConfirm){
     '🏁 Arrivée: ' + arrivee + '\n' +
     '👤 Pour: ' + nom + '\n' +
     '💰 Prix: ' + prix.toLocaleString('fr-FR') + ' FCFA\n' +
+    '💳 Paiement: ' + (payLabels[paiement]||paiement||'À confirmer') + '\n' +
     '━━━━━━━━━━━━━━━━━\n' +
     '🔐 Code confirmation: ' + (codeConfirm||'N/A') + '\n' +
     '🏍️ Livreur en route !'
   );
-  window.location.href = 'https://wa.me/+22382826508?text=' + msg;
+  window.location.href = 'https://wa.me/22382826508?text=' + msg;
 }
-function envoyerSMSLivLite(code, nom, depart, arrivee){
-  const msg = 'MaliTaxi Lite Livraison - Code: ' + code + ' - ' + depart + ' vers ' + arrivee + ' - Pour: ' + nom;
+function envoyerSMSLivLite(code, nom, depart, arrivee, paiement){
+  var payLabels = {orange:'Orange Money', moov:'Moov Money', wave:'Wave', cash:'Cash'};
+  const msg = 'MaliTaxi Lite Livraison - Code: ' + code + ' - ' + depart + ' vers ' + arrivee + ' - Pour: ' + nom + ' - Paiement: ' + (payLabels[paiement]||paiement||'a confirmer');
   window.location.href = 'sms:+22382826508?body=' + encodeURIComponent(msg);
 }
 // ══════════════════════════════════════
