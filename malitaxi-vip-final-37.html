@@ -2845,7 +2845,7 @@ function confirmerLivraison(){
         </button>
       </div>
       <div style="display:flex;gap:9px;margin-bottom:10px">
-        <button onclick="envoyerWhatsAppLiv('${code}','${nom}','${tel}','${depart}','${arrivee}',${prix},'${codeConfirm}')"
+        <button onclick="envoyerWhatsAppLiv('${code}','${nom}','${tel}','${depart}','${arrivee}',${prix},'${codeConfirm}','${livraisonData.paiement}')"
           style="flex:1;padding:13px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
           📱 WhatsApp
         </button>
@@ -2866,7 +2866,8 @@ function envoyerSMSLiv(code, nom, depart, arrivee){
   const msg = 'MaliTaxi VIP Livraison - Code: ' + code + ' - ' + depart + ' vers ' + arrivee + ' - Pour: ' + nom;
   window.location.href = 'sms:+22382826508?body=' + encodeURIComponent(msg);
 }
-function envoyerWhatsAppLiv(code, nom, destinataire, depart, arrivee, prix, codeConfirm){
+function envoyerWhatsAppLiv(code, nom, destinataire, depart, arrivee, prix, codeConfirm, paiement){
+  var payLabels = {orange:'🟠 Orange Money', moov:'🟡 Moov Money', wave:'🔵 Wave', cash:'💵 Cash'};
   const msg = encodeURIComponent(
     '📦 MaliTaxi Livraison\n' +
     '━━━━━━━━━━━━━━━━━\n' +
@@ -2875,21 +2876,22 @@ function envoyerWhatsAppLiv(code, nom, destinataire, depart, arrivee, prix, code
     '🏁 Arrivée: ' + arrivee + '\n' +
     '👤 Pour: ' + nom + '\n' +
     '💰 Prix: ' + prix.toLocaleString('fr-FR') + ' FCFA\n' +
+    '💳 Paiement: ' + (payLabels[paiement]||paiement||'À confirmer') + '\n' +
     '━━━━━━━━━━━━━━━━━\n' +
     '🔐 Code confirmation destinataire: ' + (codeConfirm||'N/A') + '\n' +
     '🏍️ Livreur en route !'
   );
-  window.location.href = 'https://wa.me/+22382826508?text=' + msg;
+  window.location.href = 'https://wa.me/22382826508?text=' + msg;
 }
 // ══════════════════════════════════════
 // MODULE PUBLICITÉS
 // ══════════════════════════════════════
 const PUBS = [
-  {ico:"🏨",titre:"Hotel Laico Bamako",desc:"Tarifs speciaux clients MaliTaxi — Des 35 000 FCFA/nuit",bg:"linear-gradient(135deg,#1E40AF,#3B82F6)",url:"https://wa.me/+22382826508"},
-  {ico:"🏠",titre:"Immo Mali",desc:"Appartements et villas a Bamako — Locations et ventes",bg:"linear-gradient(135deg,#059669,#10b981)",url:"https://wa.me/+22382826508"},
-  {ico:"📱",titre:"TechShop Mali",desc:"Smartphones, accessoires — Livraison gratuite Bamako",bg:"linear-gradient(135deg,#7C3AED,#A78BFA)",url:"https://wa.me/+22382826508"},
-  {ico:"💄",titre:"Beauty Center Bamako",desc:"Soins visage et corps — -20% avec MaliTaxi",bg:"linear-gradient(135deg,#EC4899,#F472B6)",url:"https://wa.me/+22382826508"},
-  {ico:"🛍️",titre:"Mall du Mali",desc:"Shopping, mode et maison — Ouvert 7j/7",bg:"linear-gradient(135deg,#D97706,#F59E0B)",url:"https://wa.me/+22382826508"},
+  {ico:"🏨",titre:"Hotel Laico Bamako",desc:"Tarifs speciaux clients MaliTaxi — Des 35 000 FCFA/nuit",bg:"linear-gradient(135deg,#1E40AF,#3B82F6)",url:"https://wa.me/22382826508"},
+  {ico:"🏠",titre:"Immo Mali",desc:"Appartements et villas a Bamako — Locations et ventes",bg:"linear-gradient(135deg,#059669,#10b981)",url:"https://wa.me/22382826508"},
+  {ico:"📱",titre:"TechShop Mali",desc:"Smartphones, accessoires — Livraison gratuite Bamako",bg:"linear-gradient(135deg,#7C3AED,#A78BFA)",url:"https://wa.me/22382826508"},
+  {ico:"💄",titre:"Beauty Center Bamako",desc:"Soins visage et corps — -20% avec MaliTaxi",bg:"linear-gradient(135deg,#EC4899,#F472B6)",url:"https://wa.me/22382826508"},
+  {ico:"🛍️",titre:"Mall du Mali",desc:"Shopping, mode et maison — Ouvert 7j/7",bg:"linear-gradient(135deg,#D97706,#F59E0B)",url:"https://wa.me/22382826508"},
 ];
 let pubIdx = 0;
 let pubTimer = null;
@@ -2961,6 +2963,7 @@ function confirmerCourse(){
     km: rideEstimKm||4.1,
     duree: rideEstimMin||16,
     client: userName || 'Client VIP',
+    paiement: payMeth || 'orange',
     statut: 'en_attente',
     timestamp: Date.now()
   };
@@ -2977,7 +2980,8 @@ function confirmerCourse(){
     var db = window.db || firebase.database();
     db.ref('courses').push(data).then(function(ref){
       rideCurrentId = ref.key;
-      var msg = encodeURIComponent('🚖 NOUVELLE COURSE | '+data.depart+' → '+data.arrivee+' | '+data.prix+' FCFA | '+data.client);
+      var payLabels = {orange:'🟠 Orange Money', moov:'🟡 Moov Money', wave:'🔵 Wave', cash:'💵 Cash'};
+      var msg = encodeURIComponent('🚖 NOUVELLE COURSE | '+data.depart+' → '+data.arrivee+' | '+data.prix+' FCFA | '+data.client+' | 💳 '+(payLabels[data.paiement]||data.paiement));
       fetch('https://api.callmebot.com/whatsapp.php?phone=96551630019&text='+msg+'&apikey=1518458').catch(function(){});
       passerEtapeSuivante();
     }).catch(function(e){
