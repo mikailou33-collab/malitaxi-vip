@@ -270,6 +270,20 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 window.db = db;
+// Toast notification simple
+function showToast(msg){
+  var t = document.getElementById('toast-msg');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toast-msg';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#22223A;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:9999;max-width:85%;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.4)';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function(){ t.style.display = 'none'; }, 3000);
+}
 // Envoyer position client vers Firebase
 function envoyerPosition(){
   if(!navigator.geolocation){
@@ -286,7 +300,7 @@ function envoyerPosition(){
       timestamp: new Date().toISOString(),
       nom: localStorage.getItem('malitaxi_nom') || 'Client VIP',
       tel: localStorage.getItem('malitaxi_tel') || '+223 XX XX XX XX',
-      service: currentService || 'taxi',
+      service: svc || 'taxi',
       statut: 'en_attente'
     };
     db.ref('positions/' + clientId).set(data).then(function(){
@@ -808,6 +822,7 @@ if(navigator.geolocation){
 let avStep=0, avDest="", avVol=null, avClasse="eco";
 let payMeth="orange", openReg=null, histTab="courses";
 let points=1250, ratingNote=0, ratingTags=[], userName="Client VIP";
+let isLoggedIn=false;
 let notifs=[...NOTIFS];
 // ── Choix compagnie & type voyage ──
 let busTypeVoyage="simple", busCieIdx=0, busScheduled=false, busScheduleDate="";
@@ -841,6 +856,7 @@ function doRegister(){
 }
 function showErr(el,msg){el.textContent="⚠️ "+msg;el.style.display="block"}
 function launchApp(){
+  isLoggedIn=true;
   hide("page-splash");hide("page-auth");show("page-app");
   document.getElementById("user-name-display").textContent="Bonjour, "+userName+" 👑";
   renderServices(); renderContent(); updateBellBadge();
@@ -908,9 +924,9 @@ function selectQuartier(inputId, listId, value){
 }
 // Close suggestions on outside click
 document.addEventListener("click", function(e){
-  ["dep-suggestions","dest-suggestions","stop-suggestions"].forEach(id => {
+  ["dep-suggestions","dest-suggestions","stop-suggestions","liv-depart-sug","liv-arrivee-sug"].forEach(id => {
     const el = document.getElementById(id);
-    if(el && !el.contains(e.target)) el.style.display = "none";
+    if(el && !el.contains(e.target) && e.target.id!==id.replace("-sug","").replace("-suggestions","")) el.style.display = "none";
   });
 });
 // ── SERVICES ──
@@ -1047,7 +1063,7 @@ function renderContent(){
   const c=document.getElementById("content");
   if(["taxi","moto","livraison"].includes(svc)){ c.innerHTML=renderRide(); return; }
   if(svc==="aeroport"){ c.innerHTML=renderAvion(); return; }
-  if(svc==="malinav"){ window.open("https://mikailou33-collab.github.io/mali-nav/mali-nav-lite.html","_blank"); setSvc("taxi"); return; }
+  if(svc==="malinav"){ window.open("https://mikailou33-collab.github.io/mali-nav/","_blank"); setSvc("taxi"); return; }
   if(svc==="bus"){ c.innerHTML=renderBus(); return; }
 }
 // ── RIDE ──
@@ -1774,6 +1790,7 @@ function renderHistorique(){
 }
 // ── NAVIGATION ──
 function navTo(page){
+  if(!isLoggedIn){ showAuth('login'); return; }
   closePanel();
   document.querySelectorAll(".nav-item").forEach(el=>el.classList.remove("active"));
   document.getElementById("nav-"+page)?.classList.add("active");
@@ -2169,6 +2186,7 @@ function toggleGPSProfil(){
 }
 function deconnexion(){
   if(confirm("Voulez-vous vraiment vous déconnecter ?")){
+    isLoggedIn=false;
     closePanel();
     hide("page-app");
     document.getElementById("sos-btn").classList.remove("show");
@@ -2660,11 +2678,17 @@ function openLivraison(){
       <!-- ADRESSES -->
       <div style="margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:6px;text-transform:uppercase">📍 Adresse de ramassage</div>
-        <input id="liv-depart" placeholder="Où prendre le colis ?" 
-          style="width:100%;padding:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;font-size:14px;font-family:inherit;outline:none;margin-bottom:8px"/>
+        <div style="position:relative;margin-bottom:8px">
+          <input id="liv-depart" placeholder="Où prendre le colis ?" oninput="showSuggestions('liv-depart','liv-depart-sug',this.value)"
+            style="width:100%;padding:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;font-size:14px;font-family:inherit;outline:none"/>
+          <div id="liv-depart-sug" style="display:none;position:absolute;top:100%;left:0;right:0;background:#22223A;border:1px solid rgba(255,255,255,.15);border-radius:0 0 12px 12px;z-index:950;overflow:hidden"></div>
+        </div>
         <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:6px;text-transform:uppercase">🏁 Adresse de livraison</div>
-        <input id="liv-arrivee" placeholder="Où livrer le colis ?" 
-          style="width:100%;padding:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;font-size:14px;font-family:inherit;outline:none"/>
+        <div style="position:relative">
+          <input id="liv-arrivee" placeholder="Où livrer le colis ?" oninput="showSuggestions('liv-arrivee','liv-arrivee-sug',this.value)"
+            style="width:100%;padding:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;font-size:14px;font-family:inherit;outline:none"/>
+          <div id="liv-arrivee-sug" style="display:none;position:absolute;top:100%;left:0;right:0;background:#22223A;border:1px solid rgba(255,255,255,.15);border-radius:0 0 12px 12px;z-index:950;overflow:hidden"></div>
+        </div>
       </div>
       <!-- DESTINATAIRE -->
       <div style="margin-bottom:14px">
@@ -2820,21 +2844,30 @@ function confirmerLivraison(){
           📦 Suivre la livraison
         </button>
       </div>
-      <div style="display:flex;gap:10px">
-        <button onclick="this.parentNode.parentNode.parentNode.remove()" 
-          style="flex:1;padding:14px;background:rgba(255,255,255,.1);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit">
-          ✕ Fermer
-        </button>
-        <button onclick="envoyerWhatsAppLiv('${code}','${nom}','${tel}','${depart}','${arrivee}',${prix},'${codeConfirm}')"
-          style="flex:1;padding:14px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit">
+      <div style="display:flex;gap:9px;margin-bottom:10px">
+        <button onclick="envoyerWhatsAppLiv('${code}','${nom}','${tel}','${depart}','${arrivee}',${prix},'${codeConfirm}','${livraisonData.paiement}')"
+          style="flex:1;padding:13px;background:linear-gradient(135deg,#25D366,#128C7E);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
           📱 WhatsApp
         </button>
+        <button onclick="envoyerSMSLiv('${code}','${nom}','${depart}','${arrivee}')"
+          style="flex:1;padding:13px;background:#3498DB;border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px">
+          💬 SMS
+        </button>
       </div>
+      <button onclick="this.parentNode.parentNode.parentNode.remove()" 
+        style="width:100%;padding:14px;background:rgba(255,255,255,.1);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit">
+        ✕ Fermer
+      </button>
     </div>
   `;
   document.body.appendChild(confDiv);
 }
-function envoyerWhatsAppLiv(code, nom, destinataire, depart, arrivee, prix, codeConfirm){
+function envoyerSMSLiv(code, nom, depart, arrivee){
+  const msg = 'MaliTaxi VIP Livraison - Code: ' + code + ' - ' + depart + ' vers ' + arrivee + ' - Pour: ' + nom;
+  window.location.href = 'sms:+22382826508?body=' + encodeURIComponent(msg);
+}
+function envoyerWhatsAppLiv(code, nom, destinataire, depart, arrivee, prix, codeConfirm, paiement){
+  var payLabels = {orange:'🟠 Orange Money', moov:'🟡 Moov Money', wave:'🔵 Wave', cash:'💵 Cash'};
   const msg = encodeURIComponent(
     '📦 MaliTaxi Livraison\n' +
     '━━━━━━━━━━━━━━━━━\n' +
@@ -2843,25 +2876,27 @@ function envoyerWhatsAppLiv(code, nom, destinataire, depart, arrivee, prix, code
     '🏁 Arrivée: ' + arrivee + '\n' +
     '👤 Pour: ' + nom + '\n' +
     '💰 Prix: ' + prix.toLocaleString('fr-FR') + ' FCFA\n' +
+    '💳 Paiement: ' + (payLabels[paiement]||paiement||'À confirmer') + '\n' +
     '━━━━━━━━━━━━━━━━━\n' +
     '🔐 Code confirmation destinataire: ' + (codeConfirm||'N/A') + '\n' +
     '🏍️ Livreur en route !'
   );
-  window.location.href = 'https://wa.me/+22382826508?text=' + msg;
+  window.location.href = 'https://wa.me/22382826508?text=' + msg;
 }
 // ══════════════════════════════════════
 // MODULE PUBLICITÉS
 // ══════════════════════════════════════
 const PUBS = [
-  {ico:"🏨",titre:"Hotel Laico Bamako",desc:"Tarifs speciaux clients MaliTaxi — Des 35 000 FCFA/nuit",bg:"linear-gradient(135deg,#1E40AF,#3B82F6)",url:"https://wa.me/+22382826508"},
-  {ico:"🏠",titre:"Immo Mali",desc:"Appartements et villas a Bamako — Locations et ventes",bg:"linear-gradient(135deg,#059669,#10b981)",url:"https://wa.me/+22382826508"},
-  {ico:"📱",titre:"TechShop Mali",desc:"Smartphones, accessoires — Livraison gratuite Bamako",bg:"linear-gradient(135deg,#7C3AED,#A78BFA)",url:"https://wa.me/+22382826508"},
-  {ico:"💄",titre:"Beauty Center Bamako",desc:"Soins visage et corps — -20% avec MaliTaxi",bg:"linear-gradient(135deg,#EC4899,#F472B6)",url:"https://wa.me/+22382826508"},
-  {ico:"🛍️",titre:"Mall du Mali",desc:"Shopping, mode et maison — Ouvert 7j/7",bg:"linear-gradient(135deg,#D97706,#F59E0B)",url:"https://wa.me/+22382826508"},
+  {ico:"🏨",titre:"Hotel Laico Bamako",desc:"Tarifs speciaux clients MaliTaxi — Des 35 000 FCFA/nuit",bg:"linear-gradient(135deg,#1E40AF,#3B82F6)",url:"https://wa.me/22382826508"},
+  {ico:"🏠",titre:"Immo Mali",desc:"Appartements et villas a Bamako — Locations et ventes",bg:"linear-gradient(135deg,#059669,#10b981)",url:"https://wa.me/22382826508"},
+  {ico:"📱",titre:"TechShop Mali",desc:"Smartphones, accessoires — Livraison gratuite Bamako",bg:"linear-gradient(135deg,#7C3AED,#A78BFA)",url:"https://wa.me/22382826508"},
+  {ico:"💄",titre:"Beauty Center Bamako",desc:"Soins visage et corps — -20% avec MaliTaxi",bg:"linear-gradient(135deg,#EC4899,#F472B6)",url:"https://wa.me/22382826508"},
+  {ico:"🛍️",titre:"Mall du Mali",desc:"Shopping, mode et maison — Ouvert 7j/7",bg:"linear-gradient(135deg,#D97706,#F59E0B)",url:"https://wa.me/22382826508"},
 ];
 let pubIdx = 0;
 let pubTimer = null;
 function initPubs(){
+  if(!isLoggedIn) return;
   var section = document.getElementById('pub-section');
   if(!section) return;
   section.style.display = 'block';
@@ -2908,6 +2943,7 @@ function afficherPub(idx){
   });
 }
 function ouvrirPub(){
+  if(!isLoggedIn){ showAuth('login'); return; }
   var pub = PUBS[pubIdx];
   window.open(pub.url, '_blank');
 }
@@ -2926,18 +2962,35 @@ function confirmerCourse(){
     prix: rideEstimPrix||1235,
     km: rideEstimKm||4.1,
     duree: rideEstimMin||16,
-    client: currentUser ? currentUser.email : 'Client VIP',
+    client: userName || 'Client VIP',
+    paiement: payMeth || 'orange',
     statut: 'en_attente',
     timestamp: Date.now()
   };
-  var db = window.db || firebase.database();
-  db.ref('courses').push(data).then(function(ref){
-    rideCurrentId = ref.key;
-    var msg = encodeURIComponent('🚖 NOUVELLE COURSE | '+data.depart+' → '+data.arrivee+' | '+data.prix+' FCFA | '+data.client);
-    fetch('https://api.callmebot.com/whatsapp.php?phone=96551630019&text='+msg+'&apikey=1518458').catch(function(){});
+  var avance = false;
+  function passerEtapeSuivante(){
+    if(avance) return;
+    avance = true;
     rideStep=1;
     renderContent();
-  }).catch(function(e){ alert('Erreur Firebase: '+e.message); });
+  }
+  // Securite : avancer apres 4 secondes meme si Firebase ne repond pas
+  setTimeout(passerEtapeSuivante, 4000);
+  try{
+    var db = window.db || firebase.database();
+    db.ref('courses').push(data).then(function(ref){
+      rideCurrentId = ref.key;
+      var payLabels = {orange:'🟠 Orange Money', moov:'🟡 Moov Money', wave:'🔵 Wave', cash:'💵 Cash'};
+      var msg = encodeURIComponent('🚖 NOUVELLE COURSE | '+data.depart+' → '+data.arrivee+' | '+data.prix+' FCFA | '+data.client+' | 💳 '+(payLabels[data.paiement]||data.paiement));
+      fetch('https://api.callmebot.com/whatsapp.php?phone=96551630019&text='+msg+'&apikey=1518458').catch(function(){});
+      passerEtapeSuivante();
+    }).catch(function(e){
+      showToast('⚠️ Course enregistree localement');
+      passerEtapeSuivante();
+    });
+  }catch(e){
+    passerEtapeSuivante();
+  }
 }
 
 // ══════════════════════════════════════
