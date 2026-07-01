@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.mikailou33_collab.twa",
+    "sha256_cert_fingerprints": [
+      "75:C0:9E:97:9F:C6:94:21:6D:A6:68:DE:F0:7F:6E:6B:18:51:6F:84:BF:9F:30:9D:93:88:B8:8C:AE:5A:93:D7"
+    ]
+  }
+}]
