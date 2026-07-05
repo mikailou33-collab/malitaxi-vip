@@ -366,6 +366,7 @@ function enregistrerInfosChauffeurImmediat(){
   });
 }
 function afficherDebugCategorie(msg){
+  return; // debug desactive pour production
   var el = document.getElementById('debug-categorie');
   if(!el){
     el = document.createElement('div');
@@ -622,6 +623,7 @@ function enregistrerTokenFCMSiPossible(){
   }
 }
 function afficherDebugFCM(msg){
+  return; // debug desactive pour production
   var el = document.getElementById('debug-fcm');
   if(!el){
     el = document.createElement('div');
@@ -1726,6 +1728,7 @@ function demarrerEcouteLivraisons(){
   console.log('✅ Écoute livraisons démarrée');
 }
 function afficherDebugFirebase(type, count){
+  return; // debug desactive pour production
   var el = document.getElementById('debug-fb-'+type);
   if(!el){
     el = document.createElement('div');
