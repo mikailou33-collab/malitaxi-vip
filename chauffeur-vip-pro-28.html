@@ -162,7 +162,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
   <div id="map-drv"></div>
   <div class="drv-header">
     <div style="position:relative">
-      <div class="drv-avatar" id="drv-ava">😊</div>
+      <div class="drv-avatar" id="drv-ava" onclick="ouvrirChoixAvatarChauffeur()" style="cursor:pointer;overflow:hidden">😊</div>
       <div class="online-dot" id="drv-dot"></div>
     </div>
     <div style="flex:1;margin:0 12px">
@@ -231,7 +231,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 </div>
 <script>
 // ── DATA ──
-let driverName="Chauffeur Pro", driverTel="", vehicule="Toyota Corolla", plaque="ML-1234-A";
+let driverName="Chauffeur Pro", driverTel="", vehicule="Toyota Corolla", plaque="ML-1234-A", driverAvatar="😊", driverAvatarPhoto="";
 let isDriverLoggedIn=false;
 let isOnline=true, courseStep=0, courseIdx=0, currentCourse=null;
 let totalCourses=7, totalRevenus=245000, maNote=4.8, totalKm=142;
@@ -339,6 +339,11 @@ function launchApp(){
   document.getElementById("nav").style.display="flex";
   document.getElementById("sos-btn").classList.add("show");
   document.getElementById("drv-name").textContent=driverName;
+  try{
+    driverAvatar = localStorage.getItem("malitaxi_chauffeur_avatar_"+driverTel) || "😊";
+    driverAvatarPhoto = localStorage.getItem("malitaxi_chauffeur_avatarphoto_"+driverTel) || "";
+  }catch(e){}
+  majAvatarHeaderChauffeur();
   updateStats();
   renderHome();
   setTimeout(initMap, 600);
@@ -551,6 +556,86 @@ function stopSon(){
   try{if(audioCtx){audioCtx.close();audioCtx=null;}}catch(e){}
   if(sonIntervalId){ clearInterval(sonIntervalId); sonIntervalId = null; }
   stopSonLivraison();
+}
+function ouvrirChoixAvatarChauffeur(){
+  var ancien = document.getElementById("avatar-picker-ch");
+  if(ancien){ ancien.remove(); return; }
+  var q = String.fromCharCode(34);
+  var AVATARS_CH = ["😊","🧑🏿","👨🏿‍✈️","😎","🥳","🤓","👳🏿","🧔🏿"];
+  var panel = document.createElement("div");
+  panel.id = "avatar-picker-ch";
+  panel.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:950;display:flex;align-items:center;justify-content:center;padding:24px";
+  var boutons = AVATARS_CH.map(function(a){
+    return "<button onclick=" + q + "choisirAvatarChauffeur('" + a + "')" + q + " style=" + q + "font-size:32px;width:56px;height:56px;border-radius:14px;border:none;background:var(--card2);cursor:pointer" + q + ">" + a + "</button>";
+  }).join("");
+  panel.innerHTML =
+    "<div style=" + q + "background:var(--card);border-radius:18px;padding:22px;max-width:340px;width:100%" + q + ">"
+    + "<div style=" + q + "font-size:15px;font-weight:900;margin-bottom:14px;text-align:center" + q + ">Choisir un avatar</div>"
+    + "<div style=" + q + "display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px" + q + ">" + boutons + "</div>"
+    + "<button onclick=" + q + "document.getElementById('input-photo-avatar-ch').click()" + q + " style=" + q + "width:100%;padding:12px;margin-bottom:10px;background:var(--gold);border:none;border-radius:12px;font-weight:800;font-family:inherit;cursor:pointer;color:#000" + q + ">📷 Importer une photo</button>"
+    + "<input type=" + q + "file" + q + " id=" + q + "input-photo-avatar-ch" + q + " accept=" + q + "image/*" + q + " style=" + q + "display:none" + q + " onchange=" + q + "uploadPhotoAvatarChauffeur(this)" + q + ">"
+    + "<button onclick=" + q + "document.getElementById('avatar-picker-ch').remove()" + q + " style=" + q + "width:100%;padding:12px;background:var(--card2);border:none;border-radius:12px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text)" + q + ">Annuler</button>";
+  document.body.appendChild(panel);
+}
+function choisirAvatarChauffeur(emoji){
+  driverAvatar = emoji;
+  driverAvatarPhoto = "";
+  try{
+    localStorage.setItem("malitaxi_chauffeur_avatar_"+driverTel, driverAvatar);
+    localStorage.removeItem("malitaxi_chauffeur_avatarphoto_"+driverTel);
+  }catch(e){}
+  if(window.dbCh && driverTel){ window.dbCh.ref("chauffeurs_position/"+driverTel+"/avatar").set(emoji); window.dbCh.ref("chauffeurs_position/"+driverTel+"/avatarPhoto").remove(); }
+  var panel = document.getElementById("avatar-picker-ch");
+  if(panel) panel.remove();
+  showToast("✅ Avatar mis a jour !");
+  majAvatarHeaderChauffeur();
+  renderProfil();
+}
+function majAvatarHeaderChauffeur(){
+  var el = document.getElementById("drv-ava");
+  if(!el) return;
+  if(driverAvatarPhoto){
+    el.innerHTML = '<img src="'+driverAvatarPhoto+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">';
+  } else {
+    el.textContent = driverAvatar;
+  }
+}
+function uploadPhotoAvatarChauffeur(input){
+  var fichier = input.files && input.files[0];
+  if(!fichier) return;
+  if(!fichier.type.startsWith("image/")){
+    showToast("⚠️ Seules les images sont acceptees");
+    return;
+  }
+  if(fichier.size > 3*1024*1024){
+    showToast("⚠️ Image trop lourde (max 3 Mo)");
+    return;
+  }
+  if(!driverTel){
+    showToast("⚠️ Vous devez etre connecte");
+    return;
+  }
+  if(!window.storage){
+    showToast("⚠️ Service photo indisponible");
+    return;
+  }
+  showToast("⏳ Envoi de la photo...");
+  var ref = window.storage.ref().child("avatars_chauffeurs/" + driverTel + ".jpg");
+  ref.put(fichier).then(function(snapshot){
+    return snapshot.ref.getDownloadURL();
+  }).then(function(url){
+    driverAvatarPhoto = url;
+    try{ localStorage.setItem("malitaxi_chauffeur_avatarphoto_"+driverTel, url); }catch(e){}
+    if(window.dbCh && driverTel){ window.dbCh.ref("chauffeurs_position/"+driverTel+"/avatarPhoto").set(url); }
+    var panel = document.getElementById("avatar-picker-ch");
+    if(panel) panel.remove();
+    showToast("✅ Photo de profil mise a jour !");
+    majAvatarHeaderChauffeur();
+    renderProfil();
+  }).catch(function(err){
+    console.error(err);
+    showToast("❌ Echec de l'envoi, reessayez");
+  });
 }
 function showToast(msg){
   const old=document.getElementById("toast-notif"); if(old) old.remove();
@@ -1079,7 +1164,7 @@ function renderHisto(){
 function renderProfil(){
   document.getElementById("main-content").innerHTML='<div style="padding:20px 18px 90px">'
     +'<div style="text-align:center;margin-bottom:18px">'
-    +'<div style="width:78px;height:78px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 10px;border:3px solid rgba(245,166,35,.3)">😊</div>'
+    +'<div style="width:78px;height:78px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 10px;border:3px solid rgba(245,166,35,.3);cursor:pointer;overflow:hidden" onclick="ouvrirChoixAvatarChauffeur()">'+(driverAvatarPhoto?'<img src="'+driverAvatarPhoto+'" style="width:100%;height:100%;object-fit:cover">':driverAvatar)+'</div>'
     +'<div style="font-size:19px;font-weight:800;margin-bottom:3px">'+driverName+'</div>'
     +'<div style="font-size:12px;color:var(--gold);font-weight:700">⭐ Chauffeur Pro</div>'
     +'<div style="font-size:12px;color:var(--muted);margin-top:4px">'+maNote+' / 5 · '+totalCourses+' courses</div>'
@@ -1206,6 +1291,7 @@ showSplash();
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 <script>
 window.addEventListener('load', function(){
   if(!firebase.apps.length){
@@ -1218,6 +1304,7 @@ window.addEventListener('load', function(){
       messagingSenderId:"505754219310",
       appId:"1:505754219310:web:1098a82ac81ee10eec00bf"
     });
+window.storage = firebase.storage();
   }
   window.dbCh = firebase.database();
   demarrerEcouteLivraisons();
