@@ -3016,6 +3016,7 @@ function calculerPrixLiv(){
   livraisonData.prix = prix;
 }
 function confirmerLivraison(){
+  if(!isLoggedIn){ showAuth('login'); return; }
   const desc = document.getElementById('colis-desc')?.value;
   const depart = document.getElementById('liv-depart')?.value;
   const clientTel = document.getElementById('liv-client-tel')?.value;
@@ -3232,6 +3233,7 @@ window.addEventListener('load', function(){
   setTimeout(initPubs, 1000);
 });
 function confirmerCourse(){
+  if(!isLoggedIn){ showAuth('login'); return; }
   if(!rideDepart){return alert('Entrez un point de depart');}
   if(!rideDest){return alert('Entrez une destination');}
   var data = {
