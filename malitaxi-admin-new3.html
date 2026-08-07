@@ -647,18 +647,35 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <script>
 // LOGIN
 var ACCOUNTS = {
-  admin: {nom:'Admin Principal', role:'Super Admin', pass:'malitaxi2026'},
-  manager: {nom:'Manager', role:'Manager', pass:'manager2026'}
+  admin: {nom:'Admin Principal', role:'Super Admin'},
+  manager: {nom:'Manager', role:'Manager'}
 };
 document.getElementById('login-btn').addEventListener('click', doLogin);
 document.getElementById('a-pass').addEventListener('keydown', function(e){if(e.key==='Enter') doLogin();});
-function doLogin(){
+var MIGRATION_INITIALE = {admin:"malitaxi2026", manager:"manager2026"};
+async function hashMdpAdmin(texte){
+  var enc=new TextEncoder().encode(texte);
+  var buf=await crypto.subtle.digest("SHA-256",enc);
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
+}
+async function doLogin(){
   var u = document.getElementById('a-user').value.trim();
   var p = document.getElementById('a-pass').value;
   var err = document.getElementById('login-err');
   if(!u||!p){err.textContent='Remplissez tous les champs';return;}
   var acc = ACCOUNTS[u];
-  if(acc && acc.pass===p){
+  if(!acc){ err.textContent="Identifiants incorrects"; return; }
+  if(!window.db){ err.textContent="Connexion indisponible, reessayez"; return; }
+  try{
+    var snap = await window.db.ref("admin_comptes/"+u).once("value");
+    var compte = snap.val();
+    var mdpHash = await hashMdpAdmin(p);
+    if(!compte){
+      if(MIGRATION_INITIALE[u] !== p){ err.textContent="Identifiants incorrects"; return; }
+      await window.db.ref("admin_comptes/"+u).set({mdpHash: mdpHash});
+    } else {
+      if(compte.mdpHash !== mdpHash){ err.textContent="Identifiants incorrects"; return; }
+    }
     err.textContent='';
     document.getElementById('pg-login').style.display='none';
     document.getElementById('pg-admin').style.display='block';
@@ -667,8 +684,8 @@ function doLogin(){
     document.getElementById('user-avatar').textContent=acc.nom[0];
     chargerCompagnies();
     showToast('Bienvenue '+acc.nom+' !');
-  }else{
-    err.textContent='Identifiants incorrects';
+  }catch(e){
+    err.textContent = "Erreur de connexion, reessayez";
   }
 }
 function logout(){
