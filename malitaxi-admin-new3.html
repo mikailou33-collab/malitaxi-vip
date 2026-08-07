@@ -685,7 +685,8 @@ async function doLogin(){
     chargerCompagnies();
     showToast('Bienvenue '+acc.nom+' !');
   }catch(e){
-    err.textContent = "Erreur de connexion, reessayez";
+    err.textContent = "ERREUR DEBUG: " + e.message;
+    console.error("Erreur complete:", e);
   }
 }
 function logout(){
