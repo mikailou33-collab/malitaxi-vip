@@ -544,9 +544,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128226; Publicites</div>
           <div class="card">
             <div class="card-body">
-              <div class="form-group"><label class="form-label">Region</label><select class="form-select"><option>District de Bamako</option><option>Kayes</option><option>Koulikoro</option><option>Sikasso</option><option>Ségou</option><option>Mopti</option><option>Tombouctou</option><option>Gao</option><option>Kidal</option><option>Taoudénit</option><option>Ménaka</option><option>Bougouni</option><option>Dioïla</option><option>Nioro</option><option>Kita</option><option>Nara</option><option>Bandiagara</option><option>San</option><option>Douentza</option><option>Koutiala</option></select></div>
-              <div class="form-group"><label class="form-label">Lien YouTube</label><input class="form-input" placeholder="https://youtube.com/..."/></div>
-              <button class="btn btn-green" style="width:100%" onclick="showToast('Publicite ajoutee !')">Publier</button>
+              <div class="form-group"><label class="form-label">Region</label><select class="form-select" id="pub-region"><option>District de Bamako</option><option>Kayes</option><option>Koulikoro</option><option>Sikasso</option><option>Ségou</option><option>Mopti</option><option>Tombouctou</option><option>Gao</option><option>Kidal</option><option>Taoudénit</option><option>Ménaka</option><option>Bougouni</option><option>Dioïla</option><option>Nioro</option><option>Kita</option><option>Nara</option><option>Bandiagara</option><option>San</option><option>Douentza</option><option>Koutiala</option></select></div>
+              <div class="form-group"><label class="form-label">Lien YouTube</label><input class="form-input" id="pub-lien" placeholder="https://youtube.com/..."/></div>
+              <button class="btn btn-green" style="width:100%" onclick="publierPublicite()">Publier</button>
             </div>
           </div>
         </div>
@@ -926,6 +926,21 @@ chargerCompagnies = function(){
   _ancienChargerCompagnies();
   chargerTarifsConfig();
 };
+</script>
+
+<script>
+function publierPublicite(){
+  var region = document.getElementById("pub-region").value;
+  var lien = document.getElementById("pub-lien").value.trim();
+  if(!lien){ showToast("Entrez un lien YouTube"); return; }
+  if(!window.db){ showToast("Connexion indisponible"); return; }
+  window.db.ref("publicites").push({region: region, lien: lien, date: new Date().toISOString()}).then(function(){
+    showToast("Publicite ajoutee !");
+    document.getElementById("pub-lien").value = "";
+  }).catch(function(){
+    showToast("Erreur lors de la publication");
+  });
+}
 </script>
 </body>
 </html>
