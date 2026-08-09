@@ -479,8 +479,10 @@ function showSection(s){
 // ── PLAN BUS ──
 function ouvrirPlan(){
   var siegesReserves = {};
+  var siegesDetails = {};
+  window._siegesDetails = siegesDetails;
   reservations.filter(function(r){return r.statut==='confirmed'||r.statut==='pending'||r.statut==='sold';})
-    .forEach(function(r){if(r.siege) siegesReserves[r.siege]=r.statut;});
+    .forEach(function(r){if(r.siege){siegesReserves[r.siege]=r.statut; siegesDetails[r.siege]=r;}});
 
   var html = '<div style="text-align:center;margin-bottom:12px"><span style="background:#374151;color:white;padding:6px 20px;border-radius:8px;font-size:12px;font-weight:700">👨‍✈️ CHAUFFEUR</span></div>';
   html += '<div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px;flex-wrap:wrap">';
@@ -496,7 +498,8 @@ function ouvrirPlan(){
     var statut = siegesReserves[s]||'free';
     var bg = statut==='free'?'#16a34a':statut==='pending'?'#f59e0b':statut==='confirmed'?'#14a34a':'#2563eb';
     var color = statut==='pending'?'#1a1f2e':'white';
-    html += '<div style="padding:8px 4px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;background:'+bg+';color:'+color+'">'+s+'</div>';
+    var clicAttr = statut!=='free' ? ' onclick="voirDetailSiege('+s+')" style="padding:8px 4px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;background:'+bg+';color:'+color+';cursor:pointer"' : ' style="padding:8px 4px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;background:'+bg+';color:'+color+'"';
+    html += '<div'+clicAttr+'>'+s+'</div>';
   }
   html += '</div>';
   html += '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--sub)">Total: '+Object.keys(siegesReserves).length+' sièges occupés / 44</div>';
@@ -505,6 +508,17 @@ function ouvrirPlan(){
   document.getElementById('modal-plan').style.display='flex';
 }
 
+function voirDetailSiege(s){
+  var r = window._siegesDetails ? window._siegesDetails[s] : null;
+  if(!r){ showToast("Aucun detail pour ce siege"); return; }
+  var statutLabel = r.statut==="confirmed"?"Confirmee":r.statut==="pending"?"En attente":r.statut==="sold"?"Vendue physique":"Refusee";
+  var msg = "Siege "+s+"\n"
+    + "Client: "+(r.nom||r.client||"Inconnu")+"\n"
+    + "Telephone: "+(r.tel||"Non renseigne")+"\n"
+    + "Reference: "+(r.reference||r.ref||r.id||"-")+"\n"
+    + "Statut: "+statutLabel;
+  alert(msg);
+}
 function fermerPlan(){document.getElementById('modal-plan').style.display='none';}
 
 // ── STATS DÉTAILLÉES ──
