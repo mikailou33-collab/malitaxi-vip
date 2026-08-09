@@ -189,7 +189,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="nav-item" onclick="showPage('courses')">
           <span class="nav-icon">&#128205;</span> Courses
         </div>
-        <div class="nav-item" onclick="showPage('paiements')">
+        <div class="nav-item" id="nav-paiements" onclick="showPage('paiements')">
           <span class="nav-icon">&#128176;</span> Paiements
         </div>
         <div class="nav-item" onclick="showPage('fraudes')">
@@ -219,13 +219,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           <span class="nav-icon">&#128188;</span> Emploi Mali
         </div>
         <div class="nav-section">Systeme</div>
-        <div class="nav-item" onclick="showPage('rapports')">
+        <div class="nav-item" id="nav-rapports" onclick="showPage('rapports')">
           <span class="nav-icon">&#128200;</span> Rapports
         </div>
-        <div class="nav-item" onclick="showPage('admins')">
+        <div class="nav-item" id="nav-admins" onclick="showPage('admins')">
           <span class="nav-icon">&#128101;</span> Administrateurs
         </div>
-        <div class="nav-item" onclick="showPage('tarifs')">
+        <div class="nav-item" id="nav-tarifs" onclick="showPage('tarifs')">
           <span class="nav-icon">&#9881;</span> Tarifs & Config
         </div>
       </nav>
@@ -271,7 +271,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
             </div>
             <div class="stat-card">
               <div class="stat-icon" style="background:#fef9c3">&#128176;</div>
-              <div><div class="stat-value">0</div><div class="stat-label">Revenus FCFA</div></div>
+              <div id="carte-revenus"><div class="stat-value">0</div><div class="stat-label">Revenus FCFA</div></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon" style="background:#f3e8ff">&#128652;</div>
@@ -659,6 +659,7 @@ async function doLogin(){
   var err = document.getElementById('login-err');
   if(!u||!p){err.textContent='Remplissez tous les champs';return;}
   var acc = ACCOUNTS[u];
+  window.currentAccountKey = u;
   if(!acc){ err.textContent="Identifiants incorrects"; return; }
   if(!window.db){ err.textContent="Connexion indisponible, reessayez"; return; }
   try{
@@ -678,10 +679,20 @@ async function doLogin(){
     document.getElementById('user-role').textContent=acc.role;
     document.getElementById('user-avatar').textContent=acc.nom[0];
     chargerCompagnies();
+    appliquerRestrictionsManager();
     showToast('Bienvenue '+acc.nom+' !');
   }catch(e){
     err.textContent = "Erreur de connexion, reessayez";
   }
+}
+function appliquerRestrictionsManager(){
+  var estManager = window.currentAccountKey === "manager";
+  ["nav-paiements","nav-rapports","nav-admins","nav-tarifs"].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = estManager ? "none" : "flex";
+  });
+  var revenus = document.getElementById("carte-revenus");
+  if(revenus) revenus.style.display = estManager ? "none" : "block";
 }
 function logout(){
   document.getElementById('pg-admin').style.display='none';
