@@ -230,12 +230,12 @@ var DEMO_RESERVATIONS = [
 // ── COMPAGNIES ──
 // Codes secrets uniquement - compagnies ne se connaissent pas
 var COMPAGNIES = {
-  'BUS-2026-K8P2': {nom:'SONEF', id:'sonef', icon:'🚌', color:'#f59e0b'},
-  'BUS-2026-X7R4': {nom:'Rimbo Transport', id:'rimbo', icon:'🚌', color:'#3b82f6'},
-  'BUS-2026-B3M9': {nom:'Bani Transport', id:'bani', icon:'🚌', color:'#14a34a'},
-  'BUS-2026-Q5T1': {nom:'Bittar Transport', id:'bittar', icon:'🚌', color:'#8b5cf6'},
-  'BUS-2026-Y9W6': {nom:'Diarra Bus', id:'diarra', icon:'🚌', color:'#ec4899'},
-  'ADMIN-MT-2026': {nom:'Admin MaliTaxi', id:'admin', icon:'⚙️', color:'#f5c400'}
+  sonef: {nom:'SONEF', id:'sonef', icon:'🚌', color:'#f59e0b'},
+  rimbo: {nom:'Rimbo Transport', id:'rimbo', icon:'🚌', color:'#3b82f6'},
+  bani: {nom:'Bani Transport', id:'bani', icon:'🚌', color:'#14a34a'},
+  bittar: {nom:'Bittar Transport', id:'bittar', icon:'🚌', color:'#8b5cf6'},
+  diarra: {nom:'Diarra Bus', id:'diarra', icon:'🚌', color:'#ec4899'},
+  admin: {nom:'Admin MaliTaxi', id:'admin', icon:'⚙️', color:'#f5c400'}
 };
 
 // Callmebot config
@@ -247,11 +247,32 @@ var currentFilter = 'all';
 var reservations = [];
 
 // ── LOGIN ──
-function seConnecter(){
-  var code = document.getElementById('login-pass').value.trim().toUpperCase();
+var MIGRATION_CODES = {
+  'BUS-2026-K8P2':'sonef', 'BUS-2026-X7R4':'rimbo', 'BUS-2026-B3M9':'bani',
+  'BUS-2026-Q5T1':'bittar', 'BUS-2026-Y9W6':'diarra', 'ADMIN-MT-2026':'admin'
+};
+async function hashCodeSecret(texte){
+  var enc=new TextEncoder().encode(texte);
+  var buf=await crypto.subtle.digest("SHA-256",enc);
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,"0");}).join("");
+}
+async function trouverIdParCode(codeTape){
+  if(!window.db) return null;
+  var hash = await hashCodeSecret(codeTape);
+  var snap = await window.db.ref("dashboard_bus_codes/"+hash).once("value");
+  var id = snap.val();
+  if(!id && MIGRATION_CODES[codeTape]){
+    id = MIGRATION_CODES[codeTape];
+    await window.db.ref("dashboard_bus_codes/"+hash).set(id);
+  }
+  return id;
+}
+async function seConnecter(){
+  var codeTape = document.getElementById('login-pass').value.trim().toUpperCase();
+  var code = await trouverIdParCode(codeTape);
   var err = document.getElementById('login-err');
 
-  if(!COMPAGNIES[code]){
+  if(!code || !COMPAGNIES[code]){
     err.style.display='block';
     err.textContent='❌ Code secret incorrect';
     return;
