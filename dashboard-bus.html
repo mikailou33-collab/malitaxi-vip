@@ -503,6 +503,7 @@ function ouvrirPlan(){
   }
   html += '</div>';
   html += '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--sub)">Total: '+Object.keys(siegesReserves).length+' sièges occupés / 44</div>';
+  html += '<button onclick="vendreSiegePhysique()" style="width:100%;margin-top:14px;padding:12px;background:#2563eb;color:white;border:none;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">🎫 Vendre un siège (guichet)</button>';
 
   document.getElementById('plan-content').innerHTML = html;
   document.getElementById('modal-plan').style.display='flex';
@@ -518,6 +519,32 @@ function voirDetailSiege(s){
     + "Reference: "+(r.reference||r.ref||r.id||"-")+"\n"
     + "Statut: "+statutLabel;
   alert(msg);
+}
+function vendreSiegePhysique(){
+  var siege = prompt("Numero du siege a vendre (1 a 44) :");
+  if(!siege || isNaN(siege) || siege<1 || siege>44){ showToast("Numero de siege invalide"); return; }
+  siege = parseInt(siege);
+  if(siegesReserves[siege]){ showToast("Ce siege est deja pris !"); return; }
+  var nom = prompt("Nom du client :");
+  if(!nom){ showToast("Nom requis"); return; }
+  var tel = prompt("Telephone du client (optionnel) :") || "";
+  var comp = COMPAGNIES[currentUser] || {};
+  if(!window.db){ showToast("Connexion indisponible"); return; }
+  window.db.ref("reservations_bus").push({
+    reference: "GUICHET-"+Date.now(),
+    compagnie: comp.nom || "Inconnu",
+    compagnie_id: currentUser==="admin" ? null : currentUser,
+    nom: nom,
+    tel: tel,
+    siege: siege,
+    statut: "sold",
+    timestamp: Date.now()
+  }).then(function(){
+    showToast("Siege "+siege+" vendu !");
+    ouvrirPlan();
+  }).catch(function(){
+    showToast("Erreur lors de la vente");
+  });
 }
 function fermerPlan(){document.getElementById('modal-plan').style.display='none';}
 
