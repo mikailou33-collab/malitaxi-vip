@@ -467,13 +467,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
               <div class="form-group"><label class="form-label">Code promo</label><input class="form-input" id="new-promo-code" placeholder="Ex: MALI2026" style="text-transform:uppercase"/></div>
               <div class="form-group"><label class="form-label">Reduction (%)</label><input class="form-input" id="new-promo-reduction" type="number" placeholder="Ex: 20"/></div>
               <div class="form-group"><label class="form-label">Limite d'utilisations</label><input class="form-input" id="new-promo-limite" type="number" placeholder="Ex: 100"/></div>
+              <div class="form-group"><label class="form-label">Nom influenceur/partenaire (optionnel)</label><input class="form-input" id="new-promo-influenceur" placeholder="Ex: Aminata Beauty"/></div>
+              <div class="form-group"><label class="form-label">Commission influenceur (%) (optionnel)</label><input class="form-input" id="new-promo-commission" type="number" placeholder="Ex: 5"/></div>
               <button class="btn btn-green" style="width:100%" onclick="creerPromo()">Creer la promotion</button>
             </div>
           </div>
           <div class="card">
             <div class="card-body" style="padding:0">
               <table class="table">
-                <thead><tr><th>Code</th><th>Reduction</th><th>Utilisations</th><th>Statut</th></tr></thead>
+                <thead><tr><th>Code</th><th>Reduction</th><th>Utilisations</th><th>Influenceur</th><th>Commission due</th><th>Statut</th></tr></thead>
                 <tbody id="promos-liste-body">
                   <tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucune promotion active pour le moment</td></tr>
                 </tbody>
@@ -790,17 +792,22 @@ function creerPromo(){
   var code = (document.getElementById("new-promo-code").value || "").trim().toUpperCase();
   var reduction = parseFloat(document.getElementById("new-promo-reduction").value);
   var limite = parseInt(document.getElementById("new-promo-limite").value) || 100;
+  var influenceur = (document.getElementById("new-promo-influenceur").value || "").trim();
+  var commission = parseFloat(document.getElementById("new-promo-commission").value) || 0;
   if(!code){ showToast("Entrez un code promo"); return; }
   if(!reduction || reduction<=0 || reduction>100){ showToast("Reduction invalide (1-100)"); return; }
   if(!window.db){ showToast("Connexion indisponible"); return; }
   window.db.ref("promotions/"+code).set({
     code: code, reduction: reduction, limite: limite, utilisations: 0,
-    actif: true, dateCreation: new Date().toISOString()
+    actif: true, dateCreation: new Date().toISOString(),
+    influenceur: influenceur, commission: commission, montantCommissionCumule: 0
   }).then(function(){
     showToast("Promotion "+code+" creee !");
     document.getElementById("new-promo-code").value = "";
     document.getElementById("new-promo-reduction").value = "";
     document.getElementById("new-promo-limite").value = "";
+    document.getElementById("new-promo-influenceur").value = "";
+    document.getElementById("new-promo-commission").value = "";
     chargerPromos();
   chargerPartenaires();
   }).catch(function(){
@@ -821,7 +828,7 @@ function chargerPromos(){
     body.innerHTML = codes.map(function(c){
       var p = data[c];
       var statut = p.actif ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>';
-      return "<tr><td>"+p.code+"</td><td>"+p.reduction+"%</td><td>"+(p.utilisations||0)+"/"+p.limite+"</td><td>"+statut+"</td></tr>";
+      return "<tr><td>"+p.code+"</td><td>"+p.reduction+"%</td><td>"+(p.utilisations||0)+"/"+p.limite+"</td><td>"+(p.influenceur||"-")+"</td><td>"+(p.commission?(p.montantCommissionCumule||0)+" F":"-")+"</td><td>"+statut+"</td></tr>";
     }).join("");
   });
 }
