@@ -215,6 +215,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="nav-item" onclick="showPage('pubs')">
           <span class="nav-icon">&#128226;</span> Publicites
         </div>
+        <div class="nav-item" id="nav-partenaires" onclick="showPage('partenaires')">
+          <span class="nav-icon">&#129309;</span> Partenaires
+        </div>
         <div class="nav-item" onclick="showPage('emploi')">
           <span class="nav-icon">&#128188;</span> Emploi Mali
         </div>
@@ -560,6 +563,33 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           </div>
         </div>
 
+        <div class="section-page" id="page-partenaires">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#129309; Partenaires</div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div class="card-title">Ajouter un partenaire</div></div>
+            <div class="card-body">
+              <div class="form-group"><label class="form-label">Categorie</label><select class="form-select" id="part-cat"><option value="hotel">Hotels</option><option value="resto">Restauration</option><option value="alim">Alimentation</option><option value="sucre">Sucreries & Boissons</option><option value="boutiq">Boutiques</option><option value="patiss">Patisserie</option><option value="salon">Salon de beaute</option><option value="spa">Spa & Bien-etre</option><option value="immo">Agence immobiliere</option><option value="photo">Photo/Shooting</option></select></div>
+              <div class="form-group"><label class="form-label">Nom du partenaire</label><input class="form-input" id="part-nom" placeholder="Ex: Restaurant Le Djenne"/></div>
+              <div class="form-group"><label class="form-label">Adresse</label><input class="form-input" id="part-adresse" placeholder="Ex: Hamdallaye ACI 2000"/></div>
+              <div class="form-group"><label class="form-label">Telephone</label><input class="form-input" id="part-tel" placeholder="Ex: +223 XX XX XX XX"/></div>
+              <div class="form-group"><label class="form-label">Horaires</label><input class="form-input" id="part-horaires" placeholder="Ex: Tous les jours 8h-22h"/></div>
+              <div class="form-group"><label class="form-label">Description</label><input class="form-input" id="part-desc" placeholder="Courte description"/></div>
+              <div class="form-group"><label class="form-label">Tags (separes par virgule)</label><input class="form-input" id="part-tags" placeholder="Ex: Wifi, Climatise, Parking"/></div>
+              <div class="form-group"><label class="form-label">Offre MaliTaxi (optionnel)</label><input class="form-input" id="part-promo" placeholder="Ex: -10% avec MaliTaxi"/></div>
+              <button class="btn btn-green" style="width:100%" onclick="ajouterPartenaire()">Ajouter le partenaire</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <table class="table">
+                <thead><tr><th>Nom</th><th>Categorie</th><th>Telephone</th><th></th></tr></thead>
+                <tbody id="partenaires-liste-body">
+                  <tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucun partenaire pour le moment</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
         <div class="section-page" id="page-emploi">
           <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128188; Emploi Mali</div>
           <div class="card">
@@ -772,6 +802,7 @@ function creerPromo(){
     document.getElementById("new-promo-reduction").value = "";
     document.getElementById("new-promo-limite").value = "";
     chargerPromos();
+  chargerPartenaires();
   }).catch(function(){
     showToast("Erreur lors de la creation");
   });
@@ -792,6 +823,56 @@ function chargerPromos(){
       var statut = p.actif ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>';
       return "<tr><td>"+p.code+"</td><td>"+p.reduction+"%</td><td>"+(p.utilisations||0)+"/"+p.limite+"</td><td>"+statut+"</td></tr>";
     }).join("");
+  });
+}
+var NOMS_CATEGORIES_PART = {hotel:"Hotels",resto:"Restauration",alim:"Alimentation",sucre:"Sucreries & Boissons",boutiq:"Boutiques",patiss:"Patisserie",salon:"Salon de beaute",spa:"Spa & Bien-etre",immo:"Agence immobiliere",photo:"Photo/Shooting"};
+function ajouterPartenaire(){
+  var cat = document.getElementById("part-cat").value;
+  var nom = document.getElementById("part-nom").value.trim();
+  var adresse = document.getElementById("part-adresse").value.trim();
+  var tel = document.getElementById("part-tel").value.trim();
+  var horaires = document.getElementById("part-horaires").value.trim() || "Non renseigne";
+  var desc = document.getElementById("part-desc").value.trim();
+  var tagsTxt = document.getElementById("part-tags").value.trim();
+  var promo = document.getElementById("part-promo").value.trim();
+  if(!nom || !adresse){ showToast("Nom et adresse requis"); return; }
+  if(!window.db){ showToast("Connexion indisponible"); return; }
+  var tags = tagsTxt ? tagsTxt.split(",").map(function(t){return t.trim();}).filter(function(t){return t;}) : [];
+  window.db.ref("partenaires/"+cat).push({
+    nom: nom, adresse: adresse, tel: tel, horaires: horaires,
+    desc: desc, tags: tags, promo: promo, note: "5.0"
+  }).then(function(){
+    showToast("Partenaire ajoute !");
+    ["part-nom","part-adresse","part-tel","part-horaires","part-desc","part-tags","part-promo"].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value = "";
+    });
+    chargerPartenaires();
+  }).catch(function(){
+    showToast("Erreur lors de l ajout");
+  });
+}
+function chargerPartenaires(){
+  if(!window.db) return;
+  window.db.ref("partenaires").once("value").then(function(snap){
+    var data = snap.val() || {};
+    var body = document.getElementById("partenaires-liste-body");
+    if(!body) return;
+    var lignes = [];
+    Object.keys(data).forEach(function(cat){
+      Object.keys(data[cat]).forEach(function(key){
+        var p = data[cat][key];
+        lignes.push("<tr><td>"+p.nom+"</td><td>"+(NOMS_CATEGORIES_PART[cat]||cat)+"</td><td>"+(p.tel||"-")+"</td><td><button class=\"btn btn-red\" style=\"padding:5px 10px;font-size:11px\" onclick=\"supprimerPartenaire('"+cat+"','"+key+"')\">Supprimer</button></td></tr>");
+      });
+    });
+    body.innerHTML = lignes.length ? lignes.join("") : '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Aucun partenaire pour le moment</td></tr>';
+  });
+}
+function supprimerPartenaire(cat, key){
+  if(!window.db) return;
+  if(!confirm("Supprimer ce partenaire ?")) return;
+  window.db.ref("partenaires/"+cat+"/"+key).remove().then(function(){
+    showToast("Partenaire supprime");
+    chargerPartenaires();
   });
 }
 function chargerCompagnies(){
