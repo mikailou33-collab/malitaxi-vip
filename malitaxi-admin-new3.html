@@ -239,12 +239,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
             <div class="user-name" id="user-name">Admin</div>
             <div class="user-role" id="user-role">Super Admin</div>
           </div>
+          <button class="logout-btn" onclick="ouvrirChangerMdp()" title="Changer mon mot de passe" style="margin-right:6px">&#128273;</button>
           <button class="logout-btn" onclick="logout()">&#128682;</button>
         </div>
       </div>
     </aside>
 
-    <main class="main">
+    <div id="modal-changer-mdp" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;align-items:center;justify-content:center">
+      <div style="background:var(--bg2,#1a1a2e);border-radius:16px;padding:24px;max-width:340px;width:90%">
+        <div style="font-size:16px;font-weight:800;margin-bottom:16px">Changer mon mot de passe</div>
+        <div class="form-group"><label class="form-label">Mot de passe actuel</label><input class="form-input" id="mdp-actuel" type="password"/></div>
+        <div class="form-group"><label class="form-label">Nouveau mot de passe</label><input class="form-input" id="mdp-nouveau" type="password"/></div>
+        <div class="form-group"><label class="form-label">Confirmer le nouveau mot de passe</label><input class="form-input" id="mdp-confirme" type="password"/></div>
+        <div id="mdp-err" style="color:#dc2626;font-size:12px;margin-bottom:10px"></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn" style="flex:1;background:var(--card2,#2a2a3e)" onclick="fermerChangerMdp()">Annuler</button>
+          <button class="btn btn-green" style="flex:1" onclick="validerChangementMdp()">Valider</button>
+        </div>
+      </div>
+    </div>
+<main class="main">
       <div class="topbar">
         <div class="topbar-left">
           <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
@@ -739,6 +753,39 @@ function appliquerRestrictionsManager(){
   });
   var revenus = document.getElementById("carte-revenus");
   if(revenus) revenus.style.display = estManager ? "none" : "block";
+}
+function ouvrirChangerMdp(){
+  document.getElementById("mdp-actuel").value = "";
+  document.getElementById("mdp-nouveau").value = "";
+  document.getElementById("mdp-confirme").value = "";
+  document.getElementById("mdp-err").textContent = "";
+  document.getElementById("modal-changer-mdp").style.display = "flex";
+}
+function fermerChangerMdp(){
+  document.getElementById("modal-changer-mdp").style.display = "none";
+}
+async function validerChangementMdp(){
+  var actuel = document.getElementById("mdp-actuel").value;
+  var nouveau = document.getElementById("mdp-nouveau").value;
+  var confirme = document.getElementById("mdp-confirme").value;
+  var err = document.getElementById("mdp-err");
+  if(!actuel || !nouveau || !confirme){ err.textContent = "Remplissez tous les champs"; return; }
+  if(nouveau.length < 6){ err.textContent = "Le nouveau mot de passe doit faire au moins 6 caracteres"; return; }
+  if(nouveau !== confirme){ err.textContent = "Les nouveaux mots de passe ne correspondent pas"; return; }
+  if(!window.db || !window.currentAccountKey){ err.textContent = "Erreur de connexion"; return; }
+  try{
+    var snap = await window.db.ref("admin_comptes/"+window.currentAccountKey).once("value");
+    var compte = snap.val();
+    var hashActuel = await hashMdpAdmin(actuel);
+    var motDePasseValide = compte ? (compte.mdpHash === hashActuel) : (MIGRATION_INITIALE[window.currentAccountKey] === actuel);
+    if(!motDePasseValide){ err.textContent = "Mot de passe actuel incorrect"; return; }
+    var hashNouveau = await hashMdpAdmin(nouveau);
+    await window.db.ref("admin_comptes/"+window.currentAccountKey).set({mdpHash: hashNouveau});
+    fermerChangerMdp();
+    showToast("Mot de passe change avec succes !");
+  }catch(e){
+    err.textContent = "Erreur, reessayez";
+  }
 }
 function logout(){
   document.getElementById('pg-admin').style.display='none';
