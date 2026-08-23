@@ -684,11 +684,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 // LOGIN
 var ACCOUNTS = {
   admin: {nom:'Admin Principal', role:'Super Admin'},
-  manager: {nom:'Manager', role:'Manager'}
+  manager: {nom:'Manager', role:'Manager'},
+  aminata: {nom:'Aminata', role:'Agent'},
+  sidi: {nom:'Sidi', role:'Agent'},
+  agent3: {nom:'Agent 3', role:'Agent'},
+  agent4: {nom:'Agent 4', role:'Agent'}
 };
 document.getElementById('login-btn').addEventListener('click', doLogin);
 document.getElementById('a-pass').addEventListener('keydown', function(e){if(e.key==='Enter') doLogin();});
-var MIGRATION_INITIALE = {admin:"malitaxi2026", manager:"manager2026"};
+var MIGRATION_INITIALE = {admin:"malitaxi2026", manager:"manager2026", aminata:"aminata2026", sidi:"sidi2026", agent3:"agent32026", agent4:"agent42026"};
 async function hashMdpAdmin(texte){
   var enc=new TextEncoder().encode(texte);
   var buf=await crypto.subtle.digest("SHA-256",enc);
@@ -727,7 +731,8 @@ async function doLogin(){
   }
 }
 function appliquerRestrictionsManager(){
-  var estManager = window.currentAccountKey === "manager";
+  var COMPTES_RESTREINTS = ["manager","aminata","sidi","agent3","agent4"];
+  var estManager = COMPTES_RESTREINTS.indexOf(window.currentAccountKey) !== -1;
   ["nav-paiements","nav-rapports","nav-admins","nav-tarifs"].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = estManager ? "none" : "flex";
