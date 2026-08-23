@@ -585,6 +585,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
             <div class="card-header"><div class="card-title">Ajouter un partenaire</div></div>
             <div class="card-body">
               <div class="form-group"><label class="form-label">Categorie</label><select class="form-select" id="part-cat"><option value="hotel">Hotels</option><option value="resto">Restauration</option><option value="alim">Alimentation</option><option value="sucre">Sucreries & Boissons</option><option value="boutiq">Boutiques</option><option value="patiss">Patisserie</option><option value="salon">Salon de beaute</option><option value="spa">Spa & Bien-etre</option><option value="immo">Agence immobiliere</option><option value="photo">Photo/Shooting</option></select></div>
+              <div class="form-group"><label class="form-label">Photo</label><input class="form-input" id="part-photo" type="file" accept="image/*"/></div>
               <div class="form-group"><label class="form-label">Nom du partenaire</label><input class="form-input" id="part-nom" placeholder="Ex: Restaurant Le Djenne"/></div>
               <div class="form-group"><label class="form-label">Adresse</label><input class="form-input" id="part-adresse" placeholder="Ex: Hamdallaye ACI 2000"/></div>
               <div class="form-group"><label class="form-label">Telephone</label><input class="form-input" id="part-tel" placeholder="Ex: +223 XX XX XX XX"/></div>
@@ -885,9 +886,10 @@ function chargerPromos(){
   });
 }
 var NOMS_CATEGORIES_PART = {hotel:"Hotels",resto:"Restauration",alim:"Alimentation",sucre:"Sucreries & Boissons",boutiq:"Boutiques",patiss:"Patisserie",salon:"Salon de beaute",spa:"Spa & Bien-etre",immo:"Agence immobiliere",photo:"Photo/Shooting"};
-function ajouterPartenaire(){
+async function ajouterPartenaire(){
   var cat = document.getElementById("part-cat").value;
   var nom = document.getElementById("part-nom").value.trim();
+  var fichierPhoto = document.getElementById("part-photo").files[0];
   var adresse = document.getElementById("part-adresse").value.trim();
   var tel = document.getElementById("part-tel").value.trim();
   var horaires = document.getElementById("part-horaires").value.trim() || "Non renseigne";
@@ -897,11 +899,24 @@ function ajouterPartenaire(){
   if(!nom || !adresse){ showToast("Nom et adresse requis"); return; }
   if(!window.db){ showToast("Connexion indisponible"); return; }
   var tags = tagsTxt ? tagsTxt.split(",").map(function(t){return t.trim();}).filter(function(t){return t;}) : [];
+  var photoUrl = "";
+  if(fichierPhoto){
+    if(!fichierPhoto.type.startsWith("image/")){ showToast("Le fichier doit etre une image"); return; }
+    if(fichierPhoto.size > 3*1024*1024){ showToast("Image trop lourde (max 3 Mo)"); return; }
+    if(!window.storage){ showToast("Service photo indisponible"); return; }
+    showToast("Envoi de la photo...");
+    try{
+      var refPhoto = window.storage.ref().child("photos_partenaires/"+cat+"_"+Date.now()+".jpg");
+      var snap = await refPhoto.put(fichierPhoto);
+      photoUrl = await snap.ref.getDownloadURL();
+    }catch(e){ showToast("Echec envoi photo, partenaire ajoute sans photo"); }
+  }
   window.db.ref("partenaires/"+cat).push({
     nom: nom, adresse: adresse, tel: tel, horaires: horaires,
-    desc: desc, tags: tags, promo: promo, note: "5.0"
+    desc: desc, tags: tags, promo: promo, note: "5.0", photo: photoUrl
   }).then(function(){
     showToast("Partenaire ajoute !");
+    document.getElementById("part-photo").value = "";
     ["part-nom","part-adresse","part-tel","part-horaires","part-desc","part-tags","part-promo"].forEach(function(id){
       var el = document.getElementById(id); if(el) el.value = "";
     });
