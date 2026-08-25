@@ -215,6 +215,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="nav-item" onclick="showPage('pubs')">
           <span class="nav-icon">&#128226;</span> Publicites
         </div>
+        <div class="nav-item" id="nav-urgences" onclick="showPage('urgences')">
+          <span class="nav-icon">&#128680;</span> Urgences
+        </div>
         <div class="nav-item" id="nav-partenaires" onclick="showPage('partenaires')">
           <span class="nav-icon">&#129309;</span> Partenaires
         </div>
@@ -579,6 +582,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           </div>
         </div>
 
+        <div class="section-page" id="page-urgences">
+          <div class="page-title">Urgences chauffeurs</div>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th>Date</th><th>Motif</th><th>Chauffeur</th><th>Client</th><th>Trajet</th><th>Statut</th><th></th></tr></thead>
+            <tbody id="urgences-liste-body"><tr><td colspan="7" style="text-align:center;color:var(--muted)">Chargement...</td></tr></tbody>
+          </table></div>
+        </div>
         <div class="section-page" id="page-partenaires">
           <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#129309; Partenaires</div>
           <div class="card" style="margin-bottom:16px">
@@ -797,7 +807,7 @@ function logout(){
 
 // NAVIGATION
 var PAGES = {
-  dashboard:'Dashboard',chauffeurs:'Chauffeurs',courses:'Courses',
+  dashboard:'Dashboard',chauffeurs:'Chauffeurs',courses:'Courses',urgences:'Urgences chauffeurs',
   paiements:'Paiements',fraudes:'Fraudes',promos:'Promotions',
   regions:'19 Regions',bus:'Reservations Bus',compagnies:'Compagnies Bus',
   infomali:'Info Mali',pubs:'Publicites',emploi:'Emploi Mali',
@@ -814,6 +824,7 @@ function showPage(id){
   document.getElementById('page-title').textContent = PAGES[id]||id;
   closeSidebar();
   if(id==='compagnies') chargerCompagnies();
+  if(id==='urgences') chargerUrgences();
 }
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');
@@ -923,6 +934,32 @@ async function ajouterPartenaire(){
     chargerPartenaires();
   }).catch(function(){
     showToast("Erreur lors de l ajout");
+  });
+}
+function chargerUrgences(){
+  if(!window.db) return;
+  window.db.ref("alertes_urgence").limitToLast(50).once("value").then(function(snap){
+    var data = snap.val() || {};
+    var codes = Object.keys(data).reverse();
+    var body = document.getElementById("urgences-liste-body");
+    if(!body) return;
+    if(codes.length === 0){
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">Aucune urgence signalee</td></tr>';
+      return;
+    }
+    body.innerHTML = codes.map(function(k){
+      var u = data[k];
+      var date = new Date(u.timestamp).toLocaleString("fr-FR");
+      var statut = u.traite ? '<span class="badge badge-green">Traite</span>' : '<span class="badge badge-red">A traiter</span>';
+      var btn = u.traite ? "" : '<button onclick="marquerUrgenceTraitee(\''+k+'\')" class="btn" style="padding:4px 10px;font-size:11px">Marquer traite</button>';
+      return "<tr><td>"+date+"</td><td>"+u.motif+"</td><td>"+u.chauffeurNom+" ("+u.chauffeurTel+")</td><td>"+(u.client||"-")+"</td><td>"+u.depart+" -&gt; "+u.arrivee+"</td><td>"+statut+"</td><td>"+btn+"</td></tr>";
+    }).join("");
+  });
+}
+function marquerUrgenceTraitee(key){
+  if(!window.db) return;
+  window.db.ref("alertes_urgence/"+key+"/traite").set(true).then(function(){
+    chargerUrgences();
   });
 }
 function chargerPartenaires(){
