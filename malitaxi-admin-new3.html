@@ -1124,10 +1124,16 @@ function initFB(){
     s2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js';
     s2.onload = function(){
       try{
-        var cfg = {apiKey:'AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU',databaseURL:'https://malitaxi-default-rtdb.firebaseio.com'};
+        var cfg = {apiKey:'AIzaSyDdM8PcwhNnfCjaLmqwV5gLgLe9UUsgnZU',databaseURL:'https://malitaxi-default-rtdb.firebaseio.com',storageBucket:'malitaxi.firebasestorage.app'};
         if(!firebase.apps.length) firebase.initializeApp(cfg);
         window.db = firebase.database();
       }catch(e){}
+      var s3 = document.createElement('script');
+      s3.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js';
+      s3.onload = function(){
+        try{ window.storage = firebase.storage(); }catch(e){}
+      };
+      document.head.appendChild(s3);
     };
     document.head.appendChild(s2);
   };
