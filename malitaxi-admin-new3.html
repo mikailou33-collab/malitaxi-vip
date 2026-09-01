@@ -215,6 +215,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="nav-item" onclick="showPage('pubs')">
           <span class="nav-icon">&#128226;</span> Publicites
         </div>
+        <div class="nav-item" id="nav-pub-malitaxi" onclick="showPage('pubmalitaxi')">
+          <span class="nav-icon">&#128246;</span> Pub MaliTaxi
+        </div>
         <div class="nav-item" id="nav-urgences" onclick="showPage('urgences')">
           <span class="nav-icon">&#128680;</span> Urgences
         </div>
@@ -582,6 +585,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           </div>
         </div>
 
+        <div class="section-page" id="page-pubmalitaxi">
+          <div style="margin-bottom:20px;font-size:16px;font-weight:800">&#128246; Publicites MaliTaxi VIP</div>
+          <div class="card"><div class="card-body">
+            <div class="form-group"><label class="form-label">Titre</label><input class="form-input" id="pubmt-titre" placeholder="Ex: Mall du Mali"/></div>
+            <div class="form-group"><label class="form-label">Description</label><input class="form-input" id="pubmt-desc" placeholder="Ex: Shopping, mode et maison - Ouvert 7j/7"/></div>
+            <div class="form-group"><label class="form-label">Photo</label><input class="form-input" id="pubmt-photo" type="file" accept="image/*"/></div>
+            <div class="form-group"><label class="form-label">Lien (optionnel)</label><input class="form-input" id="pubmt-lien" placeholder="https://..."/></div>
+            <button class="btn btn-green" style="width:100%" onclick="publierPubMaliTaxi()">Publier</button>
+          </div></div>
+          <div class="card" style="margin-top:16px"><div class="card-header"><div class="card-title">Publicites actives</div></div>
+            <div class="table-wrap"><table class="table">
+              <thead><tr><th>Titre</th><th>Description</th><th></th></tr></thead>
+              <tbody id="pubmt-liste-body"><tr><td colspan="3" style="text-align:center;color:var(--muted)">Chargement...</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
         <div class="section-page" id="page-urgences">
           <div class="page-title">Urgences chauffeurs</div>
           <div class="table-wrap"><table class="table">
@@ -807,7 +826,7 @@ function logout(){
 
 // NAVIGATION
 var PAGES = {
-  dashboard:'Dashboard',chauffeurs:'Chauffeurs',courses:'Courses',urgences:'Urgences chauffeurs',
+  dashboard:'Dashboard',chauffeurs:'Chauffeurs',courses:'Courses',urgences:'Urgences chauffeurs',pubmalitaxi:'Publicites MaliTaxi VIP',
   paiements:'Paiements',fraudes:'Fraudes',promos:'Promotions',
   regions:'19 Regions',bus:'Reservations Bus',compagnies:'Compagnies Bus',
   infomali:'Info Mali',pubs:'Publicites',emploi:'Emploi Mali',
@@ -825,6 +844,7 @@ function showPage(id){
   closeSidebar();
   if(id==='compagnies') chargerCompagnies();
   if(id==='urgences') chargerUrgences();
+  if(id==='pubmalitaxi') chargerPubMaliTaxi();
 }
 function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open');
@@ -1180,6 +1200,59 @@ chargerCompagnies = function(){
 </script>
 
 <script>
+async function publierPubMaliTaxi(){
+  var titre = document.getElementById("pubmt-titre").value.trim();
+  var desc = document.getElementById("pubmt-desc").value.trim();
+  var lien = document.getElementById("pubmt-lien").value.trim();
+  var fichierPhoto = document.getElementById("pubmt-photo").files[0];
+  if(!titre || !desc){ showToast("Titre et description requis"); return; }
+  if(!window.db){ showToast("Connexion indisponible"); return; }
+  var photoUrl = "";
+  if(fichierPhoto){
+    if(!window.storage){ showToast("Service photo indisponible"); return; }
+    showToast("Envoi de la photo...");
+    try{
+      var refPhoto = window.storage.ref().child("pubs_malitaxi/"+Date.now()+".jpg");
+      var snap = await refPhoto.put(fichierPhoto);
+      photoUrl = await snap.ref.getDownloadURL();
+    }catch(e){ showToast("Echec envoi photo"); return; }
+  }
+  window.db.ref("pubs_malitaxi_vip").push({
+    titre: titre, desc: desc, lien: lien, photo: photoUrl,
+    actif: true, dateCreation: new Date().toISOString()
+  }).then(function(){
+    showToast("Publicite ajoutee !");
+    document.getElementById("pubmt-titre").value = "";
+    document.getElementById("pubmt-desc").value = "";
+    document.getElementById("pubmt-lien").value = "";
+    document.getElementById("pubmt-photo").value = "";
+    chargerPubMaliTaxi();
+  });
+}
+function chargerPubMaliTaxi(){
+  if(!window.db) return;
+  window.db.ref("pubs_malitaxi_vip").once("value").then(function(snap){
+    var data = snap.val() || {};
+    var codes = Object.keys(data);
+    var body = document.getElementById("pubmt-liste-body");
+    if(!body) return;
+    if(codes.length === 0){
+      body.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted)">Aucune publicite pour le moment</td></tr>';
+      return;
+    }
+    body.innerHTML = codes.map(function(k){
+      var p = data[k];
+      return "<tr><td>"+p.titre+"</td><td>"+p.desc+"</td><td><button onclick=\"supprimerPubMaliTaxi('"+k+"')\" class=\"btn btn-red\" style=\"padding:4px 10px;font-size:11px\">Supprimer</button></td></tr>";
+    }).join("");
+  });
+}
+function supprimerPubMaliTaxi(key){
+  if(!confirm("Supprimer cette publicite ?")) return;
+  window.db.ref("pubs_malitaxi_vip/"+key).remove().then(function(){
+    showToast("Publicite supprimee");
+    chargerPubMaliTaxi();
+  });
+}
 function publierPublicite(){
   var region = document.getElementById("pub-region").value;
   var lien = document.getElementById("pub-lien").value.trim();
