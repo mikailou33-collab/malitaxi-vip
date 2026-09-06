@@ -541,6 +541,7 @@ function supprimerHoraireCompagnie(key){
 }
 function ouvrirPlan(){
   var siegesReserves = {};
+  window._siegesReserves = siegesReserves;
   var siegesDetails = {};
   window._siegesDetails = siegesDetails;
   reservations.filter(function(r){return r.statut==='confirmed'||r.statut==='pending'||r.statut==='sold';})
@@ -586,7 +587,7 @@ function vendreSiegePhysique(){
   var siege = prompt("Numero du siege a vendre (1 a 44) :");
   if(!siege || isNaN(siege) || siege<1 || siege>44){ showToast("Numero de siege invalide"); return; }
   siege = parseInt(siege);
-  if(siegesReserves[siege]){ showToast("Ce siege est deja pris !"); return; }
+  if(window._siegesReserves && window._siegesReserves[siege]){ showToast("Ce siege est deja pris !"); return; }
   var nom = prompt("Nom du client :");
   if(!nom){ showToast("Nom requis"); return; }
   var tel = prompt("Telephone du client (optionnel) :") || "";
