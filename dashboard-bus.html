@@ -345,6 +345,8 @@ function chargerReservations(){
     reservations.sort(function(a,b){return (b.timestamp||0)-(a.timestamp||0);});
     majStats();
     afficherListe();
+    var modalPlan = document.getElementById("modal-plan");
+    if(modalPlan && modalPlan.style.display === "flex") ouvrirPlan();
   });
 }
 
