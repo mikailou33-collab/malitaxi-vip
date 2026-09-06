@@ -586,13 +586,29 @@ function voirDetailSiege(s){
   alert(msg);
 }
 function vendreSiegePhysique(){
-  var siege = prompt("Numero du siege a vendre (1 a 44) :");
+  var html = '<div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;display:flex;align-items:flex-end;justify-content:center" id="modal-vente-guichet">'
+    +'<div style="background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:420px">'
+    +'<div style="font-size:17px;font-weight:900;margin-bottom:16px">🎫 Vendre un siège (guichet)</div>'
+    +'<label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Numéro de siège (1-44)</label>'
+    +'<input type="number" id="vg-siege" min="1" max="44" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:6px 0 14px">'
+    +'<label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Nom du client</label>'
+    +'<input type="text" id="vg-nom" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:6px 0 14px">'
+    +'<label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Téléphone (optionnel)</label>'
+    +'<input type="tel" id="vg-tel" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:6px 0 18px">'
+    +'<button onclick="confirmerVenteGuichet()" style="width:100%;padding:13px;background:#2563eb;color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer;margin-bottom:8px">✅ Confirmer la vente</button>'
+    +'<button onclick="document.getElementById(\'modal-vente-guichet\').remove()" style="width:100%;padding:12px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;cursor:pointer">Annuler</button>'
+    +'</div></div>';
+  var div = document.createElement("div");
+  div.innerHTML = html;
+  document.body.appendChild(div.firstChild);
+}
+function confirmerVenteGuichet(){
+  var siege = parseInt(document.getElementById("vg-siege").value, 10);
   if(!siege || isNaN(siege) || siege<1 || siege>44){ showToast("Numero de siege invalide"); return; }
-  siege = parseInt(siege);
   if(window._siegesReserves && window._siegesReserves[siege]){ showToast("Ce siege est deja pris !"); return; }
-  var nom = prompt("Nom du client :");
+  var nom = document.getElementById("vg-nom").value.trim();
   if(!nom){ showToast("Nom requis"); return; }
-  var tel = prompt("Telephone du client (optionnel) :") || "";
+  var tel = document.getElementById("vg-tel").value.trim();
   var comp = COMPAGNIES[currentUser] || {};
   if(!window.db){ showToast("Connexion indisponible"); return; }
   window.db.ref("reservations_bus").push({
@@ -605,6 +621,8 @@ function vendreSiegePhysique(){
     statut: "sold",
     timestamp: Date.now()
   }).then(function(){
+    var modal = document.getElementById("modal-vente-guichet");
+    if(modal) modal.remove();
     showToast("Siege "+siege+" vendu !");
     ouvrirPlan();
   }).catch(function(){
