@@ -553,7 +553,7 @@ function ouvrirPlan(){
   html += '<div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px;flex-wrap:wrap">';
   html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#16a34a"></div>Libre</div>';
   html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#f59e0b"></div>En attente</div>';
-  html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#14a34a"></div>Confirmé</div>';
+  html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#7c3aed"></div>Confirmé</div>';
   html += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--sub)"><div style="width:14px;height:14px;border-radius:3px;background:#2563eb"></div>Vendu</div>';
   html += '</div>';
   html += '<div style="display:grid;grid-template-columns:1fr 8px 1fr 1fr;gap:4px;max-width:260px;margin:0 auto">';
@@ -561,7 +561,7 @@ function ouvrirPlan(){
   for(var s=1;s<=44;s++){
     if(s%4===3){html += '<div style="background:transparent"></div>';}
     var statut = siegesReserves[s]||'free';
-    var bg = statut==='free'?'#16a34a':statut==='pending'?'#f59e0b':statut==='confirmed'?'#14a34a':'#2563eb';
+    var bg = statut==='free'?'#16a34a':statut==='pending'?'#f59e0b':statut==='confirmed'?'#7c3aed':'#2563eb';
     var color = statut==='pending'?'#1a1f2e':'white';
     var clicAttr = statut!=='free' ? ' onclick="voirDetailSiege('+s+')" style="padding:8px 4px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;background:'+bg+';color:'+color+';cursor:pointer"' : ' style="padding:8px 4px;border-radius:7px;font-size:11px;font-weight:800;text-align:center;background:'+bg+';color:'+color+'"';
     html += '<div'+clicAttr+'>'+s+'</div>';
