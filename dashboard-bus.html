@@ -165,6 +165,9 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
     <button class="nav-btn" onclick="showSection('plan')">
       <span style="font-size:20px">🪑</span>Plan bus
     </button>
+    <button class="nav-btn" onclick="showSection('horaires')">
+      <span style="font-size:20px">⏰</span>Mes horaires
+    </button>
     <button class="nav-btn" onclick="showSection('stats')">
       <span style="font-size:20px">📊</span>Statistiques
     </button>
@@ -172,6 +175,23 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
       <span style="font-size:20px">❓</span>Aide
     </button>
   </nav>
+  <div id="modal-horaires" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:flex-end;justify-content:center">
+    <div style="background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:17px;font-weight:900">⏰ Mes horaires</div>
+        <button onclick="document.getElementById('modal-horaires').style.display='none'" style="background:#f3f4f6;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer">✕</button>
+      </div>
+      <div id="liste-horaires-comp" style="margin-bottom:16px"></div>
+      <div style="border-top:1px solid #e4e7ec;padding-top:14px">
+        <div style="font-size:12px;font-weight:800;color:#6b7280;margin-bottom:8px;text-transform:uppercase">Ajouter un horaire</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input type="time" id="nouvel-horaire-heure" style="flex:1;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
+          <input type="number" id="nouvel-horaire-places" placeholder="Places" min="1" max="44" style="width:90px;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
+        </div>
+        <button onclick="ajouterHoraireCompagnie()" style="width:100%;padding:12px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer">+ Ajouter cet horaire</button>
+      </div>
+    </div>
+  </div>
 
 </div>
 
@@ -467,6 +487,7 @@ function notifierClient(tel, ref, statut){
 
 // ── SECTIONS ──
 function showSection(s){
+  if(s==='horaires'){ afficherHorairesSection(); return; }
   if(s==='plan') ouvrirPlan();
   else if(s==='stats') afficherStats();
   else if(s==='help') afficherAide();
@@ -477,6 +498,47 @@ function showSection(s){
 }
 
 // ── PLAN BUS ──
+function afficherHorairesSection(){
+  document.getElementById("modal-horaires").style.display = "flex";
+  chargerHorairesCompagnie();
+}
+function chargerHorairesCompagnie(){
+  if(!window.db || !currentUser) return;
+  window.db.ref("horaires_compagnies/"+currentUser).once("value").then(function(snap){
+    var data = snap.val() || {};
+    var codes = Object.keys(data);
+    var conteneur = document.getElementById("liste-horaires-comp");
+    if(!conteneur) return;
+    if(codes.length === 0){
+      conteneur.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:13px;padding:12px">Aucun horaire defini pour le moment</div>';
+      return;
+    }
+    conteneur.innerHTML = codes.map(function(k){
+      var h = data[k];
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f9fafb;border-radius:10px;margin-bottom:6px"><div><span style="font-weight:800">'+h.heure+'</span><span style="color:#6b7280;font-size:12px;margin-left:8px">'+h.places+' places</span></div><button onclick="supprimerHoraireCompagnie(\''+k+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer">Retirer</button></div>';
+    }).join("");
+  });
+}
+function ajouterHoraireCompagnie(){
+  var heure = document.getElementById("nouvel-horaire-heure").value;
+  var places = parseInt(document.getElementById("nouvel-horaire-places").value, 10);
+  if(!heure || !places || places < 1 || places > 44){ showToast("⚠️ Renseignez une heure et un nombre de places valide (1-44)"); return; }
+  if(!window.db || !currentUser) return;
+  var heureAffichee = heure.replace(":", "h");
+  window.db.ref("horaires_compagnies/"+currentUser).push({heure: heureAffichee, places: places}).then(function(){
+    showToast("✅ Horaire ajoute");
+    document.getElementById("nouvel-horaire-heure").value = "";
+    document.getElementById("nouvel-horaire-places").value = "";
+    chargerHorairesCompagnie();
+  });
+}
+function supprimerHoraireCompagnie(key){
+  if(!confirm("Retirer cet horaire ?")) return;
+  window.db.ref("horaires_compagnies/"+currentUser+"/"+key).remove().then(function(){
+    showToast("Horaire retire");
+    chargerHorairesCompagnie();
+  });
+}
 function ouvrirPlan(){
   var siegesReserves = {};
   var siegesDetails = {};
