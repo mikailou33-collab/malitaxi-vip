@@ -198,6 +198,8 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
           <div id="sugg-destination-horaire" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e4e7ec;border-radius:10px;max-height:200px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
         </div>
         <input type="number" id="nouvel-horaire-prix" placeholder="Prix par place (FCFA)" min="0" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin-bottom:8px">
+        <label style="font-size:11px;color:#9ca3af;font-weight:700">📅 Date precise (optionnel — laisser vide = tous les jours)</label>
+        <input type="date" id="nouvel-horaire-date" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:4px 0 8px">
         <button onclick="ajouterHoraireCompagnie()" style="width:100%;padding:12px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer">+ Ajouter cet horaire</button>
       </div>
     </div>
@@ -529,7 +531,7 @@ function chargerHorairesCompagnie(){
     }
     conteneur.innerHTML = codes.map(function(k){
       var h = data[k];
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f9fafb;border-radius:10px;margin-bottom:6px"><div>'+(h.destination?'<div style="font-size:11px;color:#2563eb;font-weight:800;margin-bottom:2px">🚌 Vers '+h.destination+'</div>':'')+'<span style="font-weight:800">'+h.heure+'</span><span style="color:#6b7280;font-size:12px;margin-left:8px">'+h.places+' places</span>'+(h.prix?'<span style="color:#16a34a;font-size:12px;font-weight:800;margin-left:8px">'+h.prix.toLocaleString()+' FCFA</span>':'')+'</div><button onclick="supprimerHoraireCompagnie(\''+k+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer">Retirer</button></div>';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f9fafb;border-radius:10px;margin-bottom:6px"><div>'+(h.destination?'<div style="font-size:11px;color:#2563eb;font-weight:800;margin-bottom:2px">🚌 Vers '+h.destination+'</div>':'')+(h.date?'<div style="font-size:10px;color:#dc2626;font-weight:800;margin-bottom:2px">📅 '+h.date+' uniquement</div>':'<div style="font-size:10px;color:#16a34a;font-weight:700;margin-bottom:2px">🔁 Tous les jours</div>')+'<span style="font-weight:800">'+h.heure+'</span><span style="color:#6b7280;font-size:12px;margin-left:8px">'+h.places+' places</span>'+(h.prix?'<span style="color:#16a34a;font-size:12px;font-weight:800;margin-left:8px">'+h.prix.toLocaleString()+' FCFA</span>':'')+'</div><button onclick="supprimerHoraireCompagnie(\''+k+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer">Retirer</button></div>';
     }).join("");
   });
 }
@@ -571,15 +573,19 @@ function ajouterHoraireCompagnie(){
   var places = parseInt(document.getElementById("nouvel-horaire-places").value, 10);
   var destination = document.getElementById("nouvel-horaire-destination").value;
   var prix = parseInt(document.getElementById("nouvel-horaire-prix").value, 10);
+  var dateChoisie = document.getElementById("nouvel-horaire-date").value || "";
   if(!heure || !destination || !places || places < 1 || places > 44 || !prix || prix < 0){ showToast("⚠️ Renseignez une destination, une heure, un nombre de places (1-44) et un prix valides"); return; }
   if(!window.db || !currentUser) return;
   var heureAffichee = heure.replace(":", "h");
-  window.db.ref("horaires_compagnies/"+currentUser).push({heure: heureAffichee, destination: destination, places: places, prix: prix}).then(function(){
+  var donneesHoraire = {heure: heureAffichee, destination: destination, places: places, prix: prix};
+  if(dateChoisie) donneesHoraire.date = dateChoisie;
+  window.db.ref("horaires_compagnies/"+currentUser).push(donneesHoraire).then(function(){
     showToast("✅ Horaire ajoute");
     document.getElementById("nouvel-horaire-heure").value = "";
     document.getElementById("nouvel-horaire-destination").value = "";
     document.getElementById("nouvel-horaire-places").value = "";
     document.getElementById("nouvel-horaire-prix").value = "";
+    document.getElementById("nouvel-horaire-date").value = "";
     chargerHorairesCompagnie();
   });
 }
