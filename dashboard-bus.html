@@ -188,6 +188,26 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
           <input type="time" id="nouvel-horaire-heure" style="flex:1;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
           <input type="number" id="nouvel-horaire-places" placeholder="Places" min="1" max="44" style="width:90px;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
         </div>
+        <select id="nouvel-horaire-destination" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin-bottom:8px;background:white">
+          <option value="">-- Choisir la destination --</option>
+          <option value="Ségou">Ségou</option>
+          <option value="Mopti">Mopti</option>
+          <option value="Sikasso">Sikasso</option>
+          <option value="Kayes">Kayes</option>
+          <option value="Tombouctou">Tombouctou</option>
+          <option value="Gao">Gao</option>
+          <option value="Koulikoro">Koulikoro</option>
+          <option value="Bougouni">Bougouni</option>
+          <option value="Koutiala">Koutiala</option>
+          <option value="San">San</option>
+          <option value="Nioro">Nioro</option>
+          <option value="Kita">Kita</option>
+          <option value="Nara">Nara</option>
+          <option value="Dioïla">Dioïla</option>
+          <option value="Douentza">Douentza</option>
+          <option value="Bandiagara">Bandiagara</option>
+          <option value="Kidal">Kidal</option>
+        </select>
         <input type="number" id="nouvel-horaire-prix" placeholder="Prix par place (FCFA)" min="0" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin-bottom:8px">
         <button onclick="ajouterHoraireCompagnie()" style="width:100%;padding:12px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer">+ Ajouter cet horaire</button>
       </div>
@@ -518,20 +538,22 @@ function chargerHorairesCompagnie(){
     }
     conteneur.innerHTML = codes.map(function(k){
       var h = data[k];
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f9fafb;border-radius:10px;margin-bottom:6px"><div><span style="font-weight:800">'+h.heure+'</span><span style="color:#6b7280;font-size:12px;margin-left:8px">'+h.places+' places</span>'+(h.prix?'<span style="color:#16a34a;font-size:12px;font-weight:800;margin-left:8px">'+h.prix.toLocaleString()+' FCFA</span>':'')+'</div><button onclick="supprimerHoraireCompagnie(\''+k+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer">Retirer</button></div>';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f9fafb;border-radius:10px;margin-bottom:6px"><div>'+(h.destination?'<div style="font-size:11px;color:#2563eb;font-weight:800;margin-bottom:2px">🚌 Vers '+h.destination+'</div>':'')+'<span style="font-weight:800">'+h.heure+'</span><span style="color:#6b7280;font-size:12px;margin-left:8px">'+h.places+' places</span>'+(h.prix?'<span style="color:#16a34a;font-size:12px;font-weight:800;margin-left:8px">'+h.prix.toLocaleString()+' FCFA</span>':'')+'</div><button onclick="supprimerHoraireCompagnie(\''+k+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer">Retirer</button></div>';
     }).join("");
   });
 }
 function ajouterHoraireCompagnie(){
   var heure = document.getElementById("nouvel-horaire-heure").value;
   var places = parseInt(document.getElementById("nouvel-horaire-places").value, 10);
+  var destination = document.getElementById("nouvel-horaire-destination").value;
   var prix = parseInt(document.getElementById("nouvel-horaire-prix").value, 10);
-  if(!heure || !places || places < 1 || places > 44 || !prix || prix < 0){ showToast("⚠️ Renseignez une heure, un nombre de places (1-44) et un prix valides"); return; }
+  if(!heure || !destination || !places || places < 1 || places > 44 || !prix || prix < 0){ showToast("⚠️ Renseignez une destination, une heure, un nombre de places (1-44) et un prix valides"); return; }
   if(!window.db || !currentUser) return;
   var heureAffichee = heure.replace(":", "h");
-  window.db.ref("horaires_compagnies/"+currentUser).push({heure: heureAffichee, places: places, prix: prix}).then(function(){
+  window.db.ref("horaires_compagnies/"+currentUser).push({heure: heureAffichee, destination: destination, places: places, prix: prix}).then(function(){
     showToast("✅ Horaire ajoute");
     document.getElementById("nouvel-horaire-heure").value = "";
+    document.getElementById("nouvel-horaire-destination").value = "";
     document.getElementById("nouvel-horaire-places").value = "";
     document.getElementById("nouvel-horaire-prix").value = "";
     chargerHorairesCompagnie();
