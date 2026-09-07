@@ -142,6 +142,11 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
     </div>
   </div>
 
+  <div style="display:flex;gap:8px;padding:0 16px 10px;align-items:center">
+    <input type="date" id="filtre-date-resa" onchange="filtrerParDate()" style="flex:1;padding:9px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;font-size:13px">
+    <button onclick="afficherDepartsJour()" style="padding:9px 14px;background:#1d4ed8;color:white;border:none;border-radius:10px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap">🚌 Départs du jour</button>
+    <button onclick="document.getElementById('filtre-date-resa').value='';filtrerParDate()" style="padding:9px 12px;background:#f3f4f6;color:#374151;border:none;border-radius:10px;font-weight:700;font-size:12px;cursor:pointer">✕</button>
+  </div>
   <div class="filters">
     <button class="filter-btn active" id="f-all" onclick="setFilter('all')">🔢 Toutes</button>
     <button class="filter-btn" id="f-pending" onclick="setFilter('pending')">⏳ En attente</button>
@@ -380,7 +385,9 @@ function setFilter(f){
 // ── AFFICHER LISTE ──
 function afficherListe(){
   var container = document.getElementById('liste-resas');
+  var dateFiltre = document.getElementById('filtre-date-resa') ? document.getElementById('filtre-date-resa').value : '';
   var filtered = currentFilter==='all' ? reservations : reservations.filter(function(r){return r.statut===currentFilter;});
+  if(dateFiltre) filtered = filtered.filter(function(r){return r.date===dateFiltre;});
 
   if(filtered.length===0){
     container.innerHTML = '<div class="empty"><div style="font-size:48px;margin-bottom:12px">📭</div><div style="font-size:14px;font-weight:700">Aucune réservation</div><div style="font-size:12px;margin-top:4px">Aucune pour ce filtre</div></div>';
@@ -674,10 +681,32 @@ function confirmerVenteGuichet(){
 function fermerPlan(){document.getElementById('modal-plan').style.display='none';}
 
 // ── STATS DÉTAILLÉES ──
+function filtrerParDate(){
+  afficherListe();
+}
+function afficherDepartsJour(){
+  var aujourdhui = new Date().toISOString().split("T")[0];
+  document.getElementById("filtre-date-resa").value = aujourdhui;
+  var reservationsJour = reservations.filter(function(r){ return r.date===aujourdhui && (r.statut==="confirmed"||r.statut==="pending"); });
+  if(reservationsJour.length === 0){ showToast("📭 Aucun depart prevu aujourd'hui"); afficherListe(); return; }
+  var parHoraire = {};
+  reservationsJour.forEach(function(r){
+    var cle = (r.heure||"?")+" - "+(r.arrivee||r.destination||"?");
+    if(!parHoraire[cle]) parHoraire[cle] = 0;
+    parHoraire[cle]++;
+  });
+  var resume = Object.keys(parHoraire).map(function(k){ return k+" : "+parHoraire[k]+" passager(s)"; }).join("\n");
+  alert("🚌 DEPARTS AUJOURD'HUI\n\n"+resume);
+  afficherListe();
+}
 function afficherStats(){
   var total = reservations.length;
-  var confirmees = reservations.filter(function(r){return r.statut==='confirmed';}).length;
-  showToast('📊 '+total+' reservation(s) au total, '+confirmees+' confirmee(s)');
+  var confirmeesArr = reservations.filter(function(r){return r.statut==='confirmed';});
+  var confirmees = confirmeesArr.length;
+  var revenuTotal = confirmeesArr.reduce(function(somme, r){ return somme + (parseInt(r.prix,10) || 0); }, 0);
+  var aujourdhui = new Date().toISOString().split("T")[0];
+  var revenuJour = confirmeesArr.filter(function(r){ return r.date===aujourdhui; }).reduce(function(somme, r){ return somme + (parseInt(r.prix,10) || 0); }, 0);
+  alert("📊 STATISTIQUES\n\nReservations totales: "+total+"\nConfirmees: "+confirmees+"\n\n💰 Revenu total (confirme): "+revenuTotal.toLocaleString()+" FCFA\n💰 Revenu aujourd'hui: "+revenuJour.toLocaleString()+" FCFA");
 }
 
 // ── AIDE ──
