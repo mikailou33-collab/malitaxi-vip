@@ -693,16 +693,30 @@ function filtrerParDate(){
 function afficherDepartsJour(){
   var aujourdhui = new Date().toISOString().split("T")[0];
   document.getElementById("filtre-date-resa").value = aujourdhui;
-  var reservationsJour = reservations.filter(function(r){ return r.date===aujourdhui && (r.statut==="confirmed"||r.statut==="pending"); });
+  var reservationsJour = reservations.filter(function(r){ return r.date===aujourdhui && (r.statut==="confirmed"||r.statut==="pending"||r.statut==="sold"); });
   if(reservationsJour.length === 0){ showToast("📭 Aucun depart prevu aujourd'hui"); afficherListe(); return; }
   var parHoraire = {};
   reservationsJour.forEach(function(r){
     var cle = (r.heure||"?")+" - "+(r.arrivee||r.destination||"?");
-    if(!parHoraire[cle]) parHoraire[cle] = 0;
-    parHoraire[cle]++;
+    if(!parHoraire[cle]) parHoraire[cle] = [];
+    parHoraire[cle].push(r);
   });
-  var resume = Object.keys(parHoraire).map(function(k){ return k+" : "+parHoraire[k]+" passager(s)"; }).join("\n");
-  alert("🚌 DEPARTS AUJOURD'HUI\n\n"+resume);
+  var comp = COMPAGNIES[currentUser] || {nom:"Compagnie"};
+  var htmlListe = Object.keys(parHoraire).sort().map(function(cle){
+    var passagers = parHoraire[cle];
+    var lignesPassagers = passagers.sort(function(a,b){ return (a.siege||0)-(b.siege||0); }).map(function(r){
+      return '<tr><td style="padding:6px;border-bottom:1px solid #e4e7ec">N°'+(r.siege||"-")+'</td><td style="padding:6px;border-bottom:1px solid #e4e7ec">'+(r.nom||"—")+'</td><td style="padding:6px;border-bottom:1px solid #e4e7ec">'+(r.tel||"—")+'</td></tr>';
+    }).join("");
+    return '<div style="margin-bottom:20px"><div style="background:#1d4ed8;color:white;padding:8px 12px;font-weight:800;border-radius:8px 8px 0 0">🚌 '+cle+' ('+passagers.length+' passager(s))</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#f3f4f6"><th style="padding:6px;text-align:left">Siège</th><th style="padding:6px;text-align:left">Nom</th><th style="padding:6px;text-align:left">Téléphone</th></tr>'+lignesPassagers+'</table></div>';
+  }).join("");
+  var fenetreImpression = window.open("", "_blank");
+  fenetreImpression.document.write('<html><head><title>Liste passagers - '+aujourdhui+'</title><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;padding:20px;max-width:600px;margin:0 auto">'
+    +'<h2 style="text-align:center">🚌 '+comp.nom+'</h2>'
+    +'<div style="text-align:center;color:#6b7280;margin-bottom:20px">Liste des passagers — '+aujourdhui+'</div>'
+    +htmlListe
+    +'<div style="text-align:center;margin-top:20px"><button onclick="window.print()" style="padding:12px 24px;background:#2563eb;color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer">🖨️ Imprimer</button></div>'
+    +'</body></html>');
+  fenetreImpression.document.close();
   afficherListe();
 }
 function afficherStats(){
