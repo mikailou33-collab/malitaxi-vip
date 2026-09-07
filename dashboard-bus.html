@@ -173,6 +173,9 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
     <button class="nav-btn" onclick="showSection('horaires')">
       <span style="font-size:20px">⏰</span>Mes horaires
     </button>
+    <button class="nav-btn" onclick="showSection('profil')">
+      <span style="font-size:20px">🏢</span>Profil
+    </button>
     <button class="nav-btn" onclick="showSection('stats')">
       <span style="font-size:20px">📊</span>Statistiques
     </button>
@@ -180,6 +183,18 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
       <span style="font-size:20px">❓</span>Aide
     </button>
   </nav>
+  <div id="modal-profil" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:flex-end;justify-content:center">
+    <div style="background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:420px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:17px;font-weight:900">🏢 Profil de la compagnie</div>
+        <button onclick="document.getElementById('modal-profil').style.display='none'" style="background:#f3f4f6;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer">✕</button>
+      </div>
+      <div id="profil-nom-affiche" style="text-align:center;font-size:15px;font-weight:800;margin-bottom:16px;color:#374151"></div>
+      <label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Numéro de téléphone de contact</label>
+      <input type="tel" id="profil-telephone" placeholder="Ex: 76123456" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:6px 0 18px">
+      <button onclick="enregistrerProfilCompagnie()" style="width:100%;padding:13px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:800;cursor:pointer">✅ Enregistrer</button>
+    </div>
+  </div>
   <div id="modal-horaires" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:flex-end;justify-content:center">
     <div style="background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -504,6 +519,7 @@ function notifierClient(tel, ref, statut){
 // ── SECTIONS ──
 function showSection(s){
   if(s==='horaires'){ afficherHorairesSection(); return; }
+  if(s==='profil'){ afficherProfilSection(); return; }
   if(s==='plan') ouvrirPlan();
   else if(s==='stats') afficherStats();
   else if(s==='help') afficherAide();
@@ -514,6 +530,25 @@ function showSection(s){
 }
 
 // ── PLAN BUS ──
+function afficherProfilSection(){
+  var comp = COMPAGNIES[currentUser] || {nom:"Compagnie"};
+  document.getElementById("profil-nom-affiche").textContent = comp.icon+" "+comp.nom;
+  document.getElementById("modal-profil").style.display = "flex";
+  if(!window.db || !currentUser) return;
+  window.db.ref("compagnies_profils/"+currentUser+"/telephone").once("value").then(function(snap){
+    document.getElementById("profil-telephone").value = snap.val() || "";
+  });
+}
+function enregistrerProfilCompagnie(){
+  var tel = document.getElementById("profil-telephone").value.trim();
+  if(!window.db || !currentUser){ showToast("Connexion indisponible"); return; }
+  window.db.ref("compagnies_profils/"+currentUser).update({telephone: tel}).then(function(){
+    showToast("✅ Profil mis a jour");
+    document.getElementById("modal-profil").style.display = "none";
+  }).catch(function(){
+    showToast("Erreur lors de l'enregistrement");
+  });
+}
 function afficherHorairesSection(){
   document.getElementById("modal-horaires").style.display = "flex";
   chargerHorairesCompagnie();
