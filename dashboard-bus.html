@@ -634,9 +634,8 @@ function fermerPlan(){document.getElementById('modal-plan').style.display='none'
 // ── STATS DÉTAILLÉES ──
 function afficherStats(){
   var total = reservations.length;
-  var revenus = reservations.filter(function(r){return r.statut==='confirmed';}).length * 150;
-  var comp = COMPAGNIES[currentUser]||{nom:'Admin'};
-  showToast('💰 Commission totale: '+revenus.toLocaleString()+' FCFA');
+  var confirmees = reservations.filter(function(r){return r.statut==='confirmed';}).length;
+  showToast('📊 '+total+' reservation(s) au total, '+confirmees+' confirmee(s)');
 }
 
 // ── AIDE ──
