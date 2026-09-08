@@ -209,6 +209,10 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
           <input type="number" id="nouvel-horaire-places" placeholder="Places" min="1" max="44" style="width:90px;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
         </div>
         <div style="position:relative;margin-bottom:8px">
+          <input type="text" id="nouvel-horaire-depart" placeholder="🔍 Ville de départ..." autocomplete="off" oninput="chercherDepartHoraire(this)" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
+          <div id="sugg-depart-horaire" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e4e7ec;border-radius:10px;max-height:200px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
+        </div>
+        <div style="position:relative;margin-bottom:8px">
           <input type="text" id="nouvel-horaire-destination" placeholder="🔍 Rechercher une destination (ville ou village)..." autocomplete="off" oninput="chercherDestinationHoraire(this)" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
           <div id="sugg-destination-horaire" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e4e7ec;border-radius:10px;max-height:200px;overflow-y:auto;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
         </div>
@@ -566,12 +570,30 @@ function chargerHorairesCompagnie(){
     }
     conteneur.innerHTML = codes.map(function(k){
       var h = data[k];
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f9fafb;border-radius:10px;margin-bottom:6px"><div>'+(h.destination?'<div style="font-size:11px;color:#2563eb;font-weight:800;margin-bottom:2px">🚌 Vers '+h.destination+'</div>':'')+(h.date?'<div style="font-size:10px;color:#dc2626;font-weight:800;margin-bottom:2px">📅 '+h.date+' uniquement</div>':'<div style="font-size:10px;color:#16a34a;font-weight:700;margin-bottom:2px">🔁 Tous les jours</div>')+'<span style="font-weight:800">'+h.heure+'</span><span style="color:#6b7280;font-size:12px;margin-left:8px">'+h.places+' places</span>'+(h.prix?'<span style="color:#16a34a;font-size:12px;font-weight:800;margin-left:8px">'+h.prix.toLocaleString()+' FCFA</span>':'')+'</div><button onclick="supprimerHoraireCompagnie(\''+k+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer">Retirer</button></div>';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f9fafb;border-radius:10px;margin-bottom:6px"><div>'+(h.depart&&h.destination?'<div style="font-size:11px;color:#2563eb;font-weight:800;margin-bottom:2px">🚌 '+h.depart+' → '+h.destination+'</div>':(h.destination?'<div style="font-size:11px;color:#2563eb;font-weight:800;margin-bottom:2px">🚌 Vers '+h.destination+'</div>':''))+(h.date?'<div style="font-size:10px;color:#dc2626;font-weight:800;margin-bottom:2px">📅 '+h.date+' uniquement</div>':'<div style="font-size:10px;color:#16a34a;font-weight:700;margin-bottom:2px">🔁 Tous les jours</div>')+'<span style="font-weight:800">'+h.heure+'</span><span style="color:#6b7280;font-size:12px;margin-left:8px">'+h.places+' places</span>'+(h.prix?'<span style="color:#16a34a;font-size:12px;font-weight:800;margin-left:8px">'+h.prix.toLocaleString()+' FCFA</span>':'')+'</div><button onclick="supprimerHoraireCompagnie(\''+k+'\')" style="background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer">Retirer</button></div>';
     }).join("");
   });
 }
 var VILLES_MALI_HORAIRES = ["Bamako","Ségou","Mopti","Sikasso","Kayes","Tombouctou","Gao","Koulikoro","Bougouni","Koutiala","San","Nioro","Kita","Nara","Dioïla","Douentza","Bandiagara","Kidal"];
 var destinationSuggTimer = null;
+var departSuggTimer = null;
+function chercherDepartHoraire(input){
+  clearTimeout(departSuggTimer);
+  var q = input.value.trim();
+  var liste = document.getElementById("sugg-depart-horaire");
+  if(!liste) return;
+  if(q.length < 2){ liste.style.display = "none"; liste.innerHTML = ""; return; }
+  var villesTrouvees = VILLES_MALI_HORAIRES.filter(function(v){ return v.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
+  var htmlVilles = villesTrouvees.map(function(v){
+    return "<div onmousedown=\"selectionnerDepartHoraire('"+v+"')\" style=\"padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer;border-bottom:1px solid #f1f5f9;color:#2563eb\">🏙️ "+v+"</div>";
+  }).join("");
+  liste.innerHTML = htmlVilles;
+  liste.style.display = "block";
+}
+function selectionnerDepartHoraire(nom){
+  document.getElementById("nouvel-horaire-depart").value = nom;
+  document.getElementById("sugg-depart-horaire").style.display = "none";
+}
 function chercherDestinationHoraire(input){
   clearTimeout(destinationSuggTimer);
   var q = input.value.trim();
@@ -606,17 +628,19 @@ function selectionnerDestinationHoraire(nom){
 function ajouterHoraireCompagnie(){
   var heure = document.getElementById("nouvel-horaire-heure").value;
   var places = parseInt(document.getElementById("nouvel-horaire-places").value, 10);
+  var depart = document.getElementById("nouvel-horaire-depart").value;
   var destination = document.getElementById("nouvel-horaire-destination").value;
   var prix = parseInt(document.getElementById("nouvel-horaire-prix").value, 10);
   var dateChoisie = document.getElementById("nouvel-horaire-date").value || "";
-  if(!heure || !destination || !places || places < 1 || places > 44 || !prix || prix < 0){ showToast("⚠️ Renseignez une destination, une heure, un nombre de places (1-44) et un prix valides"); return; }
+  if(!heure || !depart || !destination || !places || places < 1 || places > 44 || !prix || prix < 0){ showToast("⚠️ Renseignez une ville de depart, une destination, une heure, un nombre de places (1-44) et un prix valides"); return; }
   if(!window.db || !currentUser) return;
   var heureAffichee = heure.replace(":", "h");
-  var donneesHoraire = {heure: heureAffichee, destination: destination, places: places, prix: prix};
+  var donneesHoraire = {heure: heureAffichee, depart: depart, destination: destination, places: places, prix: prix};
   if(dateChoisie) donneesHoraire.date = dateChoisie;
   window.db.ref("horaires_compagnies/"+currentUser).push(donneesHoraire).then(function(){
     showToast("✅ Horaire ajoute");
     document.getElementById("nouvel-horaire-heure").value = "";
+    document.getElementById("nouvel-horaire-depart").value = "";
     document.getElementById("nouvel-horaire-destination").value = "";
     document.getElementById("nouvel-horaire-places").value = "";
     document.getElementById("nouvel-horaire-prix").value = "";
