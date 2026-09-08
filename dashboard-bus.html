@@ -206,7 +206,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t
         <div style="font-size:12px;font-weight:800;color:#6b7280;margin-bottom:8px;text-transform:uppercase">Ajouter un horaire</div>
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <input type="time" id="nouvel-horaire-heure" style="flex:1;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
-          <input type="number" id="nouvel-horaire-places" placeholder="Places" min="1" max="44" style="width:90px;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
+          <input type="number" id="nouvel-horaire-places" placeholder="Places" min="1" max="65" style="width:90px;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
         </div>
         <div style="position:relative;margin-bottom:8px">
           <input type="text" id="nouvel-horaire-depart" placeholder="🔍 Ville de départ..." autocomplete="off" oninput="chercherDepartHoraire(this)" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit">
@@ -632,7 +632,7 @@ function ajouterHoraireCompagnie(){
   var destination = document.getElementById("nouvel-horaire-destination").value;
   var prix = parseInt(document.getElementById("nouvel-horaire-prix").value, 10);
   var dateChoisie = document.getElementById("nouvel-horaire-date").value || "";
-  if(!heure || !depart || !destination || !places || places < 1 || places > 44 || !prix || prix < 0){ showToast("⚠️ Renseignez une ville de depart, une destination, une heure, un nombre de places (1-44) et un prix valides"); return; }
+  if(!heure || !depart || !destination || !places || places < 1 || places > 65 || !prix || prix < 0){ showToast("⚠️ Renseignez une ville de depart, une destination, une heure, un nombre de places (1-65) et un prix valides"); return; }
   if(!window.db || !currentUser) return;
   var heureAffichee = heure.replace(":", "h");
   var donneesHoraire = {heure: heureAffichee, depart: depart, destination: destination, places: places, prix: prix};
@@ -672,7 +672,7 @@ function ouvrirPlan(){
   html += '</div>';
   html += '<div style="display:grid;grid-template-columns:1fr 8px 1fr 1fr;gap:4px;max-width:260px;margin:0 auto">';
 
-  for(var s=1;s<=44;s++){
+  for(var s=1;s<=65;s++){
     if(s%4===3){html += '<div style="background:transparent"></div>';}
     var statut = siegesReserves[s]||'free';
     var bg = statut==='free'?'#16a34a':statut==='pending'?'#f59e0b':statut==='confirmed'?'#7c3aed':'#2563eb';
@@ -681,7 +681,7 @@ function ouvrirPlan(){
     html += '<div'+clicAttr+'>'+s+'</div>';
   }
   html += '</div>';
-  html += '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--sub)">Total: '+Object.keys(siegesReserves).length+' sièges occupés / 44</div>';
+  html += '<div style="text-align:center;margin-top:12px;font-size:12px;color:var(--sub)">Total: '+Object.keys(siegesReserves).length+' sièges occupés / 65</div>';
   html += '<button onclick="vendreSiegePhysique()" style="width:100%;margin-top:14px;padding:12px;background:#2563eb;color:white;border:none;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">🎫 Vendre un siège (guichet)</button>';
 
   document.getElementById('plan-content').innerHTML = html;
@@ -703,8 +703,8 @@ function vendreSiegePhysique(){
   var html = '<div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:900;display:flex;align-items:flex-end;justify-content:center" id="modal-vente-guichet">'
     +'<div style="background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:420px">'
     +'<div style="font-size:17px;font-weight:900;margin-bottom:16px">🎫 Vendre un siège (guichet)</div>'
-    +'<label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Numéro de siège (1-44)</label>'
-    +'<input type="number" id="vg-siege" min="1" max="44" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:6px 0 14px">'
+    +'<label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Numéro de siège (1-65)</label>'
+    +'<input type="number" id="vg-siege" min="1" max="65" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:6px 0 14px">'
     +'<label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Nom du client</label>'
     +'<input type="text" id="vg-nom" style="width:100%;padding:11px;border:2px solid #e4e7ec;border-radius:10px;font-family:inherit;margin:6px 0 14px">'
     +'<label style="font-size:12px;font-weight:800;color:#6b7280;text-transform:uppercase">Téléphone (optionnel)</label>'
@@ -718,7 +718,7 @@ function vendreSiegePhysique(){
 }
 function confirmerVenteGuichet(){
   var siege = parseInt(document.getElementById("vg-siege").value, 10);
-  if(!siege || isNaN(siege) || siege<1 || siege>44){ showToast("Numero de siege invalide"); return; }
+  if(!siege || isNaN(siege) || siege<1 || siege>65){ showToast("Numero de siege invalide"); return; }
   if(window._siegesReserves && window._siegesReserves[siege]){ showToast("Ce siege est deja pris !"); return; }
   var nom = document.getElementById("vg-nom").value.trim();
   if(!nom){ showToast("Nom requis"); return; }
