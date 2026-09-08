@@ -417,7 +417,7 @@ function afficherListe(){
     var comp = COMPAGNIES[r.compagnie_id] || {nom:r.compagnie||'Inconnu', icon:'🚌'};
 
     html += '<div class="resa-card '+r.statut+'">';
-    html += '<div class="resa-header"><span class="resa-ref">'+r.ref+'</span><span class="resa-status '+r.statut+'">'+statusLabel+'</span></div>';
+    html += '<div class="resa-header"><span class="resa-ref">'+(r.reference||r.ref||'-')+'</span><span class="resa-status '+r.statut+'">'+statusLabel+'</span></div>';
 
     if(currentUser==='admin'){
       html += '<div class="resa-row"><span class="resa-row-icon">🚌</span><span class="resa-row-label">Compagnie</span><span class="resa-row-val">'+comp.nom+'</span></div>';
@@ -432,14 +432,14 @@ function afficherListe(){
 
     if(r.statut==='pending'){
       html += '<div class="resa-actions">';
-      html += '<button class="btn-action btn-confirm" onclick="confirmer(\''+r.id+'\',\''+r.ref+'\',\''+r.tel+'\',\''+r.compagnie_id+'\')">✅ Confirmer</button>';
-      html += '<button class="btn-action btn-refuse" onclick="refuser(\''+r.id+'\',\''+r.ref+'\',\''+r.tel+'\')">❌ Refuser</button>';
+      html += '<button class="btn-action btn-confirm" onclick="confirmer(\''+r.id+'\',\''+(r.reference||r.ref||'')+'\',\''+r.tel+'\',\''+r.compagnie_id+'\')">✅ Confirmer</button>';
+      html += '<button class="btn-action btn-refuse" onclick="refuser(\''+r.id+'\',\''+(r.reference||r.ref||'')+'\',\''+r.tel+'\')">❌ Refuser</button>';
       html += '</div>';
     }
 
     if(r.statut==='confirmed'){
       html += '<div class="resa-actions">';
-      html += '<button class="btn-action btn-wa" onclick="notifierClient(\''+r.tel+'\',\''+r.ref+'\',\'confirmed\')">📱 Notifier client</button>';
+      html += '<button class="btn-action btn-wa" onclick="notifierClient(\''+r.tel+'\',\''+(r.reference||r.ref||'')+'\',\'confirmed\')">📱 Notifier client</button>';
       html += '</div>';
     }
 
@@ -502,7 +502,7 @@ function notifierClientAuto(tel, ref, statut){
 function notifierAdmin(ref, compId, statut){
   var comp = COMPAGNIES[compId] || {nom:'Compagnie'};
   var msg = '📊 DASHBOARD MALITAXI\n🔖 '+ref+'\n🚌 '+comp.nom+'\n'+
-    (statut==='confirmed'?'✅ Confirmée':'❌ Refusée')+'\n💰 Commission: 150 FCFA\n🇲🇱 MaliTaxi';
+    (statut==='confirmed'?'✅ Confirmée':'❌ Refusée')+'\n🇲🇱 MaliTaxi';
   var url = 'https://api.callmebot.com/whatsapp.php?phone='+CALLMEBOT_PHONE+'&text='+encodeURIComponent(msg)+'&apikey='+CALLMEBOT_API;
   fetch(url).catch(function(){});
 }
