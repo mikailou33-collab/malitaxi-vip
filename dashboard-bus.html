@@ -487,29 +487,38 @@ function refuser(id, ref, tel){
 // ── NOTIFIER CLIENT AUTO (Callmebot) ──
 function notifierClientAuto(tel, ref, statut, r){
   if(!tel || tel === '—') return;
-  var msg = '';
-  if(statut==='confirmed'){
-    msg = '✅ RÉSERVATION CONFIRMÉE\n━━━━━━━━━━━━━━\n🔖 Réf: '+ref;
-    if(r){
-      var comp = COMPAGNIES[r.compagnie_id] || {nom:r.compagnie||''};
-      if(comp.nom) msg += '\n🚌 '+comp.nom;
-      if(r.depart && r.arrivee) msg += '\n🗺️ '+r.depart+' → '+r.arrivee;
-      if(r.date) msg += '\n📅 '+r.date;
-      if(r.heure) msg += '\n⏰ '+r.heure;
-      if(r.siege) msg += '\n🪑 Siège N°'+r.siege;
-      if(r.prix) msg += '\n💰 '+r.prix.toLocaleString()+' FCFA';
+  var envoyerMessage = function(telCompagnie){
+    var msg = '';
+    if(statut==='confirmed'){
+      msg = '✅ RÉSERVATION CONFIRMÉE\n━━━━━━━━━━━━━━\n🔖 Réf: '+ref;
+      if(r){
+        var comp = COMPAGNIES[r.compagnie_id] || {nom:r.compagnie||''};
+        if(comp.nom) msg += '\n🚌 '+comp.nom;
+        if(r.depart && r.arrivee) msg += '\n🗺️ '+r.depart+' → '+r.arrivee;
+        if(r.date) msg += '\n📅 '+r.date;
+        if(r.heure) msg += '\n⏰ '+r.heure;
+        if(r.siege) msg += '\n🪑 Siège N°'+r.siege;
+        if(r.prix) msg += '\n💰 '+r.prix.toLocaleString()+' FCFA';
+      }
+      msg += '\n\n✅ Votre place est confirmée !\n💳 Paiement déjà réglé — présentez ce message à l\'embarquement';
+      if(telCompagnie) msg += '\n📞 Contact compagnie: '+telCompagnie;
+      msg += '\n\n🇲🇱 Bon voyage ! MaliTaxi';
+    } else {
+      msg = '❌ RÉSERVATION REFUSÉE\n━━━━━━━━━━━━━━\n🔖 Réf: '+ref+'\n❌ Votre réservation a été refusée.\nVeuillez choisir un autre horaire.\n\n🇲🇱 MaliTaxi — Service client';
     }
-    msg += '\n\n✅ Votre place est confirmée !\n💳 Paiement déjà réglé — présentez ce message à l\'embarquement\n\n🇲🇱 Bon voyage ! MaliTaxi';
+    var cleanTel = tel.replace(/[^0-9]/g,'');
+    var url = 'https://api.callmebot.com/whatsapp.php?phone='+cleanTel+'&text='+encodeURIComponent(msg)+'&apikey='+CALLMEBOT_API;
+    fetch(url).catch(function(){
+      window.open('https://wa.me/'+cleanTel+'?text='+encodeURIComponent(msg),'_blank');
+    });
+  };
+  if(r && r.compagnie_id && window.db){
+    window.db.ref("compagnies_profils/"+r.compagnie_id+"/telephone").once("value").then(function(snap){
+      envoyerMessage(snap.val() || "");
+    }).catch(function(){ envoyerMessage(""); });
   } else {
-    msg = '❌ RÉSERVATION REFUSÉE\n━━━━━━━━━━━━━━\n🔖 Réf: '+ref+'\n❌ Votre réservation a été refusée.\nVeuillez choisir un autre horaire.\n\n🇲🇱 MaliTaxi — Service client';
+    envoyerMessage("");
   }
-  // Nettoyer le numéro
-  var cleanTel = tel.replace(/[^0-9]/g,'');
-  var url = 'https://api.callmebot.com/whatsapp.php?phone='+cleanTel+'&text='+encodeURIComponent(msg)+'&apikey='+CALLMEBOT_API;
-  fetch(url).catch(function(){
-    // Fallback WhatsApp manuel
-    window.open('https://wa.me/'+cleanTel+'?text='+encodeURIComponent(msg),'_blank');
-  });
 }
 
 // ── NOTIFIER ADMIN ──
