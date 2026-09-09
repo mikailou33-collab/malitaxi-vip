@@ -499,7 +499,7 @@ function notifierClientAuto(tel, ref, statut, r){
       if(r.siege) msg += '\n🪑 Siège N°'+r.siege;
       if(r.prix) msg += '\n💰 '+r.prix.toLocaleString()+' FCFA';
     }
-    msg += '\n\n✅ Votre place est confirmée !\n💳 Payez à la gare le jour du départ\n\n🇲🇱 Bon voyage ! MaliTaxi';
+    msg += '\n\n✅ Votre place est confirmée !\n💳 Paiement déjà réglé — présentez ce message à l\'embarquement\n\n🇲🇱 Bon voyage ! MaliTaxi';
   } else {
     msg = '❌ RÉSERVATION REFUSÉE\n━━━━━━━━━━━━━━\n🔖 Réf: '+ref+'\n❌ Votre réservation a été refusée.\nVeuillez choisir un autre horaire.\n\n🇲🇱 MaliTaxi — Service client';
   }
